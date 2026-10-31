@@ -23,7 +23,7 @@ G.Interact = (() => {
     { id: 'cd', name: 'Prisa', desc: '-40% recarga', color: '#ffd23f', on: p => { p.cdMul *= 0.6; }, off: p => { p.cdMul /= 0.6; } }
   ];
   const TRAP_R = 74;
-  const authority = () => !G.Coop.active || G.Coop.isHost;
+  const authority = () => true;
   let healShown = 0, healAcc = 0;
 
   function update(dt, pl) {

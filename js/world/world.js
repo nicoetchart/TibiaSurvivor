@@ -361,7 +361,6 @@ G.World = (() => {
 
   function destroyProp(p, fromNet = false) {
     broken.add(p.tx + ',' + p.ty);
-    if (G.Coop.active && !fromNet) G.Coop.propBroken(p);
     const cx = Math.floor(p.tx / N), cy = Math.floor(p.ty / N);
     const c = data.get(cx + ',' + cy);
     if (c) {

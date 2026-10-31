@@ -36,7 +36,6 @@ G.Combat = (() => {
     }
     m.t = Math.max(0.05, m.cd * pl.cdMul);
     pl.cast(m);
-    if (G.Coop.active) G.Coop.cast(pl, m);
     // Vínculo: su icono destella en el HUD al lanzarse (uno que explota pegado al
     // enemigo, como Ascuas tras Ataque Rápido, casi no se ve).
     m.castAt = performance.now();

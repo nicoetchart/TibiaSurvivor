@@ -33,10 +33,8 @@ G.Pickups = (() => {
 
   function push(o) {
     // En cooperativo sólo el anfitrión crea objetos (las copias llegan por la red).
-    if (G.Coop.active && !G.Coop.isHost) return;
     o.id = nextId++;
     list.push(o);
-    if (G.Coop.isHost) G.Coop.pickupAdded(o);
     if (list.length > MAX) {
       // Fusiona los dos más antiguos de XP para no crecer sin límite.
       const i = list.findIndex(p => p.kind === 'xp' || p.kind === 'xpBig');
@@ -44,10 +42,8 @@ G.Pickups = (() => {
         const a = list.splice(i, 1)[0];
         const j = list.findIndex(p => p.kind === 'xp' || p.kind === 'xpBig');
         if (j >= 0) { list[j].value += a.value; list[j].kind = 'xpBig'; }
-        if (G.Coop.isHost) G.Coop.pickupGone(a.id);
       } else {
         const a = list.shift();
-        if (G.Coop.isHost) G.Coop.pickupGone(a.id);
       }
     }
   }
