@@ -229,9 +229,9 @@ G.Player = class Player {
     if (this.invuln > 0 || this.dead) return;
     let eff = null;
     if (type) {
-      const k = G.Types.mult(type, this.mon.types);
-      eff = G.Types.label(k);
-      amount *= k * G.Weather.mult(type);
+      const k = G.Content.attackFactor(type, this.mon.types, null);
+      eff = G.Content.effectivenessLabel(type, this.mon.types, null);
+      amount *= k;
     }
     // Con un ataque cuerpo a cuerpo activo se recibe un 25 % menos: hay que
     // estar encima de los enemigos para pegar (iban muy por detrás).

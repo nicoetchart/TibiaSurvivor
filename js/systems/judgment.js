@@ -166,7 +166,7 @@ G.Judgment = (() => {
     const n = G.Game.everyone().length, t = G.Game.st.time;
     const floor = (3200 + t * 9) * 0.35 * 1;
     base = Math.max(floor, singleDps() * 3);
-    G.Spawner.say('¡Huye de Arceus! Es invencible', 3, true);
+    G.Spawner.say(G.Content.mode === 'neutral' ? '¡Huye del juez! Es invencible' : '¡Huye de Arceus! Es invencible', 3, true);
   }
 
   // ---------------- cada fotograma ----------------
@@ -374,7 +374,7 @@ G.Judgment = (() => {
     G.Sprites.preload([cfg.q[(bossN + 4) % cfg.q.length]], 8000);
     G.FX.ring(x, y, 8, 120, GOLD, 0.6, 5);
     G.FX.burst(x, y - 30, '#fff3c8', 24, 200);
-    G.Spawner.say('¡' + e.name + ' acude a la Sentencia!', 1.8);
+    G.Spawner.say(G.Content.mode === 'neutral' ? '¡Un guardián acude al juicio!' : '¡' + e.name + ' acude a la Sentencia!', 1.8);
     G.Audio.sfx('rift');
   }
 

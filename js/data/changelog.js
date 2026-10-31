@@ -6,6 +6,19 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-31', title: ['Contenido neutral (fase 3A)', 'Neutral content (phase 3A)'], new: [
+    ['Primera capa de datos originales: criaturas, habilidades, tipos de daño y vocación Hechicero supremo (sin cambiar aún la partida Pokémon).',
+     'First layer of original data: creatures, abilities, damage types and Master Sorcerer vocation (Pokémon runs unchanged for now).']
+  ], chg: [
+    ['Las habilidades nuevas no usan la tabla de tipos antigua: su daño no se multiplica por el elemento ni por el clima. Las partidas con un compañero ya elegido siguen igual.',
+     'New abilities ignore the old type chart: their damage is not multiplied by element or weather. Runs with a companion already chosen stay the same.'],
+    ['Hay un elenco propio de criaturas preparado para partidas nuevas. Si ya elegiste compañero, los enemigos de la partida siguen siendo los de antes.',
+     'A separate creature roster is ready for new runs. If you already chose a companion, the enemies in a run stay the same as before.'],
+    ['Una cuenta nueva elige la vocación Master Sorcerer y entra con criaturas y habilidades propias. Una cuenta que ya tenía compañero sigue con la partida anterior.',
+     'A new account picks the Master Sorcerer vocation and plays with its own creatures and abilities. An account that already had a companion keeps the previous run.'],
+    ['En una partida nueva, tú y los enemigos se ven como figuras geométricas de colores. El resumen habla de monedas, no de una colección anterior.',
+     'In a new run, you and the enemies appear as colored geometric figures. The summary talks about coins, not an older collection.']
+  ] },
   { d: '2026-10-31', title: ['Guardado TibiaSurvivor', 'TibiaSurvivor save data'], chg: [
     ['La partida y las cuentas nuevas se guardan con el prefijo ts.* en este navegador. Los saves antiguos de PokéSurvivor (ps.*) no se importan automáticamente; idioma, sonido y ajustes gráficos sí pueden copiarse una vez si no tenías ts.*.',
      'New accounts and progress are stored under the ts.* prefix in this browser. Old PokéSurvivor saves (ps.*) are not imported automatically; language, audio and graphics settings may copy over once if you had no ts.* yet.']

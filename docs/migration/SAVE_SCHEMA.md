@@ -52,7 +52,9 @@ Migración one-shot desde `ps.lang`, `ps.settings`, `ps.audio`, `ps.news.seen` s
 1. JSON inválido → cuarentena `*.bak.<timestamp>` + partida nueva en memoria + aviso al entrar.
 2. `product` distinto de `tibiasurvivor` → cuarentena + partida nueva.
 3. `schemaVersion` > soportado → cuarentena + partida nueva.
-4. `partner` con dex inexistente o no en `owned` → `partner = null` → test de personalidad.
+4. `partner` con id inexistente o no en `owned` → `partner = null` → pantalla de vocación (F3; ver DEC-021).
+5. **Fase 3 (DEC-018, DEC-024):** ids **99001–99099** = criaturas neutrales TibiaSurvivor; válidos en `owned`/`partner` si existen en `G.CREATURE_BY_ID` (aunque no estén en `G.DEX_BY` Pokémon). Id **99001** reservado para el avatar por defecto de vocación **Master Sorcerer** (`master_sorcerer`, DEC-020).
+6. **DEC-019:** cuentas con `partner` dex Pokémon (1–966…) conservan ese id; el flujo neutral aplica a cuentas nuevas o `partner == null` tras sanitize.
 
 ## Forma mínima futura (referencia, no implementada en F2)
 

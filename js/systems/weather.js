@@ -45,8 +45,12 @@ G.Weather = (() => {
 
   function def() { return cur ? KINDS[cur.kind] : null; }
 
+  /** Partida neutral: el clima se ve, pero no cambia el daño ni la velocidad (DEC-026). */
+  function cosmeticOnly() { return G.Content && G.Content.mode === 'neutral'; }
+
   /** Multiplicador de daño de un ataque de este tipo con el clima actual. */
   function mult(type) {
+    if (cosmeticOnly()) return 1;
     const d = def();
     return d && d.mult[type] ? 1 + (d.mult[type] - 1) * level() : 1;
   }
@@ -59,12 +63,14 @@ G.Weather = (() => {
 
   /** ¿Le afecta el daño de arena/nieve a un Pokémon con estos tipos? */
   function hurts(types) {
+    if (cosmeticOnly()) return false;
     const d = def();
     return !!(d && d.safe && !types.some(t => d.safe.includes(t)));
   }
 
   /** Factor de velocidad (nieve) para un Pokémon con estos tipos. */
   function speedFor(types) {
+    if (cosmeticOnly()) return 1;
     const d = def();
     return d && d.slow && !types.includes('ice') ? 1 - 0.1 * level() : 1;
   }

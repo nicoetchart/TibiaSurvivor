@@ -36,8 +36,8 @@ G.LevelUp = (() => {
       // Con 2 potenciadores ya no se ofrecen más: los buff no hacen daño y
       // llenar los 4 huecos con ellos deja la run sin salida.
       const buffs = pl.moves.filter(m => m.kind === 'buff').length;
-      const pool = G.Moves.poolFor(pl.mon).filter(id =>
-        !pl.hasMove(id) && !(pl.banned && pl.banned.has(id)) && !(buffs >= 2 && G.Moves.BY_ID[id].kind === 'buff'));
+      const pool = G.Content.learnPool(pl.mon).filter(id =>
+        !pl.hasMove(id) && !(pl.banned && pl.banned.has(id)) && G.Moves.BY_ID[id] && !(buffs >= 2 && G.Moves.BY_ID[id].kind === 'buff'));
       for (const id of G.U.pickN(pool, 6)) {
         const d = G.Moves.BY_ID[id];
         out.push({
@@ -96,7 +96,8 @@ G.LevelUp = (() => {
         w: evoFor ? 14 : pl.slots.length < pl.maxMoves ? 4 : 7,
         type: 'stat', key: 'stat:' + s.id,
         icon: s.icon, color: evoFor ? '#ffd23f' : '#8fa3c4', tag: evoFor ? 'Evoluciona ' + evoFor.name : 'Mejora',
-        title: s.title, desc: s.desc,
+        title: G.Content.mode === 'neutral' && s.id === 'heal' ? 'Alivio' : s.title,
+        desc: G.Content.mode === 'neutral' && s.id === 'heal' ? 'Recupera el 45% de tu vida ahora mismo.' : s.desc,
         apply: p => { s.apply(p); p.statsTaken[s.id] = (p.statsTaken[s.id] || 0) + 1; }
       });
     }

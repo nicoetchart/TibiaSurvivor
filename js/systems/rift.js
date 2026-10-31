@@ -154,7 +154,9 @@ G.Rift = (() => {
     if (arena.shiny) e.makeShiny();
     G.EnemyMgr.add(e);
     arena.bossId = e.id;
-    G.Spawner.say('¡' + e.name + (e.shiny ? ' shiny' : '') + ' te esperaba en la grieta!', 3.2);
+    G.Spawner.say(G.Content.mode === 'neutral'
+      ? '¡Un guardián te esperaba en la grieta!'
+      : '¡' + e.name + (e.shiny ? ' shiny' : '') + ' te esperaba en la grieta!', 3.2);
     G.Camera.kick(1.1);
     G.Audio.sfx('boss');
   }
@@ -190,7 +192,9 @@ G.Rift = (() => {
     arena.phase = 'won'; arena.endT = 5;
     G.Progress.event('rift', { type: arena.type });
     G.Pickups.pullAll();
-    G.Spawner.say('¡Has vencido a ' + G.DEX_BY[arena.dex].name + '! Recoge el premio…', 3.4, true);
+    G.Spawner.say(G.Content.mode === 'neutral'
+      ? '¡Has vencido al guardián! Recoge el premio…'
+      : '¡Has vencido a ' + G.DEX_BY[arena.dex].name + '! Recoge el premio…', 3.4, true);
     G.Audio.sfx('legend');
     const pl = G.Game.player;
     if (pl) {

@@ -2,10 +2,11 @@
 (() => {
   // Si un archivo no llega a cargarse (conexión móvil que se corta), mejor
   // avisar que arrancar a medias.
-  const NEED = ['U', 'I18n', 'Settings', 'DB', 'Audio', 'Input', 'Touch', 'Sprites', 'Camera', 'Moves', 'Enemies', 'Upgrades', 'Items',
+  const NEED = ['U', 'I18n', 'Settings', 'DB', 'Audio', 'Input', 'Touch', 'Sprites', 'GeoSprites', 'Camera', 'DamageTypes', 'Content', 'ContentBridge',
+                'Moves', 'Abilities', 'Vocations', 'Enemies', 'NeutralRoster', 'Upgrades', 'Items',
                 'World', 'FX', 'Projectiles', 'EnemyMgr', 'Pickups', 'Player', 'Combat', 'Spawner', 'LevelUp', 'Gacha',
                 'Rift', 'Weather', 'Progress', 'Hazards', 'Icons', 'UI', 'HUD',
-                'MenuUI', 'RunUI', 'SettingsUI', 'Game', 'Flow'];
+                'MenuUI', 'VocationUI', 'RunUI', 'SettingsUI', 'Game', 'Flow'];
   function broken() {
     // (En la versión publicada G no está en window: va encerrado, ver tools/build.js.)
     const miss = NEED.filter(k => typeof G !== 'object' || !G[k]);

@@ -55,17 +55,17 @@ G.Events = (() => {
     if (nextT > 0) return;
     if (G.EnemyMgr.bossAlive()) { nextT = 10; return; }
     nextT = G.U.rand(EVERY[0], EVERY[1]);
-    const ids = ['horde', 'gold', 'lost'].filter(id => id !== last);
+    const ids = (G.Content.mode === 'neutral' ? ['horde', 'gold'] : ['horde', 'gold', 'lost']).filter(id => id !== last);
     start(G.U.pick(ids), time, players);
   }
 
   function start(id, time, players) {
     last = id;
     if (id === 'horde') {
-      const types = G.Enemies.hordeTypes(time);
+      const types = G.Content.roster().hordeTypes(time);
       if (!types.length) return start('gold', time, players);
       const type = G.U.pick(types);
-      const defs = G.Enemies.hordeDefs(type, time);
+      const defs = G.Content.roster().hordeDefs(type, time);
       G.Sprites.preload(defs.map(d => d.dex));
       cur = { id, t: 0, dur: DUR, type, defs };
       G.Spawner.burst(Math.round(6 * 1));
@@ -100,6 +100,7 @@ G.Events = (() => {
   // ---------------- duende del tesoro ----------------
 
   function spawnThief(players, time) {
+    if (G.Content.mode === 'neutral') return;
     const gold = Math.random() < 0.25;
     const dex = gold ? 1000 : 52;
     const mon = G.DEX_BY[dex];

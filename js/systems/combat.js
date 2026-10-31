@@ -76,11 +76,17 @@ G.Combat = (() => {
   }
 
   function payload(m) {
-    return { burn: m.burn || 0, poison: m.poison || 0, slow: m.slow || 0, knock: m.knock || 0, mtype: m.type };
+    return { burn: m.burn || 0, poison: m.poison || 0, slow: m.slow || 0, knock: m.knock || 0, mtype: m.type, aid: m.id };
   }
 
-  /** Tabla de tipos × clima para un ataque de tipo `type` contra `e`. */
-  function typeK(type, e) { return G.Types.mult(type, e.types) * G.Weather.mult(type); }
+  /** Tabla de tipos × clima, o ×1 si el ataque es una habilidad TibiaSurvivor. */
+  function typeK(type, e, sourceId) {
+    return G.Content.attackFactor(type, e && e.types, sourceId);
+  }
+
+  function typeLabel(type, e, sourceId) {
+    return G.Content.effectivenessLabel(type, e && e.types, sourceId);
+  }
 
   function fireProjectiles(pl, m) {
     const col = G.U.TYPE_COLOR[m.type];
@@ -526,10 +532,10 @@ G.Combat = (() => {
   const isCrit = pl => !ghost && pl.critChance > 0 && Math.random() < pl.critChance;
 
   function hit(pl, e, dmg, col, dx, dy, knock, m) {
-    const k = typeK(m.type, e);
+    const k = typeK(m.type, e, m.id);
     const crit = isCrit(pl);
     dmg *= k * (crit ? CRIT_MUL : 1);
-    e.hurt(dmg, col, dx, dy, knock, crit ? 'crit' : G.Types.label(G.Types.mult(m.type, e.types)));
+    e.hurt(dmg, col, dx, dy, knock, crit ? 'crit' : typeLabel(m.type, e, m.id));
     if (!ghost) pl.onDealt(dmg);
     pl.dmgDealt += dmg;
     if (m.burn) e.applyBurn(m.burn);
@@ -635,9 +641,9 @@ G.Combat = (() => {
         }
 
         const crit = isCrit(pl);
-        const k = (p.mtype ? typeK(p.mtype, e) : 1) * (crit ? CRIT_MUL : 1);
+        const k = (p.mtype ? typeK(p.mtype, e, p.aid) : 1) * (crit ? CRIT_MUL : 1);
         e.hurt(p.dmg * k, p.color, p.vx || (e.x - pl.x), p.vy || (e.y - pl.y), p.knock,
-               crit ? 'crit' : p.mtype ? G.Types.label(G.Types.mult(p.mtype, e.types)) : null);
+               crit ? 'crit' : p.mtype ? typeLabel(p.mtype, e, p.aid) : null);
         if (Math.random() < 0.5) G.FX.sp('impact', p.vis ? p.vis.pal : 'normal', e.x, e.y - e.bodyH * 0.5, { life: 0.12, scale: 1 });
         pl.dmgDealt += p.dmg * k;
         pl.onDealt(p.dmg * k);

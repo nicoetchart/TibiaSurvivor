@@ -58,6 +58,7 @@ G.Sprites = (() => {
 
   /** Geometría de una animación (la shiny sólo difiere en casos raros). */
   function animMeta(dex, anim, shiny = false) {
+    if (G.GeoSprites && G.GeoSprites.isGeo(dex)) return G.GeoSprites.frameMeta(anim);
     const m = meta(dex);
     if (!m) return null;
     const name = animName(dex, anim, shiny);
@@ -226,6 +227,10 @@ G.Sprites = (() => {
 
     /** Dibuja con los pies en (x, y). opts: { flash, alpha } */
     draw(ctx, x, y, opts = {}) {
+      if (G.GeoSprites && G.GeoSprites.isGeo(this.dex)) {
+        G.GeoSprites.draw(ctx, this.dex, x, y, this.scale, this.cur, this.frame, opts);
+        return;
+      }
       let m = animMeta(this.dex, this.cur, this.shiny);
       let s = sheet(this.dex, this.cur, this.shiny);
       const k = PX * this.scale;

@@ -27,8 +27,8 @@ G.Spawner = (() => {
 
   function reset() {
     acc = 0; bossIdx = 0; surgeT = 32; announce = null; announceT = 0; preloadT = 0;
-    G.Enemies.rollRun();
-    G.Sprites.preload(G.Enemies.upcomingDex(0, 80));
+    G.Content.roster().rollRun();
+    G.Sprites.preload(G.Content.roster().upcomingDex(0, 80));
   }
 
   /** Enemigos por segundo según el minuto de la run. */
@@ -77,11 +77,11 @@ G.Spawner = (() => {
   }
 
   function spawnOne(pl, t, angle) {
-    const def = G.U.pick(G.Enemies.bagAt(t));
+    const def = G.U.pick(G.Content.roster().bagAt(t));
     const pt = freePoint(pl, angle == null ? Math.random() * 6.2832 : angle, isFlyer(def));
     if (!pt) return null;
     const shiny = rollShiny(def.dex);
-    const e = new G.Enemy(def, pt[0], pt[1], scaled(G.Enemies.scale(t), 1 * hpK(t)));
+    const e = new G.Enemy(def, pt[0], pt[1], scaled(G.Content.roster().scale(t), 1 * hpK(t)));
     e.dmg *= DMG_K; e.xp = Math.round(e.xp * XP_K);
     if (G.EnemyMgr.count >= CAP * ELITE_FROM) { e.maxHp = e.hp = Math.round(e.maxHp * 1.6); e.dmg *= 1.25; e.xp = Math.round(e.xp * 1.6); }
     if (shiny) e.makeShiny();
@@ -96,7 +96,7 @@ G.Spawner = (() => {
 
   function spawnBoss(pl, t, b) {
     const [x, y] = ringPoint(pl, Math.random() * 6.2832);
-    const e = new G.Enemy(b, x, y, scaled(G.Enemies.bossScale(t), 1 * (players.length > 1 ? 1.4 : 1)), true);
+    const e = new G.Enemy(b, x, y, scaled(G.Content.roster().bossScale(t), 1 * (players.length > 1 ? 1.4 : 1)), true);
     if (rollShiny(b.dex)) e.makeShiny();
     G.EnemyMgr.add(e);
     say('¡' + e.name + (e.shiny ? ' shiny' : '') + ' salvaje apareció!', 3.2);
@@ -115,10 +115,10 @@ G.Spawner = (() => {
 
     // Precarga lo que va a salir en el próximo minuto.
     preloadT -= dt;
-    if (preloadT <= 0) { preloadT = 10; G.Sprites.preload(G.Enemies.upcomingDex(t, 60)); }
+    if (preloadT <= 0) { preloadT = 10; G.Sprites.preload(G.Content.roster().upcomingDex(t, 60)); }
 
     // --- jefes ---
-    const b = G.Enemies.BOSSES[bossIdx];
+    const b = G.Content.roster().BOSSES[bossIdx];
     if (b && t >= b.at) { spawnBoss(anchor(), t, b); bossIdx++; }
 
     // Combate de jefe: las oleadas bajan al 25% y no hay mareas, para que el

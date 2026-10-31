@@ -26,7 +26,8 @@
       this.id = nextId++;
       this.def = def;
       this.dex = def.dex;
-      this.name = (G.DEX_BY[def.dex] && G.DEX_BY[def.dex].name) || def.name;
+      const foreign = G.Content && G.Content.mode === 'neutral' && !G.Content.isNeutralLegacyId(def.dex);
+      this.name = foreign ? 'Guardián' : ((G.DEX_BY[def.dex] && G.DEX_BY[def.dex].name) || def.name);
       this.x = x; this.y = y;
       this.boss = boss;
       this.scale = boss ? bossScale(def.dex) : 1;

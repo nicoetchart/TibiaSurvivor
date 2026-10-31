@@ -31,7 +31,12 @@ G.MenuUI = (() => {
 
   function open() {
     const s = G.DB.save;
+    const neutral = G.Content.mode === 'neutral';
+    document.querySelectorAll('#scr-menu [data-go="dex"], #scr-menu [data-go="upgrades"], #scr-menu [data-go="gacha"]').forEach(b => {
+      b.classList.toggle('hidden', neutral);
+    });
     const mon = G.DEX_BY[s.partner];
+    if (!mon) return;
     const shiny = !!s.partnerShiny && G.DB.ownsShiny(mon.dex);
     G.UI.chrome(true);
     G.UI.show('scr-menu');

@@ -139,12 +139,14 @@ Flujo repetido: login o perfil → selección Pokémon → **Jugar** → movimie
 
 ## Fase 3 — Contenido neutral
 
-- [ ] Partida sin nombres Pokémon en HUD/menú/run
-- [ ] Una vocación jugable
-- [ ] Enemigos usan roster neutral
-- [ ] Multiplicadores de daño = 1 (sin tabla Pokémon)
-- [ ] Sin `.dex` requerido en runtime neutral
-- [ ] Placeholders visibles (geométricos)
+Smoke de agente en `dev.html?dev` (2026-10-31, invitado): vocación, menú sin Pokédex/Mejoras/Gacha, partida con Archimago errante y enemigo del roster. Figuras geométricas comprobadas en canvas (píxeles de color, sin petición a `assets/pokemon/99001`).
+
+- [x] Partida sin nombres Pokémon en HUD del camino nuevo (el nombre visible es la criatura neutral)
+- [x] Una vocación jugable
+- [x] Enemigos usan roster neutral
+- [x] Multiplicadores de daño = 1 en habilidades `ts-*` (comprobado en 3B; el modo neutral fuerza el mismo factor)
+- [ ] Sin `.dex` requerido en runtime neutral — el campo numérico 99001–99099 sigue siendo el id de sprite y de guardado
+- [x] Placeholders visibles (geométricos)
 
 ---
 

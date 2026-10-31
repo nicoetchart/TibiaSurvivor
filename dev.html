@@ -117,6 +117,19 @@
   </div>
 </section>
 
+<!-- ====== Vocación (cuentas nuevas, Fase 3) ====== -->
+<section id="scr-vocation" class="scr dim hidden">
+  <div class="box result">
+    <p class="sub">Elige tu vocación</p>
+    <h3 class="gold" id="voc-name">Master Sorcerer</h3>
+    <p id="voc-text"></p>
+    <p id="voc-ability"></p>
+    <div class="row" style="justify-content:center;margin-top:14px">
+      <button id="voc-ok" class="btn gold">Empezar con esta vocación</button>
+    </div>
+  </div>
+</section>
+
 <!-- ====== Test de personalidad ====== -->
 <section id="scr-test" class="scr dim hidden">
   <div class="box test-box">
@@ -450,8 +463,16 @@
 <!-- datos de juego -->
 <script defer src="js/data/moves.js"></script>
 <script defer src="js/data/types.js"></script>
+<script defer src="js/data/damage-types.js"></script>
+<script defer src="js/data/creatures.js"></script>
+<script defer src="js/data/vocations.js"></script>
+<script defer src="js/data/abilities.js"></script>
+<script defer src="js/data/content-api.js"></script>
+<script defer src="js/core/geo-sprites.js"></script>
+<script defer src="js/data/content-bridge.js"></script>
 <script defer src="js/data/starters.js"></script>
 <script defer src="js/data/enemies.js"></script>
+<script defer src="js/data/neutral-roster.js"></script>
 <script defer src="js/data/upgrades.js"></script>
 <script defer src="js/data/items.js"></script>
 <script defer src="js/data/missions.js"></script>
@@ -486,6 +507,7 @@
 <script defer src="js/ui/hud.js"></script>
 <script defer src="js/ui/login.js"></script>
 <script defer src="js/ui/test.js"></script>
+<script defer src="js/ui/vocation-ui.js"></script>
 <script defer src="js/ui/menu.js"></script>
 <script defer src="js/ui/slots.js"></script>
 <script defer src="js/ui/gacha-ui.js"></script>

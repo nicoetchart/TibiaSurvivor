@@ -308,6 +308,207 @@ Validación manual F2 (`TEST_CHECKLIST.md`); opcional `node tools/build.js` ante
 
 ---
 
+## 2026-10-31 — FASE 3 (Planificación y decisiones DEC-018–026)
+
+### Fase
+
+3 — **pending** (plan detallado acordado; implementación no iniciada)
+
+### Archivos modificados
+
+- `docs/migration/DECISIONS.md` — DEC-018 a DEC-026 (**accepted**)
+- `docs/migration/MIGRATION_LOG.md` — esta entrada
+
+### Decisiones tomadas
+
+DEC-018 (banda 99001–99099), DEC-019 (solo cuentas nuevas → flujo neutral), DEC-020 (vocación **Master Sorcerer**, nombre UI original), DEC-021 (eliminar test personalidad), DEC-022 (Rift + Judgment accesibles; Gacha eliminado), DEC-023 (ocultar Pokédex/Mejoras/Gacha en menú F3), DEC-024 (sanitize ids TS sin subir schemaVersion), DEC-025 (solo dev.html en F3), DEC-026 (clima cosmético, mult daño = 1).
+
+### Implicaciones para subfases
+
+| Subfase | Ajuste por decisiones |
+|---------|------------------------|
+| 3A | Documentar banda ids; `G.Vocations` con `master_sorcerer` |
+| 3B | Abilities acorde hechicero; `G.DamageTypes.mult` = 1; weather sin buff elemental |
+| 3C | Criaturas neutrales + roster; no mezclar con cuentas legacy con partner dex |
+| 3D | `Flow.afterLogin`: vocación si cuenta nueva o `partner` null; legacy si partner dex Pokémon; retirar TestUI |
+| 3E | Ocultar entradas menú; quitar gacha de NEED/dev.html cuando corresponda; rift/judgment sin retirar |
+
+### Deuda explícita
+
+- Rift/Judgment accesibles pueden mostrar nombres Pokémon hasta sustitución de contenido (F4 o parche F3E documentado).
+- Cuentas TS ya creadas con partner Pokémon no migran solas al neutral (DEC-019).
+
+### Próximo paso recomendado
+
+Autorización explícita de **Subfase 3A — Inventario e interfaces neutrales** (código + `dev.html` scripts, sin build producción).
+
+---
+
+## 2026-10-31 — FASE 3A (Inventario e interfaces neutrales)
+
+### Fase
+
+3A — **completed**
+
+### Archivos creados
+
+- `js/data/damage-types.js` — `G.DamageTypes` (mult ×1)
+- `js/data/creatures.js` — `G.CREATURES`, `G.CREATURE_BY_ID`, `G.CREATURE_BY_LEGACY` (99001–99007)
+- `js/data/abilities.js` — `G.Abilities` (4 habilidades `ts-*`)
+- `js/data/vocations.js` — `G.Vocations` (`master_sorcerer`)
+- `js/data/content-api.js` — `G.Content`
+- `js/data/content-bridge.js` — `G.ContentBridge` (stub; sin `installLegacyAliases` en boot)
+
+### Archivos modificados
+
+- `dev.html` — orden de scripts (neutral data tras `types.js`)
+- `js/main.js` — `NEED`: `DamageTypes`, `Content`, `ContentBridge`, `Abilities`, `Vocations`
+- `js/data/changelog.js` — entrada 3A
+- `docs/migration/MIGRATION_LOG.md`
+
+### Símbolos nuevos
+
+`G.DamageTypes`, `G.CREATURES`, `G.CREATURE_BY_ID`, `G.CREATURE_BY_LEGACY`, `G.Abilities`, `G.Vocations`, `G.Content`, `G.ContentBridge`.
+
+### Compatibilidad temporal
+
+- `G.Content.mode` = `'legacy'`; `startRun` sin cambios.
+- Pokémon (`G.DEX`, `moves`, test personalidad) intactos.
+- `@ts-adapter-f3` en `content-bridge.js`.
+
+### Pruebas ejecutadas
+
+| Prueba | Resultado |
+|--------|-----------|
+| `node --check` en archivos 3A + `main.js` | OK |
+
+### Próximo paso recomendado
+
+**Subfase 3B** — `G.DamageTypes` en combate/jugador; puente abilities → combat.
+
+---
+
+## 2026-10-31 — FASE 3B (DamageTypes y Abilities)
+
+### Fase
+
+3B — **completed**
+
+### Archivos modificados
+
+- `js/data/abilities.js` — buff usa `stat: 'atk'` (contrato de `Player.addBuff`)
+- `js/data/damage-types.js` — colores/nombres en `G.U` solo si la clave no existía
+- `js/data/content-api.js` — `usesNeutralDamage`, `attackFactor`, `effectivenessLabel`
+- `js/data/content-bridge.js` — `@ts-adapter-f3` `installAbilityAliases()` al cargar
+- `js/systems/combat.js` — `typeK` / etiquetas vía `G.Content`; proyectiles llevan `aid`
+- `js/entities/player.js` — `hurt` usa `attackFactor` (clima incluido solo en camino Pokémon)
+- `js/systems/weather.js` — si `G.Content.mode === 'neutral'`, daño, chip y ralentización = neutros (DEC-026)
+- `js/data/changelog.js`
+
+### Qué no cambió
+
+- `G.Types.mult` sigue siendo la tabla de 18 tipos. No se reasignó a `G.DamageTypes`.
+- `G.Content.mode` sigue en `'legacy'`. Partidas con compañero Pokémon conservan ventajas elementales y clima.
+- `installLegacyAliases()` no se llama (criaturas aún no entran en `G.DEX_BY`).
+
+### Regla de daño
+
+| Origen | Multiplicador |
+|--------|----------------|
+| Id en `G.Abilities` (`ts-*`) | `G.DamageTypes.mult` = 1, sin clima |
+| `G.Content.mode === 'neutral'` | igual, también golpes sin id de habilidad |
+| Movimiento Pokémon | `G.Types.mult` × `G.Weather.mult` |
+
+### Pruebas
+
+`node --check` y script de factores (habilidad `ts-arc-bolt` instancia; fuego vs planta = 1 con id `ts-*` y 1.6 con id Pokémon).
+
+### Próximo paso recomendado
+
+**Subfase 3C** — roster de criaturas y vocación conectados al spawner, sin sustituir todavía el arranque de partida.
+
+---
+
+## 2026-10-31 — FASE 3C (Creatures, vocación y roster)
+
+### Fase
+
+3C — **completed**
+
+### Archivos
+
+- `js/data/neutral-roster.js` — `G.NeutralRoster` (6 enemigos, sin jefe)
+- `js/data/content-api.js` — `G.Content.roster()`
+- `js/data/content-bridge.js` — `@ts-adapter-f3` copia en `G.DEX_BY` ids 99001–99007; habilidad inicial en el archimago
+- `js/systems/spawner.js`, `js/systems/events.js` — leen `G.Content.roster()`
+- `dev.html`, `js/main.js` — script y `NEED`
+- `js/data/changelog.js`
+
+### Comportamiento
+
+- `G.Content.mode` sigue en `'legacy'`: el spawner sigue llamando a `G.Enemies`.
+- Con modo `neutral`, `bagAt` solo devuelve `legacyId` 99002–99007. `99001` es el jugador.
+- `G.DEX` (el array) no recibe criaturas nuevas. `G.DEX_BY[9900x]` es una copia de forma, no un segundo diseño.
+- Vocación `master_sorcerer` → habilidad `ts-arc-bolt` en la criatura `wander_archmage`.
+- `startRun` y el test de personalidad no se han tocado.
+
+### Próximo paso recomendado
+
+**Subfase 3D** — selección de vocación, jugador y spawner en modo neutral para cuentas nuevas.
+
+---
+
+## 2026-10-31 — FASE 3D (Player, vocación y spawner)
+
+### Fase
+
+3D — **completed**
+
+### Archivos
+
+- `js/ui/vocation-ui.js` y `dev.html` — pantalla de vocación; el test de personalidad ya no se abre
+- `js/game.js` — `syncFromSave` antes de crear al jugador; habilidad `ts-arc-bolt` en modo neutral
+- `js/core/db.js` — `sanitize` acepta ids de `G.Content.getCreature` sin subir `schemaVersion`
+- `js/data/content-api.js` — `syncFromSave`, `startingMoveId`, `learnPool`; `getCreature` acepta `"99001"`
+- `js/systems/levelup.js` — el pool neutral sale de `G.Abilities`
+- `js/systems/events.js` — en neutral no hay criatura perdida ni ladrón de dex Pokémon
+- `js/ui/menu.js` — oculta Pokédex, Mejoras y Gacha si el modo es neutral
+- `js/main.js` — `NEED` incluye `VocationUI`
+
+### Regla de cuenta (DEC-019)
+
+| `save.partner` | Modo | Arranque |
+|----------------|------|----------|
+| `null` | neutral | pantalla de vocación |
+| 99001–99099 | neutral | menú y roster `G.NeutralRoster` |
+| dex Pokémon | legacy | menú y `G.Enemies` |
+
+### Próximo paso recomendado
+
+**Subfase 3E** — sprites geométricos y revisión del HUD en `dev.html`.
+
+---
+
+## 2026-10-31 — FASE 3E (Sprites geométricos y HUD)
+
+### Fase
+
+3E — **completed**. Con esto cierra la Fase 3 en el camino de cuentas nuevas. Los scripts de gacha siguen cargados porque el menú legacy (DEC-019) aún los consulta. Las grietas y el juicio siguen pudiendo mostrar arte Pokémon; los avisos y la barra de vida en modo neutral dicen «guardián».
+
+### Archivos
+
+- `js/core/geo-sprites.js` — `G.GeoSprites` (triángulo, orbe, cuña, bloque, diamante)
+- `js/core/sprites.js` — ids 99001–99099 no piden `assets/pokemon/`
+- `js/entities/enemy.js` — en modo neutral, un dex ajeno se llama Guardián
+- `js/ui/hud.js`, `js/ui/run-ui.js`, `js/systems/rift.js`, `js/systems/judgment.js` — textos del camino neutral
+- `dev.html`, `js/main.js` — script y `NEED`
+
+### Próximo paso recomendado
+
+**Fase 4** no iniciar sin autorización. Antes, prueba manual del checklist de Fase 3 en `dev.html`.
+
+---
+
 <!-- Plantilla para entradas futuras
 
 ## YYYY-MM-DD — FASE N

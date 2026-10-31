@@ -77,7 +77,13 @@ G.Game = (() => {
 
   function startRun() {
     const save = G.DB.save;
+    G.Content.syncFromSave(save);
     const mon = G.DEX_BY[save.partner];
+    const startId = G.Content.startingMoveId(mon);
+    if (!mon || !Number.isFinite(mon.hp) || !Number.isFinite(mon.spd) || !Number.isFinite(mon.atk) || !startId || !G.Moves.BY_ID[startId]) {
+      G.UI.toast('No se pudo crear al personaje.');
+      return;
+    }
     const perks = G.Upgrades.perks(G.DB.upgradesOf(mon.dex));
 
     G.UI.hideAll();
@@ -106,12 +112,12 @@ G.Game = (() => {
     // Atajos: movimientos con hueco fijo (save.pbind[dex] = [id del 1, id del 2, ...]),
     // antes de aprender nada: addMove ya los coloca.
     (save.pbind && save.pbind[mon.dex] || []).forEach((id, i) => { if (id) pl.bind[id] = i; });
-    pl.addMove(G.startMoveOf(mon.dex));
+    pl.addMove(startId);
     // Mejora "Veto": movimientos que no quieres que te salgan.
     pl.banned = new Set((save.pban && save.pban[mon.dex] || []).slice(0, perks.bans));
     // Mejora "Repertorio": un segundo movimiento de ataque al azar.
     if (perks.startMoves >= 2) {
-      const pool = G.Moves.poolFor(mon).filter(id => !pl.hasMove(id) && !pl.banned.has(id) && G.Moves.BY_ID[id].kind !== 'buff');
+      const pool = G.Content.learnPool(mon).filter(id => !pl.hasMove(id) && !pl.banned.has(id) && G.Moves.BY_ID[id] && G.Moves.BY_ID[id].kind !== 'buff');
       if (pool.length) pl.addMove(G.U.pick(pool));
       pl.setActive(0);
     }
@@ -713,7 +719,7 @@ G.Game = (() => {
 G.Flow = {
   boot() {
     G.UI.initChrome();
-    G.LoginUI.init(); G.TestUI.init(); G.MenuUI.init(); G.GachaUI.init();
+    G.LoginUI.init(); G.VocationUI.init(); G.TestUI.init(); G.MenuUI.init(); G.GachaUI.init();
     G.GoalsUI.init(); G.ProfileUI.init(); G.SettingsUI.init(); G.NewsUI.init(); G.Updater.init();
     // Tu nombre arriba a la derecha abre tu perfil.
     document.getElementById('user-pill').onclick = () => G.GoalsUI.open('profile');
@@ -753,10 +759,12 @@ G.Flow = {
     if (G.DB.consumeRecoveredFlag && G.DB.consumeRecoveredFlag()) {
       G.UI.toast('No se pudo leer tu partida guardada: se ha creado una nueva.', 6000);
     }
-    if (!G.DB.save.partner) G.TestUI.start();
+    G.Content.syncFromSave(G.DB.save);
+    if (!G.DB.save.partner) G.VocationUI.start();
     else this.goMenu();
   },
   goMenu() {
+    if (G.DB.save) G.Content.syncFromSave(G.DB.save);
     if (G.Game.state !== 'ui') G.Game.toUI();
     G.Audio.music('village');
     G.MenuUI.open();

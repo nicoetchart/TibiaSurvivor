@@ -20,7 +20,7 @@
 | 0 | Auditoría operativa y línea base | **completed** |
 | 1 | Motor offline | **completed** (2026-10-31; smoke manual operador PASS post-corrección) |
 | 2 | Namespace y guardado TibiaSurvivor (`ts.*`) | **completed** (2026-10-31) |
-| 3 | Capa neutral de contenido | pending |
+| 3 | Capa neutral de contenido | **completed** (3A–3E, 2026-10-31; gacha y arte de grieta/juicio siguen en el camino legacy) |
 | 4 | Eliminación de contenido Pokémon | pending |
 | 5 | Identidad TibiaSurvivor | pending |
 | 6 | Vertical slice MVP | pending |
@@ -177,7 +177,7 @@ Revertir Fase 2; datos `ts.*` quedan en localStorage del navegador de prueba (do
 
 ## FASE 3 — Capa neutral de contenido
 
-**Estado:** pending
+**Estado:** **completed** (3A–3E, 2026-10-31). Cuentas nuevas: vocación, roster y figuras geométricas. Cuentas con compañero Pokémon: camino anterior. Gacha sigue en disco para ese camino. Arte de grieta/juicio aún puede ser Pokémon; el texto en modo neutral dice «guardián».
 
 ### Objetivo
 

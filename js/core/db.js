@@ -159,12 +159,13 @@ G.DB = (() => {
     s.tickets = s.tickets || { t1: 0, t10: 0 };
     s.tickets.t1 = n(s.tickets.t1);
     s.tickets.t10 = n(s.tickets.t10);
-    if (G.DEX_BY) for (const coll of ['owned', 'shiny']) {
-      for (const d of Object.keys(s[coll] || {})) if (!G.DEX_BY[d]) delete s[coll][d];
+    const knownId = d => (G.DEX_BY && G.DEX_BY[d]) || (G.Content && G.Content.getCreature && G.Content.getCreature(d));
+    if (G.DEX_BY || G.Content) for (const coll of ['owned', 'shiny']) {
+      for (const d of Object.keys(s[coll] || {})) if (!knownId(d)) delete s[coll][d];
     }
-    if (s.partner != null && G.DEX_BY) {
+    if (s.partner != null && (G.DEX_BY || G.Content)) {
       const dex = s.partner;
-      if (!G.DEX_BY[dex] || !(s.owned && s.owned[dex])) {
+      if (!knownId(dex) || !(s.owned && s.owned[dex])) {
         s.partner = null;
         s.partnerShiny = false;
       }
