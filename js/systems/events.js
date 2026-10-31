@@ -21,7 +21,7 @@
 G.Events = (() => {
   const EVERY = [240, 300], DUR = 30, LOST_TIME = 120;
   const THIEF_FIRST = [120, 240], THIEF_NEXT = [240, 360], THIEF_LIFE = 15;
-  const authority = () => !G.Coop.active || G.Coop.isHost;
+  const authority = () => true;
 
   let nextT = 0, cur = null, last = null, thiefT = 0, thieves = 0;
   let lost = null;      // { dex, name, x, y, hp, maxHp, state, follow, tx, ty, t, anim, r, hitCd, netT, grant }
@@ -68,7 +68,7 @@ G.Events = (() => {
       const defs = G.Enemies.hordeDefs(type, time);
       G.Sprites.preload(defs.map(d => d.dex));
       cur = { id, t: 0, dur: DUR, type, defs };
-      G.Spawner.burst(Math.round(6 * G.Coop.scaleRate(players.length)));
+      G.Spawner.burst(Math.round(6 * 1));
     } else if (id === 'gold') {
       cur = { id, t: 0, dur: DUR };
       for (const e of G.EnemyMgr.all()) if (!e.remote) e.makeGolden();
@@ -77,7 +77,6 @@ G.Events = (() => {
       cur = { id, t: 0, dur: Infinity };
     }
     announce();
-    if (G.Coop.isHost) G.Coop.broadcast(['ev', 's', id, cur.type || '']);
   }
 
   function announce() {
@@ -93,7 +92,6 @@ G.Events = (() => {
   function end() {
     if (!cur) return;
     cur = null;
-    if (G.Coop.isHost) G.Coop.broadcast(['ev', 'e']);
   }
 
   /** Lo que sale durante una horda (lo usa G.Enemies.bagAt). */
@@ -193,19 +191,12 @@ G.Events = (() => {
     }
     if (L.flash > 0) L.flash -= dt;
     if (L.t > LOST_TIME) return gone(L.name + ' se ha cansado de esperar y se ha ido…');
-
-    if (G.Coop.isHost && (L.netT -= dt) <= 0) {
-      L.netT = 0.1;
-      G.Coop.broadcast(['ev', 'lp', L.dex, Math.round(L.x), Math.round(L.y), Math.round(L.hp), L.state === 'follow' ? 1 : 0,
-                        Math.round(L.tx), Math.round(L.ty), L.anim.dir, L.moving ? 1 : 0]);
-    }
   }
 
   function rescued() {
     const L = lost;
     for (let i = 0; i < 12; i++) G.Pickups.drop('coin', L.tx + G.U.rand(-40, 40), L.ty + G.U.rand(-30, 30), 5);
     G.Pickups.drop('ticket', L.tx, L.ty - 12, 1);
-    if (G.Coop.isHost) G.Coop.broadcast(['ev', 'rw', L.dex, L.grant ? 1 : 0]);
     reward(L.dex, L.grant);
     lost = null;
     end();
@@ -223,7 +214,6 @@ G.Events = (() => {
   }
 
   function gone(msg) {
-    if (G.Coop.isHost) G.Coop.broadcast(['ev', 'lx', msg]);
     say(msg, 3);
     lost = null;
     end();

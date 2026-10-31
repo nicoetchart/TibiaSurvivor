@@ -24,7 +24,35 @@ Ejecutar una vez con el código actual para congelar comportamiento esperado.
 
 ## Fase 1 — Motor offline
 
-**Última ejecución:** 2026-10-31 (agente). Smoke test en navegador **pendiente** (entorno sin Node/Python para servidor estático).
+### Evidencia — prueba manual fallida (pre-corrección)
+
+**Fecha:** 2026-10-31 (operador).  
+**Entorno:** `dev.html` (servidor local o `file://`).
+
+| Paso | Resultado |
+|------|-----------|
+| App carga | PASS |
+| Login / perfil local | PASS |
+| Selección Pokémon principal | PASS |
+| Pulsar **Jugar** | FAIL — menú desaparece o no hay transición jugable; partida no arranca |
+| Consola | **Revisar** — esperado: fallo al cargar `events.js` o en `G.Events.reset()` / primer frame con `G.Coop` |
+
+No marcar Fase 1 como aprobada hasta repetir el flujo post-corrección.
+
+---
+
+### Ejecución post-corrección bloqueante (2026-10-31)
+
+**Corrección:** sintaxis `js/systems/events.js` + retiro runtime `G.Coop` en spawner/pickups/combat/interact/world.
+
+**Automatizado (agente, `http://127.0.0.1:8765/dev.html?dev`):**
+
+- [x] Scripts `dev.html` pasan `node --check` (incl. `events.js`)
+- [x] Tras invitado + menú + **Jugar**: `G.Game.state === 'playing'`, `G.Game.player` definido
+- [x] Tras ~2 s: `G.EnemyMgr.count > 0`, tiempo de run avanza
+- [ ] Flujo completo operador (tabla inferior) — **manual pendiente**
+
+**Última ejecución manual completa:** pendiente (operador).
 
 ### Arranque
 
@@ -67,7 +95,7 @@ Ejecutar una vez con el código actual para congelar comportamiento esperado.
 
 - [x] Scripts listados en `dev.html` existen en disco (excepto módulos online eliminados a propósito)
 - [x] `main.js` `NEED` alineado con módulos cargados
-- [x] Sin referencias runtime a `G.Social` / `G.Ranking` / `G.Coop` en archivos cargados por `dev.html`
+- [x] Sin referencias runtime a `G.Social` / `G.Ranking` / `G.Coop` en archivos cargados por `dev.html` (re-verificado 2026-10-31 tras corrección; antes del fix el commit `32d57e90` aún tenía `G.Coop` en varios módulos y `events.js` no parseaba)
 - [x] `firebase-config.js` y carpeta `js/net/` ausentes
 - [ ] Boot + partida + Network tab (manual)
 

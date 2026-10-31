@@ -141,6 +141,77 @@ DEC-010, DEC-011, DEC-012, DEC-013 aplicadas.
 
 ---
 
+## 2026-10-31 — Corrección bloqueante de Fase 1
+
+### Fase
+
+1 — motor offline (regresión Play → partida)
+
+### Síntoma reproducido
+
+Tras login/invitado, test de personalidad o menú con compañero elegido, pulsar **Jugar** ocultaba el menú pero la partida no arrancaba (`G.Game.state` no pasaba a `playing` / pantalla sin gameplay).
+
+### Causa raíz
+
+Edición incompleta de referencias `G.Coop` en `js/systems/events.js`: al retirar la sincronización cooperativa en `lostTick()` quedaron tokens huérfanos (`Math.round(...)]);`) que provocan **SyntaxError** al parsear el script. `G.Events` no se define; `G.Game.startRun()` lanza en `G.Events.reset()` **después** de `G.UI.hideAll()`, con el menú ya oculto.
+
+Complemento en el commit `32d57e90` (aún presente si no se aplican los retiros locales): referencias runtime a `G.Coop` en `spawner.js`, `pickup.js`, `combat.js`, `interact.js`, `world.js` → `ReferenceError` en el primer fotograma con `state === 'playing'`.
+
+### Archivos modificados
+
+- `js/systems/events.js` — reparación de sintaxis en `lostTick()` (eliminación del resto del `broadcast` coop)
+- (Retiros coop ya en working tree, alineados con F1) `js/systems/spawner.js`, `js/entities/pickup.js`, `js/systems/combat.js`, `js/systems/interact.js`, `js/world/world.js`
+- `docs/migration/MIGRATION_LOG.md`, `docs/migration/TEST_CHECKLIST.md`
+
+### Símbolos modificados
+
+- `G.Events.lostTick` — sin bloque de red coop
+- `G.Spawner.update` / `spawnOne` / `spawnBoss` / `say` — escalado local sin `G.Coop.*`
+- `G.Pickups.push` — sin bifurcación host/cliente
+- `G.Combat` (cast) — sin `G.Coop.cast`
+- `G.Interact.authority` — siempre local
+- `G.World.destroyProp` — sin `G.Coop.propBroken`
+
+### Corrección aplicada
+
+Restaurar `events.js` como módulo válido; completar retirada de llamadas runtime a `G.Coop` en el camino partida (spawn, pickups, combate, interact, props). Sin stubs de `G.Coop` / `G.Ranking`.
+
+### Pruebas ejecutadas
+
+| Prueba | Resultado |
+|--------|-----------|
+| `node --check` en todos los scripts de `dev.html` | OK (solo fallaba `events.js` antes del fix) |
+| Grep runtime `G.Coop` / `G.Ranking` en JS cargados por `dev.html` | OK (solo comentarios) |
+| Boot `dev.html` en `http://127.0.0.1:8765/dev.html?dev` | OK |
+| Invitado → menú → **Jugar** (CDP + clic) | OK — `state: playing`, `G.Player` creado |
+| 2 s de simulación: tiempo avanza, enemigos spawn | OK (`enemies: 2`, `time ~ 6.7 s`) |
+| Movimiento / combate / muerte / segunda partida (manual) | **Pendiente** (operador) |
+| Network tab sin Firebase/TURN | **Pendiente** (operador) |
+| `node tools/build.js` / `index.html` | **No ejecutado** |
+
+### Referencias residuales
+
+- Comentarios históricos coop en `game.js`, `spawner.js`, etc.
+- Archivos `js/net/*.js`, `js/ui/social-ui.js`, etc. **en disco** pero **no** cargados por `dev.html`
+- `index.html` / `app.min.js` desactualizados respecto a `dev.html`
+
+### Riesgos pendientes
+
+- Producción (`index.html`) sigue con bundle pre-F1 hasta build autorizado.
+- Service worker puede cachear JS antiguo en despliegues previos.
+- Smoke test manual completo del operador aún no cerrado.
+
+### Estrategia de rollback
+
+- Revertir el diff de esta corrección en `events.js` y archivos coop retirados (git restore).
+- Si hace falta volver al online completo: `git revert` del commit Fase 1 (`32d57e90`) según `MIGRATION_PLAN.md`.
+
+### Próximo paso recomendado
+
+Repetir checklist manual Fase 1; luego decidir build de producción. **No** iniciar Fase 2 sin autorización.
+
+---
+
 <!-- Plantilla para entradas futuras
 
 ## YYYY-MM-DD — FASE N
