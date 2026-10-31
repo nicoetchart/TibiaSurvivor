@@ -131,7 +131,7 @@ G.SettingsUI = (() => {
         + `<button class="btn gold" id="set-login">Crear cuenta o entrar</button>`;
       return;
     }
-    const nick = G.Social.me ? G.Social.me.name : (G.DB.user || '');
+    const nick = G.DB.user || '';
     const kind = G.DB.mode === 'local' ? 'Cuenta de este navegador' : G.DB.nameAccount ? 'Nombre y contraseña' : 'Google';
     box.innerHTML = section('Cuenta')
       + `<div class="set-row"><div class="grow"><b>Apodo</b><small>Es único y no se puede cambiar.</small></div><span class="gold" translate="no">${esc(nick)}</span></div>`

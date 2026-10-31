@@ -39,7 +39,7 @@ G.Weather = (() => {
   let cur = null;           // { kind, t, dur }
   let checkT = CHECK, chipT = 0;
   let parts = [];
-  const authority = () => !G.Coop.active || G.Coop.isHost;
+  const authority = () => true;
 
   function reset() { cur = null; checkT = CHECK; chipT = 0; parts = []; }
 
@@ -100,7 +100,6 @@ G.Weather = (() => {
         if (Math.random() < CHANCE) {
           const kind = pick(G.World.biome), dur = Math.round(G.U.rand(55, 75));
           start(kind, dur);
-          if (G.Coop.isHost) G.Coop.broadcast(['wx', kind, dur]);
         }
       }
     }
@@ -176,6 +175,6 @@ G.Weather = (() => {
     force(kind, dur) { start(kind, dur); },
     /** Quita el clima de golpe (al salir de la arena). */
     clear() { cur = null; parts.length = 0; },
-    debugStart(kind = 'rain', dur = 60) { start(kind, dur); if (G.Coop.isHost) G.Coop.broadcast(['wx', kind, dur]); }
+    debugStart(kind = 'rain', dur = 60) { start(kind, dur); }
   };
 })();

@@ -10,6 +10,17 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = t => (t >= 3600 ? Math.floor(t / 3600) + ':' + G.U.mmss(t % 3600).padStart(5, '0') : G.U.mmss(t));
 
+  function localProfileData() {
+    const s = G.DB.save;
+    if (!s) return null;
+    return {
+      name: s.name || G.DB.user || 'Jugador',
+      title: (s.profile && s.profile.title) || '',
+      favs: (s.profile && s.profile.favs) || [],
+      best: { solo: s.stats.bestTime, group: s.stats.bestGroupTime || 0, level: s.stats.bestLevel, bosses: s.stats.bossesTotal }
+    };
+  }
+
   // ======================= PANTALLA =======================
 
   G.GoalsUI = (() => {
@@ -150,8 +161,7 @@
       const s = G.DB.save;
       s.profile = s.profile || { favs: [], title: '' };
       const P = s.profile;
-      box.insertAdjacentHTML('beforeend', `<p class="sub">${G.DB.online ? 'Así te ven los demás jugadores (desde el ranking y la lista de amigos).'
-        : 'Tu perfil se publica cuando juegas con una cuenta online.'}</p>
+      box.insertAdjacentHTML('beforeend', `<p class="sub">Vista previa de tu perfil local (sólo en este navegador).</p>
         <h3>Tus 3 Pokémon favoritos</h3>`);
       const favs = document.createElement('div');
       favs.className = 'fav-slots';
@@ -181,7 +191,7 @@
       const prev = document.createElement('button');
       prev.className = 'btn gold'; prev.style.marginTop = '16px';
       prev.textContent = 'Ver mi perfil público';
-      prev.onclick = () => G.ProfileUI.showData(G.Social.profileData());
+      prev.onclick = () => G.ProfileUI.showData(localProfileData());
       box.appendChild(prev);
     }
 
@@ -219,7 +229,6 @@
 
     function save() {
       G.DB.commit();
-      if (G.Social.me) G.Social.publishProfile(true);
       G.Audio.sfx('confirm');
     }
 
@@ -235,15 +244,12 @@
     }
     function close() { $('scr-profile').classList.add('hidden'); }
 
-    /** Abre el perfil de otro jugador por su uid. */
     async function show(uid) {
-      if (!uid) return;
-      if (uid === G.Social.uid) { showData(G.Social.profileData()); return; }
-      $('prof-body').innerHTML = '<p class="sub">Cargando…</p>';
-      $('scr-profile').classList.remove('hidden');
-      const d = await G.Social.getProfile(uid);
-      if (!d) { $('prof-body').innerHTML = '<p class="sub">Este jugador aún no tiene perfil.</p>'; return; }
+      if (uid) { G.UI.toast('Perfiles de otros jugadores no están disponibles sin conexión.'); return; }
+      const d = localProfileData();
+      if (!d) return;
       showData(d);
+      $('scr-profile').classList.remove('hidden');
     }
 
     function showData(d) {

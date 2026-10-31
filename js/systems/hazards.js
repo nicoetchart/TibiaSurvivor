@@ -18,10 +18,6 @@ G.Hazards = (() => {
   function add(h, fromNet = false) {
     const o = Object.assign({ t: 0, hit: false, end: 0.3 }, h);
     list.push(o);
-    if (!fromNet && G.Coop.isHost) {
-      G.Coop.broadcast(['hz', { kind: o.kind, x: Math.round(o.x), y: Math.round(o.y), r: o.r, angle: o.angle, len: o.len, w: o.w,
-                                delay: o.delay, dmg: Math.round(o.dmg), type: o.type, color: o.color, pct: o.pct, pure: o.pure, vis: o.vis }]);
-    }
     return o;
   }
 

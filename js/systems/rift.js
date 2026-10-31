@@ -27,7 +27,7 @@ G.Rift = (() => {
   let rift = null;          // { x, y, ttl, t }
   let arena = null;         // { tx, ty, r, dex, shiny, x, y, back, biome, t, phase, endT, bossId }
   let checkT = CHECK, asked = false, downT = 0, misses = 0;
-  const authority = () => !G.Coop.active || G.Coop.isHost;
+  const authority = () => true;
   const TS = () => G.Tiles.T * G.Sprites.PX;
 
   function reset() { rift = null; arena = null; checkT = CHECK; asked = false; downT = 0; misses = 0; }
@@ -60,7 +60,6 @@ G.Rift = (() => {
       const x = near.x + Math.cos(a) * d, y = near.y + Math.sin(a) * d * 0.85;
       if (!G.World.isFree(x, y, 22)) continue;
       show(x, y, TTL);
-      if (G.Coop.isHost) G.Coop.broadcast(['rift', Math.round(x), Math.round(y), TTL]);
       return;
     }
   }
@@ -78,7 +77,7 @@ G.Rift = (() => {
     if (asked) return;
     asked = true;
     if (authority()) start();
-    else G.Coop.toHost(['re']);
+    
   }
 
   // ---------------- arena ----------------
@@ -103,7 +102,6 @@ G.Rift = (() => {
       // La arena es la de uno de sus tipos, al azar.
       type: forceType || G.U.pick(mon.types)
     };
-    if (G.Coop.isHost) G.Coop.broadcast(['arena', cfg]);
     begin(cfg);
     spawnLegend();
   }
@@ -142,7 +140,7 @@ G.Rift = (() => {
     const ts = TS();
     const def = {
       dex: mon.dex, name: mon.name,
-      hp: Math.round((3200 + t * 9) * G.Coop.scaleHp(n) * (n > 1 ? 1.4 : 1)),
+      hp: Math.round((3200 + t * 9) * 1 * (n > 1 ? 1.4 : 1)),
       spd: Math.round(G.U.clamp(48 + (mon.spd - 78) * 0.6, 48, 105)),
       dmg: Math.round(36 + t / 20), xp: Math.round(500 + t * 1.2),
       behavior: mon.types.some(x => ['psychic', 'electric', 'ghost', 'fairy', 'fire', 'water', 'ice', 'dragon'].includes(x)) ? 'ranged' : 'charger',
@@ -177,10 +175,10 @@ G.Rift = (() => {
       if (!authority()) return;
       keepInside();
       const boss = G.EnemyMgr.get(arena.bossId);
-      if (!boss || boss.dead) { G.Coop.isHost && G.Coop.broadcast(['aw']); won(); return; }
+      if (!boss || boss.dead) { won(); return; }
       const allDown = G.Game.everyone().every(p => p.dead);
       downT = allDown ? downT + dt : 0;
-      if (downT > 1.4 || arena.t > ARENA_TIME) { G.Coop.isHost && G.Coop.broadcast(['al']); lost(); }
+      if (downT > 1.4 || arena.t > ARENA_TIME) { lost(); }
       return;
     }
     arena.endT -= dt;

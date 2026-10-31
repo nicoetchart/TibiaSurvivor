@@ -103,7 +103,6 @@
       // Copia de un enemigo del anfitrión: el golpe se le manda a él, que es
       // quien decide si cae. Aquí sólo se ve (número, destello y animación).
       if (this.remote) {
-        G.Coop.hit(this, d, color, dirX, dirY, knock);
         this.hp = Math.max(1, this.hp - d);
         this.showHurt(d, color, dirX, dirY, eff);
         return;
@@ -123,7 +122,6 @@
         this.kx += nx * knock;
         this.ky += ny * knock;
       }
-      if (G.Coop.isHost) G.Coop.hurtShown(this, d, color);
       if (this.hp <= 0) this.die();
     }
 
@@ -139,16 +137,13 @@
     }
 
     applySlow(factor, dur = 1.2) {
-      if (this.remote) { G.Coop.status(this, 's', factor); return; }
       this.slow = Math.max(this.slow, factor);
       this.slowT = Math.max(this.slowT, dur);
     }
     applyBurn(stacks = 1) {
-      if (this.remote) { G.Coop.status(this, 'b', stacks); return; }
       this.burn = Math.min(8, this.burn + stacks); this.burnT = 3;
     }
     applyPoison(stacks = 1) {
-      if (this.remote) { G.Coop.status(this, 'p', stacks); return; }
       this.poison = Math.min(8, this.poison + stacks); this.poisonT = 4;
     }
 
@@ -228,7 +223,7 @@
       // Animaciones de una vez (embestida, disparo...) que ha empezado el anfitrión.
       if (n.anim !== this.lastNetAnim) {
         this.lastNetAnim = n.anim;
-        const a = G.Coop.ANIMS[n.anim];
+        const a = ['Idle', 'Walk', 'Attack', 'Shoot', 'Charge', 'Hurt', 'Faint'][n.anim];
         if (a && a !== 'Idle' && a !== 'Walk' && a !== 'Faint') this.anim.play(a, { speed: 1.4 });
       }
       this.anim.loop(moving ? 'Walk' : 'Idle');
@@ -556,7 +551,6 @@
           dmg: this.shotDmg() * k, r: 7, life: 2.4, friendly: false, color: '#ff7a9e', mtype: type,
           vis: G.VFX.forType(type)
         });
-        if (G.Coop.isHost) G.Coop.enemyShot(shot, type);
       }
       this.anim.play('Shoot');
       G.FX.ring(this.x, this.y - G.LIFT, 4, 14, '#ff7a9e', 0.2, 2);
@@ -604,7 +598,6 @@
       }
       this.anim.play('Charge');
       G.FX.ring(this.x, this.y, 8, 150, '#5fe08a', 0.5, 3);
-      if (G.Coop.isHost) G.Coop.broadcast(['fxr', Math.round(this.x), Math.round(this.y), 150, '#5fe08a']);
       if (n && G.Camera.sees(this.x, this.y, 0)) G.Audio.sfx('heal');
     }
 
@@ -614,7 +607,6 @@
       for (const e of near) { e.shield = Math.max(e.shield, e.maxHp * 0.35); e.shieldT = 8; }
       this.anim.play('Charge');
       G.FX.ring(this.x, this.y, 8, 160, '#7fc8ff', 0.5, 3);
-      if (G.Coop.isHost) G.Coop.broadcast(['fxr', Math.round(this.x), Math.round(this.y), 160, '#7fc8ff']);
     }
 
     summon() {
@@ -748,7 +740,6 @@
     function add(e) {
       list.push(e);
       byId.set(e.id, e);
-      if (G.Coop.isHost) G.Coop.enemyAdded(e);
       return e;
     }
     function get(id) { return byId.get(id); }
@@ -780,7 +771,7 @@
 
     /** Al volver: quita los de la arena y devuelve los del mapa (avisando a los demás). */
     function restore() {
-      for (const e of list) { byId.delete(e.id); if (G.Coop.isHost) G.Coop.enemyGone(e, false); }
+      for (const e of list) { byId.delete(e.id); }
       list = []; corpses = [];
       for (const e of stashed || []) add(e);
       stashed = null;
@@ -901,7 +892,7 @@
         if (e.remote) e.netUpdate(dt);
         else e.update(dt, nearestPlayer(players, e.x, e.y) || pl);
       }
-      if (!G.Coop.active || G.Coop.isHost) separate(dt);
+      if (true) separate(dt);
       for (let i = list.length - 1; i >= 0; i--) {
         const e = list[i];
         if (e.remote) continue;
@@ -912,7 +903,6 @@
           corpses.push(e);
           list.splice(i, 1);
           byId.delete(e.id);
-          if (G.Coop.isHost) G.Coop.enemyGone(e, true);
           continue;
         }
         const near = nearestPlayer(players, e.x, e.y) || pl;
@@ -921,7 +911,6 @@
           G.FX.burst(e.x, e.y - 10, '#ffd23f', 16, 140);
           G.Spawner.say('¡' + e.name + ' se ha escapado!', 2.4);
           list.splice(i, 1); byId.delete(e.id);
-          if (G.Coop.isHost) G.Coop.enemyGone(e, false);
           continue;
         }
         if (e.boss || e.shiny || G.Rift.inArena) continue;
@@ -937,7 +926,7 @@
         else if (!unseen) e.lagT = 0;
         if ((unseen && e.lagT > LAG_T) || d2 > 1400 * 1400) {
           e.lagT = 0;
-          if (!G.Spawner.ahead(e, near)) { list.splice(i, 1); byId.delete(e.id); if (G.Coop.isHost) G.Coop.enemyGone(e, false); }
+          if (!G.Spawner.ahead(e, near)) { list.splice(i, 1); byId.delete(e.id); }
         }
       }
       for (let i = corpses.length - 1; i >= 0; i--) {

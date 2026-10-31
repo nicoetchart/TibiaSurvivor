@@ -25,6 +25,18 @@ G.Progress = (() => {
   const TYPES = Object.keys(G.U.TYPE_NAME);
   let achT = 0, toastQ = [], toastT = 0;
 
+  /** Claves día/semana para misiones (antes G.Ranking.periodIds). */
+  function periodIds() {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const day = d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate());
+    const th = new Date(d);
+    th.setHours(0, 0, 0, 0);
+    th.setDate(th.getDate() + 3 - (th.getDay() + 6) % 7);
+    const wk = th.getFullYear() + pad(Math.ceil((((d - th) / 86400000) + 1) / 7));
+    return { d: day, w: wk };
+  }
+
   // ---------------- misiones ----------------
 
   function rng(seedStr) {
@@ -49,7 +61,7 @@ G.Progress = (() => {
   /** Crea las misiones del día / semana si han cambiado. */
   function ensure(s) {
     if (!s) return;
-    const ids = G.Ranking.periodIds();
+    const ids = periodIds();
     const key = String(s.created || 0);
     s.missions = s.missions || {};
     const M = s.missions;

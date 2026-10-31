@@ -29,6 +29,7 @@
  *   y en cada envío del anfitrión, ja: [x, y, animación, dirección] de Arceus.
  */
 G.Judgment = (() => {
+  const NET_ANIMS = ['Idle', 'Walk', 'Attack', 'Shoot', 'Charge', 'Hurt', 'Faint'];
   const AT = 30 * 60;
   const ARENA_R = 24;                 // en tiles (la arena de la grieta: 11)
   const BOSS_EVERY = 5;               // sin tope: siguen saliendo mientras aguantes
@@ -37,7 +38,7 @@ G.Judgment = (() => {
   // Línea de tiempo de la animación (segundos).
   const T_TITLE = 1.3, T_FLASH = 4.7, T_PORT = 5.1, T_DESC = 5.7, T_LAND = 7.9, T_BACK = 9.1, T_END = 10.1;
   const GOLD = '#ffd25e';
-  const authority = () => !G.Coop.active || G.Coop.isHost;
+  const authority = () => true;
   const TS = () => G.Tiles.T * G.Sprites.PX;
 
   let phase = null;                   // null | 'cine' | 'fight'
@@ -85,7 +86,6 @@ G.Judgment = (() => {
     const q = [];
     for (let i = 0; i < 40; i++) q.push(G.U.pick(pool).dex);
     const c = { tx: -6000 - Math.floor(Math.random() * 2000), ty: -6000 - Math.floor(Math.random() * 2000), q };
-    if (G.Coop.isHost) G.Coop.broadcast(['jd', c]);
     begin(c);
   }
 
@@ -106,7 +106,6 @@ G.Judgment = (() => {
   /** Salta la animación (tecla o toque; en grupo, el anfitrión). */
   function skip() {
     if (phase !== 'cine' || !canSkip || ct >= T_BACK) return;
-    if (G.Coop.isHost) G.Coop.broadcast(['jk']);
     doSkip();
   }
   function doSkip() {
@@ -165,7 +164,7 @@ G.Judgment = (() => {
     G.Progress.event('judge');
     // Vida del primer legendario: unos 3 s de vuestro daño a un enemigo (y un mínimo).
     const n = G.Game.everyone().length, t = G.Game.st.time;
-    const floor = (3200 + t * 9) * 0.35 * G.Coop.scaleHp(n);
+    const floor = (3200 + t * 9) * 0.35 * 1;
     base = Math.max(floor, singleDps() * 3);
     G.Spawner.say('¡Huye de Arceus! Es invencible', 3, true);
   }
@@ -314,7 +313,7 @@ G.Judgment = (() => {
     A.anim.dir = n.dir;
     if (n.anim !== A.lastNetAnim) {
       A.lastNetAnim = n.anim;
-      const a = G.Coop.ANIMS[n.anim];
+      const a = NET_ANIMS[n.anim];
       if (a === 'Charge' || a === 'Shoot' || a === 'Attack') A.anim.play(a);
     }
     A.anim.loop(Math.abs(A.x - ox) + Math.abs(A.y - oy) > 0.5 ? 'Walk' : 'Idle');
@@ -682,7 +681,7 @@ G.Judgment = (() => {
   /** Anfitrión: dónde está Arceus (va en cada envío). */
   function netState() {
     if (phase !== 'fight' || !A) return null;
-    const a = G.Coop.ANIMS.indexOf(A.anim.cur);
+    const a = NET_ANIMS.indexOf(A.anim.cur);
     return [Math.round(A.x), Math.round(A.y), a < 0 ? 0 : a, A.anim.dir];
   }
   function netApply(a) {

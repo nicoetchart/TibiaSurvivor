@@ -74,7 +74,7 @@ G.RunUI = (() => {
 
   /** Cooperativo: quién falta por elegir. */
   function setWaiting(names) {
-    const me = G.Social.me ? G.Social.me.name : '';
+    const me = G.DB.user || '';
     const others = names.filter(n => n !== me);
     const list = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' y ' + a[a.length - 1] : a[0];
     $('lvl-wait').textContent = !names.length ? ''
@@ -94,6 +94,7 @@ G.RunUI = (() => {
    * nunca en la primera y como mucho una vez al día. Se cierra con la X.
    */
   function askSupport(r) {
+    return false;
     if (!G.Funding || !G.Funding.url) return false;
     const runs = (G.DB.save && G.DB.save.stats && G.DB.save.stats.runs) || 0;
     if (runs < 2 || !(r.record || runs % 10 === 0)) return false;
