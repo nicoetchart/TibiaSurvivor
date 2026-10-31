@@ -2,16 +2,19 @@
  * TODO el acceso a datos persistentes pasa por aquí. El resto del juego sólo
  * usa G.DB.*.
  *
- * Cuentas y partidas sólo en este navegador:
- *   ps.accounts      { clave: { name, salt, hash, created } }
- *   ps.save.<clave>  partida de esa cuenta
- *   ps.session       última cuenta con sesión iniciada
+ * TibiaSurvivor (prefijo ts.*):
+ *   ts.accounts      { clave: { name, salt, hash, created } }
+ *   ts.save.<clave>  partida de esa cuenta (product: tibiasurvivor)
+ *   ts.session       última cuenta con sesión iniciada
  *
+ * Los saves históricos ps.* no se cargan ni se borran.
  * El modo invitado juega con una partida en memoria que no se guarda.
  */
 G.DB = (() => {
-  const K_ACC = 'ps.accounts', K_SES = 'ps.session', K_SAVE = 'ps.save.';
-  const K_MIGRATED = 'ps.migrated.';
+  const K_ACC = 'ts.accounts', K_SES = 'ts.session', K_SAVE = 'ts.save.';
+  const PRODUCT = 'tibiasurvivor';
+  const SCHEMA_VERSION = 1;
+  const MAX_SCHEMA_VERSION = 1;
   const VERSION = 3;
   const START_COINS = 500;
 
@@ -22,6 +25,7 @@ G.DB = (() => {
   let guest = false;
   let save = null;
   let storageOk = true;
+  let saveRecovered = false;
 
   let syncState = 'local';
   const listeners = new Set();
@@ -32,10 +36,32 @@ G.DB = (() => {
 
   // ---------------- almacenamiento local seguro ----------------
 
-  function read(k) {
-    try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : null; }
-    catch (e) { storageOk = false; return null; }
+  function readRaw(k) {
+    try {
+      const raw = localStorage.getItem(k);
+      if (raw == null || raw === '') return { ok: true, data: null, raw: null };
+      return { ok: true, data: JSON.parse(raw), raw };
+    } catch (e) {
+      storageOk = false;
+      let raw = null;
+      try { raw = localStorage.getItem(k); } catch (e2) { /* nada */ }
+      return { ok: false, raw };
+    }
   }
+
+  function read(k) {
+    const r = readRaw(k);
+    return r.ok ? r.data : null;
+  }
+
+  function quarantine(k, raw) {
+    const bak = k + '.bak.' + Date.now();
+    try {
+      if (raw != null) localStorage.setItem(bak, raw);
+      localStorage.removeItem(k);
+    } catch (e) { /* nada */ }
+  }
+
   function write(k, v) {
     const s = JSON.stringify(v);
     try { localStorage.setItem(k, s); return true; }
@@ -43,7 +69,7 @@ G.DB = (() => {
       try {
         for (let i = localStorage.length - 1; i >= 0; i--) {
           const lk = localStorage.key(i);
-          if (lk && /^ps\.rk\.c\./.test(lk)) localStorage.removeItem(lk);
+          if (lk && (/^ps\.rk\.c\./.test(lk) || /^ts\.rk\.c\./.test(lk))) localStorage.removeItem(lk);
         }
         localStorage.setItem(k, s); return true;
       } catch (e2) { storageOk = false; return false; }
@@ -51,10 +77,36 @@ G.DB = (() => {
   }
   function remove(k) { try { localStorage.removeItem(k); } catch (e) { /* nada */ } }
 
+  function acceptSave(s) {
+    if (!s || typeof s !== 'object') return false;
+    if (s.product != null && s.product !== PRODUCT) return false;
+    if (typeof s.schemaVersion === 'number' && s.schemaVersion > MAX_SCHEMA_VERSION) return false;
+    return true;
+  }
+
+  function readSave(k) {
+    const slot = K_SAVE + k;
+    const r = readRaw(slot);
+    if (!r.ok) {
+      quarantine(slot, r.raw);
+      saveRecovered = true;
+      return null;
+    }
+    if (!r.data) return null;
+    if (!acceptSave(r.data)) {
+      quarantine(slot, r.raw);
+      saveRecovered = true;
+      return null;
+    }
+    return r.data;
+  }
+
   // ---------------- partida ----------------
 
   function newSave(name) {
     return {
+      product: PRODUCT,
+      schemaVersion: SCHEMA_VERSION,
       v: VERSION,
       name,
       created: Date.now(),
@@ -94,6 +146,8 @@ G.DB = (() => {
       s.pupgDone = true;
     }
     s.tickets = Object.assign({ t1: 0, t10: 0 }, s.tickets);
+    s.product = PRODUCT;
+    s.schemaVersion = SCHEMA_VERSION;
     sanitize(s);
     s.v = VERSION;
     return s;
@@ -102,10 +156,18 @@ G.DB = (() => {
   function sanitize(s) {
     const n = v => (Number.isFinite(+v) && +v > 0 ? Math.floor(+v) : 0);
     s.coins = n(s.coins);
+    s.tickets = s.tickets || { t1: 0, t10: 0 };
     s.tickets.t1 = n(s.tickets.t1);
     s.tickets.t10 = n(s.tickets.t10);
     if (G.DEX_BY) for (const coll of ['owned', 'shiny']) {
       for (const d of Object.keys(s[coll] || {})) if (!G.DEX_BY[d]) delete s[coll][d];
+    }
+    if (s.partner != null && G.DEX_BY) {
+      const dex = s.partner;
+      if (!G.DEX_BY[dex] || !(s.owned && s.owned[dex])) {
+        s.partner = null;
+        s.partnerShiny = false;
+      }
     }
     if (s.pbind && typeof s.pbind === 'object') {
       for (const d of Object.keys(s.pbind)) {
@@ -134,49 +196,6 @@ G.DB = (() => {
     }
   }
 
-  function merge(a, b) {
-    if (!a) return b;
-    if (!b) return a;
-    const newer = (a.updated || 0) >= (b.updated || 0) ? a : b;
-    const older = newer === a ? b : a;
-    const r = JSON.parse(JSON.stringify(newer));
-    for (const coll of ['owned', 'shiny']) {
-      r[coll] = r[coll] || {};
-      for (const k in older[coll] || {}) {
-        if (!r[coll][k] || (older[coll][k].at || 0) < (r[coll][k].at || 0)) r[coll][k] = older[coll][k];
-      }
-    }
-    for (const k in older.upgrades || {}) r.upgrades[k] = Math.max(r.upgrades[k] || 0, older.upgrades[k]);
-    r.pupg = r.pupg || {};
-    for (const d in older.pupg || {}) {
-      const mine = r.pupg[d] = r.pupg[d] || {};
-      for (const k in older.pupg[d]) mine[k] = Math.max(mine[k] || 0, older.pupg[d][k]);
-    }
-    r.pupgDone = r.pupgDone || older.pupgDone;
-    for (const coll of ['legends', 'arenas', 'itemsFound', 'evoMoves', 'ach']) {
-      r[coll] = r[coll] || {};
-      for (const k in older[coll] || {}) if (!r[coll][k]) r[coll][k] = older[coll][k];
-    }
-    const mo = older.missions || {}, mr = r.missions = r.missions || {};
-    for (const [per, list] of [['day', 'daily'], ['week', 'weekly']]) {
-      if (mr[per] !== mo[per] || !mr[list] || !mo[list]) continue;
-      mr[list].forEach((m, i) => {
-        const o = mo[list][i];
-        if (!o || o.id !== m.id) return;
-        m.prog = Math.max(m.prog || 0, o.prog || 0);
-        m.claimed = m.claimed || o.claimed;
-        m.told = m.told || o.told;
-      });
-    }
-    for (const k in older.stats || {}) r.stats[k] = Math.max(r.stats[k] || 0, older.stats[k] || 0);
-    if (r.starter == null) r.starter = older.starter;
-    if (r.personality == null) r.personality = older.personality;
-    if (r.partner == null || !r.owned[r.partner]) { r.partner = older.partner; r.partnerShiny = older.partnerShiny; }
-    r.created = Math.min(a.created || Date.now(), b.created || Date.now());
-    r.updated = Math.max(a.updated || 0, b.updated || 0);
-    return r;
-  }
-
   const VALID = /^[A-Za-z0-9_ñÑáéíóúÁÉÍÓÚ]{3,16}$/;
 
   async function hash(pass, salt) {
@@ -201,7 +220,7 @@ G.DB = (() => {
   }
 
   function loadLocal(k, name) {
-    const s = read(K_SAVE + k);
+    const s = readSave(k);
     return s ? migrate(s, name) : newSave(name);
   }
 
@@ -235,7 +254,10 @@ G.DB = (() => {
 
   function restoreLocal() {
     const k = read(K_SES);
-    if (!k) return false;
+    if (!k || typeof k !== 'string') {
+      if (k != null) remove(K_SES);
+      return false;
+    }
     const accs = read(K_ACC) || {};
     if (!accs[k]) { remove(K_SES); return false; }
     beginLocal(k, accs[k].name);
@@ -286,6 +308,8 @@ G.DB = (() => {
   function commit(urgent = false) {
     if (guest || !key || !save) return false;
     save.updated = Date.now();
+    save.product = PRODUCT;
+    save.schemaVersion = SCHEMA_VERSION;
     return write(K_SAVE + key, save);
   }
 
@@ -328,9 +352,15 @@ G.DB = (() => {
     return true;
   }
 
+  function consumeRecoveredFlag() {
+    const v = saveRecovered;
+    saveRecovered = false;
+    return v;
+  }
+
   return {
     ready, register, login, loginWithGoogle, playAsGuest, logout, commit, deleteAccount, flush: pushNow,
-    owns, grant, ownsShiny, grantShiny, merge, setName, upgradesOf,
+    owns, grant, ownsShiny, grantShiny, setName, upgradesOf, consumeRecoveredFlag,
     onSync(fn) { listeners.add(fn); },
     onLeave(fn) { leaveHooks.push(fn); },
     get fb() { return null; },
@@ -345,6 +375,8 @@ G.DB = (() => {
     get save() { return save; },
     get loggedIn() { return !!save; },
     get storageOk() { return storageOk; },
+    get PRODUCT() { return PRODUCT; },
+    get SCHEMA_VERSION() { return SCHEMA_VERSION; },
     START_COINS
   };
 })();

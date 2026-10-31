@@ -18,8 +18,8 @@
 | Fase | Nombre | Estado |
 |------|--------|--------|
 | 0 | Auditoría operativa y línea base | **completed** |
-| 1 | Motor offline | **completed** (pendiente smoke test manual en navegador) |
-| 2 | Namespace y guardado TibiaSurvivor (`ts.*`) | pending |
+| 1 | Motor offline | **completed** (2026-10-31; smoke manual operador PASS post-corrección) |
+| 2 | Namespace y guardado TibiaSurvivor (`ts.*`) | **completed** (2026-10-31) |
 | 3 | Capa neutral de contenido | pending |
 | 4 | Eliminación de contenido Pokémon | pending |
 | 5 | Identidad TibiaSurvivor | pending |
@@ -78,7 +78,21 @@ Eliminar `docs/migration/` o revertir el commit de documentación.
 
 ## FASE 1 — Motor offline
 
-**Estado:** completed (2026-10-31)
+**Estado:** **completed** (2026-10-31)
+
+Validación: prueba manual fallida pre-corrección (Play no arrancaba partida); corrección bloqueante en `events.js` + retiro runtime `G.Coop`; smoke manual completo operador **PASS** (ver `TEST_CHECKLIST.md`).
+
+### Criterios de aceptación (cierre)
+
+| Criterio | Estado | Notas |
+|----------|--------|-------|
+| Juego inicia (`dev.html`) | **OK** | Operador |
+| Partida local (movimiento, spawn, combate, XP, level-up, muerte, menú) | **OK** | Operador; 2ª partida OK |
+| Guardado local operativo (sin sync cloud) | **Parcial** | Login/perfil OK; recarga pestaña `ps.*` no declarada en smoke |
+| DevTools Network sin Firebase/gstatic SDK/TURN/RTDB | **Parcial** | Modo offline + consola limpia; pestaña Network no auditada explícitamente |
+| Sin `G.Social` / `G.Net` / `G.Coop` / `G.Ranking` inicializados | **OK** | Estático + runtime sin ReferenceError |
+| Sin ReferenceError nuevos en consola | **OK** | Operador |
+| Build producción (`index.html` / `app.min.js`) | **Diferido** | No ejecutado; fuera de alcance obligatorio F1 |
 
 ### Objetivo
 
@@ -131,7 +145,7 @@ Ver `TEST_CHECKLIST.md` → sección **Fase 1**.
 
 ## FASE 2 — Namespace y guardado TibiaSurvivor
 
-**Estado:** pending
+**Estado:** **completed** (2026-10-31)
 
 ### Objetivo
 

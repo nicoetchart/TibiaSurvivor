@@ -17,9 +17,19 @@
  * (español si el navegador está en español, inglés en cualquier otro caso).
  */
 G.I18n = (() => {
-  const KEY = 'ps.lang';
+  const KEY = 'ts.lang';
+  const LEGACY = 'ps.lang';
   let saved = null;
-  try { saved = localStorage.getItem(KEY); } catch (e) { /* nada */ }
+  try {
+    saved = localStorage.getItem(KEY);
+    if (!saved) {
+      const old = localStorage.getItem(LEGACY);
+      if (old === 'es' || old === 'en') {
+        localStorage.setItem(KEY, old);
+        saved = old;
+      }
+    }
+  } catch (e) { /* nada */ }
   const byPath = /\/en(\/|$)/.test(location.pathname) ? 'en' : null;
   const nav = ((navigator.languages && navigator.languages[0]) || navigator.language || 'es').toLowerCase();
   const lang = saved === 'es' || saved === 'en' ? saved : byPath || (nav.startsWith('es') ? 'es' : 'en');

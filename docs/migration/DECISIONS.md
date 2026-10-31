@@ -15,6 +15,10 @@
 | DEC-011 | 2026-10-31 | Tras F1: `G.Flow.afterRun` siempre `goMenu()` (sin lobby) | Coop eliminado | Mantener UI lobby vacía | Menos código muerto | **accepted** |
 | DEC-012 | 2026-10-31 | `db.js` F1: modo único local; invitado opcional | Offline MVP | Login Google sin cloud | Simplifica NEED; login UI local-only | **accepted** |
 | DEC-013 | 2026-10-31 | `progress.js`: `periodIds()` local sustituye `G.Ranking.periodIds()` | Ranking eliminado | Reutilizar ranking.js stub | Misiones diarias/semanales siguen rotando | **accepted** |
+| DEC-014 | 2026-10-31 | Saves TS solo `ts.save.*`; **no** importar `ps.save.*` | Separar productos | Auto-migrar partida PS | Progreso TS empieza en cuenta nueva | **accepted** |
+| DEC-015 | 2026-10-31 | Migración one-shot prefs `ps.lang/settings/audio/news.seen` → `ts.*` si TS ausente | UX dispositivo | No migrar prefs | Ajustes conservados sin mezclar partidas | **accepted** |
+| DEC-016 | 2026-10-31 | Save TS: `product` + `schemaVersion: 1`; corrupto → `.bak.<ts>` + fresh | Recuperación boot | Silencioso / borrar | Aviso toast al login | **accepted** |
+| DEC-017 | 2026-10-31 | Mantener cuentas locales `ts.accounts` (mismo modelo que PS offline F1) | Menor diff F2 | Perfil único | Login/registro igual | **accepted** |
 
 ---
 

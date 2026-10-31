@@ -81,7 +81,7 @@ Ver `REFERENCE_INVENTORY.md` — categorías ONLINE, POKEMON_*, BRANDING.
 
 ### Fase
 
-1 — completed (smoke test manual en navegador **pendiente**: no hay Node/Python en PATH del agente para servidor local)
+1 — **completed** (2026-10-31; ver entrada «Cierre documental»)
 
 ### Archivos modificados (runtime)
 
@@ -127,17 +127,17 @@ DEC-010, DEC-011, DEC-012, DEC-013 aplicadas.
 | Grep runtime cargado (`dev.html` scripts): sin `G.Social`/`G.Ranking`/… | OK |
 | `js/net/` vacío en disco | OK |
 | Servidor HTTP local + boot navegador | **No ejecutado** (sin `node`/`py` en PATH) |
-| Partida manual completa | **Pendiente** (operador) |
+| Partida manual completa | **Pendiente** en esta fecha → cerrada en «Cierre documental» |
 | `node tools/build.js` | **No ejecutado** |
 
-### Errores pendientes
+### Errores pendientes (al cierre de implementación inicial)
 
-- Corregir `js/systems/hazards.js` tras edición automática (hecho en la misma sesión).
-- Validación jugable manual recomendada antes de Fase 2.
+- Regresión Play → partida (corregida; ver entrada siguiente).
+- `js/systems/hazards.js` tras edición automática (corregido en la misma sesión F1).
 
-### Próximo paso recomendado
+### Próximo paso recomendado (histórico)
 
-**Fase 2 — Namespace y guardado `ts.*`** (solo con autorización explícita).
+Validación manual → **hecha** (2026-10-31 operador).
 
 ---
 
@@ -185,8 +185,8 @@ Restaurar `events.js` como módulo válido; completar retirada de llamadas runti
 | Boot `dev.html` en `http://127.0.0.1:8765/dev.html?dev` | OK |
 | Invitado → menú → **Jugar** (CDP + clic) | OK — `state: playing`, `G.Player` creado |
 | 2 s de simulación: tiempo avanza, enemigos spawn | OK (`enemies: 2`, `time ~ 6.7 s`) |
-| Movimiento / combate / muerte / segunda partida (manual) | **Pendiente** (operador) |
-| Network tab sin Firebase/TURN | **Pendiente** (operador) |
+| Movimiento / combate / muerte / segunda partida (manual) | **OK** (operador, 2026-10-31) |
+| Network tab sin Firebase/TURN | **No auditado** explícitamente |
 | `node tools/build.js` / `index.html` | **No ejecutado** |
 
 ### Referencias residuales
@@ -195,20 +195,116 @@ Restaurar `events.js` como módulo válido; completar retirada de llamadas runti
 - Archivos `js/net/*.js`, `js/ui/social-ui.js`, etc. **en disco** pero **no** cargados por `dev.html`
 - `index.html` / `app.min.js` desactualizados respecto a `dev.html`
 
-### Riesgos pendientes
+### Riesgos pendientes (post-corrección)
 
 - Producción (`index.html`) sigue con bundle pre-F1 hasta build autorizado.
 - Service worker puede cachear JS antiguo en despliegues previos.
-- Smoke test manual completo del operador aún no cerrado.
 
 ### Estrategia de rollback
 
 - Revertir el diff de esta corrección en `events.js` y archivos coop retirados (git restore).
 - Si hace falta volver al online completo: `git revert` del commit Fase 1 (`32d57e90`) según `MIGRATION_PLAN.md`.
 
+---
+
+## 2026-10-31 — Cierre documental FASE 1
+
+### Fase
+
+1 — **completed**
+
+### Resumen
+
+Motor offline operativo en **`dev.html`**. Infraestructura online retirada del runtime cargado. Contenido Pokémon (`G.DEX`, `assets/pokemon/`) intacto. Prefijo save **`ps.*`** sin cambio (Fase 2).
+
+### Causa raíz regresión bloqueante (corregida)
+
+`js/systems/events.js`: eliminación incompleta de sync coop → **SyntaxError** → `G.Events` ausente → `G.Game.startRun()` falla en `G.Events.reset()` tras ocultar menú. Complemento: referencias runtime `G.Coop` en spawner, pickups, combat, interact, world.
+
+### Corrección bloqueante
+
+Reparar `lostTick()` en `events.js`; retirar llamadas runtime `G.Coop` en el camino de partida (sin stubs online).
+
+### Prueba manual operador (post-corrección) — PASS
+
+Arranque, login/perfil, selección compañero, Play, movimiento, enemigos, combate, pickups, XP, level-up, muerte, menú, segunda partida; consola sin errores bloqueantes. Evidencia fallo previo conservada en `TEST_CHECKLIST.md`.
+
+### Archivos de código tocados en Fase 1 (total)
+
+Ver diff `b1837953..HEAD` + working tree: `dev.html`, `js/main.js`, `js/core/db.js`, `js/game.js`, entidades/sistemas/world/ui listados en entrada FASE 1; eliminados `js/net/*`, UI online, Firebase config e infra repo.
+
+### Referencias online residuales
+
+- Comentarios coop/ranking en varios `.js`.
+- `js/data/funding.js` en disco, no cargado en `dev.html`.
+- `index.html`, `js/app.min.js`, `sw.js` pueden reflejar build **pre-F1** hasta `node tools/build.js` autorizado.
+
+### Riesgos diferidos
+
+| Riesgo | Fase / acción |
+|--------|----------------|
+| Bundle producción desactualizado | Build + deploy cuando autorice el dueño |
+| SW cachea JS antiguo | Regenerar build/SW al publicar |
+| Namespace save `ts.*` | Fase 2 |
+| Contenido Pokémon | Fases 3–4 |
+| Revisión explícita Network / recarga `localStorage` | Opcional pre-publicación |
+
+### Deuda / adaptadores temporales
+
+- Save y branding siguen en esquema PokéSurvivor (`ps.*`, UI Pokémon).
+- Sin adaptadores `G.DEX = G.CREATURES` (reservado F3).
+
+### Errores pendientes
+
+Ninguno bloqueante para Fase 1 en `dev.html`.
+
+### Estrategia de rollback
+
+`git revert` del commit lógico Fase 1 (+ corrección coop/events); restaurar `dev.html`, `db.js` y módulos online desde `b1837953` si se requiere PokéSurvivor online completo.
+
 ### Próximo paso recomendado
 
-Repetir checklist manual Fase 1; luego decidir build de producción. **No** iniciar Fase 2 sin autorización.
+**No iniciar Fase 2** sin autorización explícita. Opcional: `node tools/build.js` y validar `index.html` antes de publicar.
+
+---
+
+## 2026-10-31 — FASE 2 (Namespace y guardado TibiaSurvivor)
+
+### Fase
+
+2 — **completed** (implementación; smoke manual operador pendiente)
+
+### Archivos modificados
+
+- `js/core/db.js` — prefijo `ts.*`, `product` / `schemaVersion`, validación, cuarentena `.bak.<ts>`, `sanitize(partner)`, sin lectura `ps.save.*`
+- `js/core/settings.js`, `js/core/audio.js`, `js/core/i18n.js` — claves `ts.*` + migración one-shot desde `ps.*`
+- `js/ui/news-ui.js` — `ts.news.seen`
+- `js/ui/run-ui.js` — retirada `ps.ask` (Ko-fi muerto)
+- `js/ui/settings-ui.js` — copy cuenta solo local
+- `js/game.js` — toast partida recuperada
+- `dev.html` — boot idioma `ts.lang` (fallback lectura `ps.lang` solo splash)
+- `js/data/changelog.js` — entrada 2026-10-31
+- `docs/migration/SAVE_SCHEMA.md` (nuevo), `MIGRATION_PLAN.md`, `MIGRATION_LOG.md`, `TEST_CHECKLIST.md`, `DECISIONS.md`
+
+### Decisiones
+
+DEC-014, DEC-015, DEC-016, DEC-017.
+
+### Compatibilidad temporal
+
+- Campos save Pokémon (`owned`, `partner`, `pupg`, …) **sin cambio** en forma; solo namespace y validación TS.
+- `ps.*` en disco del jugador **intacto** (no importado como progreso TS).
+
+### Pruebas ejecutadas
+
+| Prueba | Resultado |
+|--------|-----------|
+| `node --check` en archivos tocados | OK |
+| Smoke manual checklist F2 | **Pendiente** operador |
+
+### Próximo paso recomendado
+
+Validación manual F2 (`TEST_CHECKLIST.md`); opcional `node tools/build.js` antes de publicar. **Fase 3** no iniciar sin autorización.
 
 ---
 

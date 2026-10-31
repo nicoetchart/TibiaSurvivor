@@ -264,7 +264,7 @@
 </div>
 <script>
   (function () {
-    var s = null; try { s = localStorage.getItem('ps.lang'); } catch (e) {}
+    var s = null; try { s = localStorage.getItem('ts.lang') || localStorage.getItem('ps.lang'); } catch (e) {}
     var n = ((navigator.languages && navigator.languages[0]) || navigator.language || 'es').toLowerCase();
     var l = s === 'es' || s === 'en' ? s : (/\/en(\/|$)/.test(location.pathname) ? 'en' : (n.indexOf('es') === 0 ? 'es' : 'en'));
     document.documentElement.lang = l;

@@ -12,10 +12,17 @@
  *   G.Settings.fx   nivel efectivo 0 (bajo) .. 2 (alto), ya resuelto el 'auto'
  */
 G.Settings = (() => {
-  const KEY = 'ps.settings';
+  const KEY = 'ts.settings';
+  const LEGACY = 'ps.settings';
   const DEF = { quality: 'auto', dmgNumbers: true, calm: false, fps: false, stick: 1 };
   let s = Object.assign({}, DEF);
-  try { Object.assign(s, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { /* nada */ }
+  try {
+    if (!localStorage.getItem(KEY)) {
+      const old = localStorage.getItem(LEGACY);
+      if (old) localStorage.setItem(KEY, old);
+    }
+    Object.assign(s, JSON.parse(localStorage.getItem(KEY) || '{}'));
+  } catch (e) { /* nada */ }
   const fns = new Set();
 
   // Calidad automática: empieza alta (media en móvil) y baja si va a tirones.

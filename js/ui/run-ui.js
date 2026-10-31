@@ -93,14 +93,8 @@ G.RunUI = (() => {
    * Mensaje de apoyo (Ko-fi) al acabar: tras un récord o cada 10 partidas,
    * nunca en la primera y como mucho una vez al día. Se cierra con la X.
    */
-  function askSupport(r) {
+  function askSupport() {
     return false;
-    if (!G.Funding || !G.Funding.url) return false;
-    const runs = (G.DB.save && G.DB.save.stats && G.DB.save.stats.runs) || 0;
-    if (runs < 2 || !(r.record || runs % 10 === 0)) return false;
-    const today = new Date().toISOString().slice(0, 10);
-    try { if (localStorage.getItem('ps.ask') === today) return false; localStorage.setItem('ps.ask', today); } catch (e) { return false; }
-    return true;
   }
 
   function showOver(r, onBack) {

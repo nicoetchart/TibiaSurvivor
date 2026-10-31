@@ -6,6 +6,13 @@
  * Cada línea en español y en inglés.
  */
 G.CHANGELOG = [
+  { d: '2026-10-31', title: ['Guardado TibiaSurvivor', 'TibiaSurvivor save data'], chg: [
+    ['La partida y las cuentas nuevas se guardan con el prefijo ts.* en este navegador. Los saves antiguos de PokéSurvivor (ps.*) no se importan automáticamente; idioma, sonido y ajustes gráficos sí pueden copiarse una vez si no tenías ts.*.',
+     'New accounts and progress are stored under the ts.* prefix in this browser. Old PokéSurvivor saves (ps.*) are not imported automatically; language, audio and graphics settings may copy over once if you had no ts.* yet.']
+  ], fix: [
+    ['Si el archivo de partida está dañado o no es de TibiaSurvivor, el juego arranca con una partida nueva y conserva una copia de respaldo en localStorage.',
+     'If your save file is corrupt or not a TibiaSurvivor save, the game starts with a fresh profile and keeps a backup copy in localStorage.']
+  ] },
   { d: '2026-10-14', title: ['Recupera tu cuenta con Gmail', 'Recover your account with Gmail'], new: [
     ['Si juegas con nombre y contraseña, puedes vincular tu Gmail: si un día olvidas la contraseña, entras con Google y es tu misma cuenta. Te lo ofrecemos al entrar.',
      'If you play with a name and password, you can link your Gmail: if you ever forget your password, sign in with Google and it is the same account. We offer it when you sign in.']

@@ -50,41 +50,59 @@ No marcar Fase 1 como aprobada hasta repetir el flujo post-corrección.
 - [x] Scripts `dev.html` pasan `node --check` (incl. `events.js`)
 - [x] Tras invitado + menú + **Jugar**: `G.Game.state === 'playing'`, `G.Game.player` definido
 - [x] Tras ~2 s: `G.EnemyMgr.count > 0`, tiempo de run avanza
-- [ ] Flujo completo operador (tabla inferior) — **manual pendiente**
 
-**Última ejecución manual completa:** pendiente (operador).
+### Ejecución manual completa post-corrección (2026-10-31 — operador) — **PASS**
+
+Flujo repetido: login o perfil → selección Pokémon → **Jugar** → movimiento → combate → pickups → XP → level-up → muerte → menú → segunda partida. Sin errores bloqueantes en consola.
+
+| Paso confirmado | Resultado |
+|-----------------|-----------|
+| Arranque de la aplicación | PASS |
+| Login o perfil local | PASS |
+| Selección Pokémon principal | PASS |
+| **Jugar** inicia partida | PASS |
+| Jugador visible y movimiento | PASS |
+| Spawn enemigos | PASS |
+| Combate | PASS |
+| Pickups | PASS |
+| Experiencia y level-up | PASS |
+| Muerte y regreso al menú | PASS |
+| Segunda partida | PASS |
+| Consola sin errores bloqueantes | PASS |
+
+**Última ejecución manual completa:** 2026-10-31 (operador) — **PASS**.
 
 ### Arranque
 
-- [ ] `dev.html` carga sin pantalla “faltan módulos” (`main.js` NEED)
-- [ ] `G.Flow.boot()` completa sin error
-- [ ] No aparecen pantallas rotas: friends, lobby, rank, mod, support (retiradas o inaccesibles)
+- [x] `dev.html` carga sin pantalla “faltan módulos” (`main.js` NEED)
+- [x] `G.Flow.boot()` completa sin error
+- [x] No aparecen pantallas rotas: friends, lobby, rank, mod, support (retiradas o inaccesibles)
 
 ### Red (Network)
 
-- [ ] Sin peticiones a `firebaseapp.com`, `googleapis.com`, `gstatic.com/firebasejs`
-- [ ] Sin `turn.pokesurvivor.com`
-- [ ] Sin WebSocket RTDB de Firebase (si antes existía al login cloud)
-- [ ] Permitido: `version.json` (updater), assets locales, fuentes
+- [ ] Sin peticiones a `firebaseapp.com`, `googleapis.com`, `gstatic.com/firebasejs` — *no revisado explícitamente en esta sesión; criterio inferido por modo offline*
+- [ ] Sin `turn.pokesurvivor.com` — *idem*
+- [ ] Sin WebSocket RTDB de Firebase — *idem*
+- [x] Permitido: `version.json` (updater), assets locales, fuentes — *sin incidencias reportadas*
 
 ### Gameplay local
 
-- [ ] Login local o invitado funcional
-- [ ] Test personalidad / menú → **Jugar**
-- [ ] Movimiento WASD + touch
-- [ ] Spawn enemigos
-- [ ] Combate y proyectiles
-- [ ] Pickups XP/moneda
-- [ ] Level-up
-- [ ] Muerte y vuelta al menú (sin lobby coop)
-- [ ] `localStorage` escribe lectura de partida (`ps.*` aún en F1)
+- [x] Login local o invitado funcional
+- [x] Test personalidad / menú → **Jugar**
+- [x] Movimiento WASD + touch — *WASD confirmado; touch no declarado*
+- [x] Spawn enemigos
+- [x] Combate y proyectiles
+- [x] Pickups XP/moneda
+- [x] Level-up
+- [x] Muerte y vuelta al menú (sin lobby coop)
+- [ ] `localStorage` escribe lectura de partida (`ps.*` aún en F1) — *no verificado recarga de pestaña en esta sesión*
 
 ### Regresión explícita
 
-- [ ] Sprites Pokémon siguen visible (`assets/pokemon/`)
-- [ ] `G.DEX` / pokedex cargados
-- [ ] Sin NaN en HP/daño
-- [ ] Consola limpia de ReferenceError nuevos
+- [x] Sprites Pokémon siguen visible (`assets/pokemon/`)
+- [x] `G.DEX` / pokedex cargados
+- [x] Sin NaN en HP/daño
+- [x] Consola limpia de ReferenceError nuevos
 
 ### Build (opcional post-F1, con autorización)
 
@@ -97,7 +115,7 @@ No marcar Fase 1 como aprobada hasta repetir el flujo post-corrección.
 - [x] `main.js` `NEED` alineado con módulos cargados
 - [x] Sin referencias runtime a `G.Social` / `G.Ranking` / `G.Coop` en archivos cargados por `dev.html` (re-verificado 2026-10-31 tras corrección; antes del fix el commit `32d57e90` aún tenía `G.Coop` en varios módulos y `events.js` no parseaba)
 - [x] `firebase-config.js` y carpeta `js/net/` ausentes
-- [ ] Boot + partida + Network tab (manual)
+- [x] Boot + partida (manual operador PASS); Network tab — *pendiente revisión explícita*
 
 ---
 
@@ -108,6 +126,14 @@ No marcar Fase 1 como aprobada hasta repetir el flujo post-corrección.
 - [ ] Ajustes migrados según decisión (idioma/volumen)
 - [ ] Save corrupto → juego arranca con save vacío o recuperación documentada
 - [ ] Guardar → cerrar pestaña → reabrir → progreso intacto
+
+### Verificación estática (2026-10-31 — Fase 2 implementada)
+
+- [x] `js/core/db.js` usa `ts.accounts`, `ts.session`, `ts.save.*`
+- [x] `product: tibiasurvivor` en `newSave` / `commit`
+- [x] Prefs dispositivo: `ts.lang`, `ts.settings`, `ts.audio`, `ts.news.seen` (+ migración one-shot desde `ps.*`)
+- [x] `docs/migration/SAVE_SCHEMA.md` documentado
+- [ ] Smoke manual operador (checklist ítems arriba)
 
 ---
 

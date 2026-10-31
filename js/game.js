@@ -750,6 +750,9 @@ G.Flow = {
   toLogin() { G.Audio.music('village'); G.LoginUI.open(); },
   afterLogin() {
     G.Audio.music('village');
+    if (G.DB.consumeRecoveredFlag && G.DB.consumeRecoveredFlag()) {
+      G.UI.toast('No se pudo leer tu partida guardada: se ha creado una nueva.', 6000);
+    }
     if (!G.DB.save.partner) G.TestUI.start();
     else this.goMenu();
   },

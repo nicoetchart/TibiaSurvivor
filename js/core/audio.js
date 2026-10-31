@@ -10,10 +10,17 @@
  * El volumen se guarda en localStorage (es del navegador, no de la cuenta).
  */
 G.Audio = (() => {
-  const KEY = 'ps.audio';
+  const KEY = 'ts.audio';
+  const LEGACY = 'ps.audio';
   let ctx = null, master, outNode, musicBus, sfxBus, reverb, wet;
   let settings = { music: 0.55, sfx: 0.7, muted: false };
-  try { Object.assign(settings, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { /* nada */ }
+  try {
+    if (!localStorage.getItem(KEY)) {
+      const old = localStorage.getItem(LEGACY);
+      if (old) localStorage.setItem(KEY, old);
+    }
+    Object.assign(settings, JSON.parse(localStorage.getItem(KEY) || '{}'));
+  } catch (e) { /* nada */ }
   let noiseBuf = null;
 
   function save() { try { localStorage.setItem(KEY, JSON.stringify(settings)); } catch (e) { /* nada */ } }

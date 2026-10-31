@@ -4,10 +4,20 @@
  */
 G.NewsUI = (() => {
   const $ = G.UI.$;
-  const KEY = 'ps.news.seen';
+  const KEY = 'ts.news.seen';
+  const LEGACY = 'ps.news.seen';
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const latest = () => (G.CHANGELOG[0] || {}).d || '';
-  function seen() { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
+  function seen() {
+    try {
+      let v = localStorage.getItem(KEY);
+      if (!v) {
+        v = localStorage.getItem(LEGACY) || '';
+        if (v) localStorage.setItem(KEY, v);
+      }
+      return v || '';
+    } catch (e) { return ''; }
+  }
 
   function init() {
     const b = $('btn-news');
