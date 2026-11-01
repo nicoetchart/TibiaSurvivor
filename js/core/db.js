@@ -129,7 +129,7 @@ G.DB = (() => {
       ach: {},
       missions: {},
       profile: { favs: [], title: '' },
-      stats: { runs: 0, bestTime: 0, bestLevel: 0, totalKills: 0, pulls: 0, coinsEarned: 0, shinies: 0,
+      stats: { runs: 0, wins: 0, bestTime: 0, bestVictoryTime: 0, bestLevel: 0, totalKills: 0, pulls: 0, coinsEarned: 0, shinies: 0,
                bossesTotal: 0, riftWins: 0, evolutions: 0, missionsDone: 0, groupRuns: 0, bestGroupTime: 0 }
     };
   }
@@ -267,9 +267,35 @@ G.DB = (() => {
 
   let readyP = null;
 
+  const SILENT_KEY = '_local';
+
+  function ensureSilentProfile() {
+    const accs = read(K_ACC) || {};
+    if (!accs[SILENT_KEY]) {
+      accs[SILENT_KEY] = { name: 'Cazador', salt: 'silent', hash: 'silent', created: Date.now(), silent: true };
+      write(K_ACC, accs);
+    }
+    beginLocal(SILENT_KEY, accs[SILENT_KEY].name);
+    if (G.Content && G.Vocations) {
+      G.Content.syncFromSave(save);
+      if (!save.partner) {
+        const id = G.Content.playerLegacyIdForVocation('master_sorcerer');
+        save.partner = id;
+        save.starter = id;
+        save.partnerShiny = false;
+        grant(id, 'start');
+      }
+    }
+    commit();
+    return true;
+  }
+
   function ready() {
     if (readyP) return readyP;
-    readyP = Promise.resolve().then(() => { setSync('local'); return restoreLocal(); });
+    readyP = Promise.resolve().then(() => {
+      setSync('local');
+      return restoreLocal() || ensureSilentProfile();
+    });
     return readyP;
   }
 

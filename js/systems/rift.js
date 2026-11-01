@@ -35,6 +35,7 @@ G.Rift = (() => {
   // ---------------- grieta en el mapa ----------------
 
   function update(dt, pl, time) {
+    if (G.MvpConfig && G.MvpConfig.DISABLE_RIFTS && G.Content && G.Content.mode === 'neutral') return;
     if (rift) {
       rift.t += dt;
       rift.ttl -= dt;

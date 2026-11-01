@@ -6,6 +6,13 @@
  */
 G.LevelUp = (() => {
 
+  function typeColor(type) {
+    if (G.Content && G.Content.mode === 'neutral' && G.DamageTypes && G.DamageTypes.COLOR[type]) {
+      return G.DamageTypes.COLOR[type];
+    }
+    return G.U.TYPE_COLOR[type] || '#8fa3c4';
+  }
+
   const STATS = [
     { id: 'hp',   icon: 'heart', title: 'Vigor',        desc: '+20 de vida máxima (y la recupera).',
       apply: pl => pl.addMaxHp(20) },
@@ -42,8 +49,8 @@ G.LevelUp = (() => {
         const d = G.Moves.BY_ID[id];
         out.push({
           w: 10, type: 'new', key: 'new:' + id,
-          icon: 'move:' + id, color: G.U.TYPE_COLOR[d.type],
-          tag: G.U.TYPE_NAME[d.type],
+          icon: 'move:' + id, color: typeColor(d.type),
+          tag: (G.DamageTypes && G.DamageTypes.NAME[d.type]) || G.U.TYPE_NAME[d.type] || d.type,
           title: d.name, desc: d.desc,
           apply: p => p.addMove(id)
         });
@@ -76,7 +83,7 @@ G.LevelUp = (() => {
       if (!txt) continue;
       out.push({
         w: 8, type: 'up', key: 'up:' + m.id,
-        icon: 'move:' + m.id, color: G.U.TYPE_COLOR[m.type],
+        icon: 'move:' + m.id, color: typeColor(m.type),
         tag: 'Nv.' + m.lvl + ' > ' + (m.lvl + 1),
         title: m.name, desc: txt,
         apply: () => G.Moves.levelUp(m)

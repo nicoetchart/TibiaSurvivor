@@ -30,6 +30,13 @@ G.GeoSprites = (() => {
     else if (c && c.behavior === 'tank') shape = 'block';
     else if (c && c.behavior === 'ranged') shape = 'diamond';
     else if (c && c.behavior === 'charger') shape = 'wedge';
+    else if (c && c.behavior === 'runner') shape = 'needle';
+    else if (c && c.behavior === 'healer') shape = 'cross';
+    else if (c && c.behavior === 'shielder') shape = 'hex';
+    else if (c && c.behavior === 'summoner') shape = 'ring';
+    else if (c && (c.behavior === 'fan' || c.behavior === 'beamer')) shape = 'star';
+    else if (c && (c.behavior === 'zoner' || c.behavior === 'jumper')) shape = 'tri';
+    else if (c && c.boss) shape = 'hex';
     return { shape, color };
   }
 
@@ -83,6 +90,32 @@ G.GeoSprites = (() => {
       ctx.lineTo(x - r * 0.8, cy - r * 0.85);
       ctx.lineTo(x - r * 0.8, cy + r * 0.85);
       ctx.closePath();
+      ctx.fill(); ctx.stroke();
+    } else if (shape === 'needle') {
+      ctx.beginPath();
+      ctx.moveTo(x + r * 1.35, cy);
+      ctx.lineTo(x - r * 0.5, cy - r * 0.45);
+      ctx.lineTo(x - r * 0.5, cy + r * 0.45);
+      ctx.closePath();
+      ctx.fill(); ctx.stroke();
+    } else if (shape === 'cross') {
+      ctx.fillRect(x - r * 0.22, cy - r, r * 0.44, r * 2);
+      ctx.fillRect(x - r, cy - r * 0.22, r * 2, r * 0.44);
+      ctx.strokeRect(x - r * 0.22, cy - r, r * 0.44, r * 2);
+      ctx.strokeRect(x - r, cy - r * 0.22, r * 2, r * 0.44);
+    } else if (shape === 'hex') {
+      poly(ctx, x, cy, r * 1.05, 6, 0);
+      ctx.fill(); ctx.stroke();
+    } else if (shape === 'ring') {
+      ctx.beginPath();
+      ctx.arc(x, cy, r, 0, 6.2832);
+      ctx.arc(x, cy, r * 0.45, 0, 6.2832, true);
+      ctx.fill('evenodd'); ctx.stroke();
+    } else if (shape === 'star') {
+      poly(ctx, x, cy, r, 5, -0.628);
+      ctx.fill(); ctx.stroke();
+    } else if (shape === 'tri') {
+      poly(ctx, x, cy, r * 1.1, 3, -1.57);
       ctx.fill(); ctx.stroke();
     } else {
       ctx.beginPath();

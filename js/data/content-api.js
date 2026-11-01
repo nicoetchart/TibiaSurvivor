@@ -64,6 +64,9 @@ G.Content = (() => {
 
   function startingMoveId(mon) {
     if (mode === 'neutral') {
+      if (mon && mon.startAbility) return mon.startAbility;
+      const c = mon && getCreature(mon.creatureId || mon.dex);
+      if (c && c.startAbility) return c.startAbility;
       const v = getVocation('master_sorcerer');
       return v && v.startingAbility;
     }

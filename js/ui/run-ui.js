@@ -97,24 +97,27 @@ G.RunUI = (() => {
     return false;
   }
 
-  function showOver(r, onBack) {
-    $('over-title').textContent = r.dead ? 'Has caído…' : 'Run terminada';
+  function showOver(r, actions) {
+    const neutral = G.Content.mode === 'neutral';
+    $('over-title').textContent = r.victory ? '¡Victoria!' : (r.dead ? 'Derrota…' : 'Run terminada');
     $('over-stats').innerHTML = `
+      <div><span>Resultado</span><b class="${r.victory ? 'gold' : ''}">${r.victory ? 'Victoria' : r.dead ? 'Derrota' : 'Abandonada'}</b></div>
       <div><span>Tiempo</span><b>${G.U.mmss(r.time)}</b></div>
       <div><span>Nivel</span><b>${r.level}</b></div>
       <div><span>Derrotados</span><b>${r.kills}</b></div>
       <div><span>Jefes</span><b>${r.bosses}</b></div>
-      ${r.judge ? `<div style="grid-column:1/-1"><span>${G.Content.mode === 'neutral' ? 'Ante el juicio' : 'Ante Arceus'}</span><b class="gold">${G.U.mmss(r.judge.time)} · ${r.judge.bosses} ${G.Content.mode === 'neutral' ? (r.judge.bosses === 1 ? 'guardián' : 'guardianes') : (r.judge.bosses === 1 ? 'legendario' : 'legendarios')}</b></div>` : ''}
-      <div style="grid-column:1/-1"><span>${G.Content.mode === 'neutral' ? 'Monedas ganadas' : 'Pokémonedas ganadas'}</span>
+      ${r.dmgDealt ? `<div><span>Daño causado</span><b>${r.dmgDealt.toLocaleString('es')}</b></div>` : ''}
+      ${r.judge ? `<div style="grid-column:1/-1"><span>Ante el juicio</span><b class="gold">${G.U.mmss(r.judge.time)} · ${r.judge.bosses} ${r.judge.bosses === 1 ? 'guardián' : 'guardianes'}</b></div>` : ''}
+      <div style="grid-column:1/-1"><span>${neutral ? 'Monedas ganadas' : 'Pokémonedas ganadas'}</span>
         <b class="gold"><span class="coin"></span> +${r.coins}</b>
         <div style="font-size:12px;color:var(--muted)">${r.breakdown}</div></div>
-      ${r.t1 || r.t10 ? `<div style="grid-column:1/-1"><span>Tickets del gacha</span><b>
+      ${!neutral && (r.t1 || r.t10) ? `<div style="grid-column:1/-1"><span>Tickets del gacha</span><b>
         ${r.t1 ? G.Icons.html('ticket', 22) + ' +' + r.t1 + ' ' : ''}${r.t10 ? G.Icons.html('ticket10', 22) + ' +' + r.t10 + ' ×10' : ''}</b></div>` : ''}
       <div style="grid-column:1/-1"><span>Movimientos</span><b style="font-size:15px">
         ${r.moves.map(m => `${G.Icons.html('move:' + m.id, 16)} ${m.name} Nv.${m.lvl}`).join(' · ') || '—'}</b></div>
-      ${r.caught && r.caught.length ? `<div style="grid-column:1/-1" class="caught"><span>${G.Icons.html('shiny', 12)} Shinies conseguidos</span>
+      ${r.caught && r.caught.length && !neutral ? `<div style="grid-column:1/-1" class="caught"><span>${G.Icons.html('shiny', 12)} Shinies conseguidos</span>
         <div class="caught-row" id="over-caught"></div></div>` : ''}
-      ${r.record ? '<div style="grid-column:1/-1;text-align:center" class="gold">¡Nuevo récord de tiempo!</div>' : ''}
+      ${r.record ? '<div style="grid-column:1/-1;text-align:center" class="gold">¡Nuevo récord!</div>' : ''}
       ${askSupport(r) ? `<div class="support-ask" id="over-ask" style="grid-column:1/-1">
         <button class="x" type="button" aria-label="Cerrar">×</button>
         <p>¿Te está gustando PokéSurvivor? Lo hago yo solo y los servidores cuestan dinero. Si quieres, puedes ayudarme a mantenerlo en línea.</p>
@@ -122,7 +125,14 @@ G.RunUI = (() => {
       </div>` : ''}`;
     const ask = $('over-ask');
     if (ask) ask.querySelector('.x').onclick = () => ask.remove();
-    $('btn-again').onclick = onBack;
+    const menuFn = actions && actions.onMenu ? actions.onMenu : actions;
+    const replayFn = actions && actions.onReplay ? actions.onReplay : null;
+    $('btn-again').onclick = () => { G.UI.hide('scr-over'); if (menuFn) menuFn(); };
+    $('btn-replay').onclick = () => {
+      G.UI.hide('scr-over');
+      if (replayFn) replayFn();
+      else if (menuFn) menuFn();
+    };
     if (r.caught && r.caught.length) {
       const row = $('over-caught');
       for (const c of r.caught) {

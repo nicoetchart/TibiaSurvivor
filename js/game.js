@@ -21,6 +21,7 @@ G.Game = (() => {
   let pl = null;
   let caught = [];          // shinies conseguidos en esta run
   let biome = -1;
+  let runEnding = false, warnedFinalMin = false;
 
   const st = { get time() { return time; } };
 
@@ -101,9 +102,12 @@ G.Game = (() => {
     G.Path.clear();
     G.Hazards.clear();
     G.World.reset(Math.floor(Math.random() * 1e6));
-    G.World.setBiome(0, true);
-    biome = 0;
+    const runBiome = G.MvpConfig && G.MvpConfig.RUN_BIOME != null ? G.MvpConfig.RUN_BIOME : 0;
+    G.World.setBiome(runBiome, true);
+    biome = runBiome;
     time = 0; pendingLevels = 0;
+    runEnding = false;
+    warnedFinalMin = false;
     runReal = performance.now(); tampered = false;
 
     pl = new G.Player(mon, perks, !!save.partnerShiny && G.DB.ownsShiny(mon.dex));
@@ -124,7 +128,7 @@ G.Game = (() => {
 
     G.Camera.x = pl.x; G.Camera.y = pl.y; G.Camera.shake = 0;
     G.Sprites.preload([mon.dex], 8000, pl.shiny);
-    G.Audio.music(G.BIOME_MUSIC[0]);
+    G.Audio.music(G.BIOME_MUSIC[biome % G.BIOME_MUSIC.length]);
     deathT = 0;
 
     state = 'playing';
@@ -184,11 +188,12 @@ G.Game = (() => {
     G.Audio.sfx('shinyGet');
   };
 
-  function endRun(dead = true) {
+  function endRun(dead = true, victory = false) {
     if (state === 'over' || !pl) return;
     state = 'over';
+    runEnding = true;
     G.Audio.music(null);
-    G.Audio.sfx(dead ? 'gameover' : 'back');
+    G.Audio.sfx(victory ? 'legend' : dead ? 'gameover' : 'back');
     const save = G.DB.save;
     const mul = pl.coinMul;
     const parts = {
@@ -199,6 +204,8 @@ G.Game = (() => {
     };
     const coins = Math.round((parts.tiempo + parts.derrotados + parts.jefes + parts.recogidas) * mul);
     const record = time > save.stats.bestTime;
+    const bestTime = victory && G.MvpConfig && G.MvpConfig.RUN_DURATION_SEC
+      ? time >= (save.stats.bestVictoryTime || 0) : false;
 
     save.coins += coins;
     bankTickets(false);
@@ -207,19 +214,26 @@ G.Game = (() => {
     save.stats.bestTime = Math.max(save.stats.bestTime, Math.floor(time));
     save.stats.bestLevel = Math.max(save.stats.bestLevel, pl.level);
     save.stats.coinsEarned += coins;
-    const judge = G.Judgment.summary();
+    if (victory) save.stats.wins = (save.stats.wins || 0) + 1;
+    if (victory && G.MvpConfig) save.stats.bestVictoryTime = Math.max(save.stats.bestVictoryTime || 0, Math.floor(time));
+    const judge = G.MvpConfig && G.MvpConfig.USE_JUDGMENT ? G.Judgment.summary() : null;
     if (judge) G.Progress.event('judgeEnd', judge);
     G.Judgment.reset();
-    G.Progress.event('runEnd', { time, level: pl.level, coins: pl.coins, types: pl.mon.types, group: false });
+    G.Progress.event('runEnd', { time, level: pl.level, coins: pl.coins, types: pl.mon.types, group: false, victory });
     G.Progress.checkAch();
     G.DB.commit('run');
 
     G.RunUI.showOver({
-      dead, time, level: pl.level, kills: pl.kills, bosses: pl.bosses, coins, record, t1: pl.t1, t10: pl.t10, judge,
+      dead, victory, time, level: pl.level, kills: pl.kills, bosses: pl.bosses, coins,
+      record: record || bestTime, t1: pl.t1, t10: pl.t10, judge,
+      dmgDealt: Math.floor(pl.dmgDealt || 0),
       moves: pl.moves, caught,
       breakdown: Object.entries(parts).filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(' · ') +
                  (mul > 1 ? ` · ×${mul.toFixed(2)} Fortuna` : '')
-    }, () => { pl = null; G.Flow.afterRun(); });
+    }, {
+      onMenu: () => { pl = null; G.Flow.afterRun(); },
+      onReplay: () => { pl = null; G.UI.hideAll(); G.Game.startRun(); }
+    });
   }
 
   /*
@@ -496,8 +510,20 @@ G.Game = (() => {
     }
     time += dt;
 
+    const mvpLimit = G.MvpConfig && G.Content.mode === 'neutral' ? G.MvpConfig.RUN_DURATION_SEC : 0;
+    if (mvpLimit && !runEnding && time >= mvpLimit) {
+      G.Spawner.say('¡Has completado la cacería!', 3.2);
+      endRun(false, true);
+      return;
+    }
+    if (mvpLimit && !warnedFinalMin && time >= mvpLimit - 60) {
+      warnedFinalMin = true;
+      G.Spawner.say('Último minuto de la cacería…', 2.8);
+    }
+
+    const rotateBiomes = !(G.MvpConfig && G.MvpConfig.BIOME_ROTATION === false);
     const b = Math.floor(time / 240);
-    if (b !== biome && !G.Rift.inArena && !G.Judgment.active) {
+    if (rotateBiomes && b !== biome && !G.Rift.inArena && !G.Judgment.active) {
       biome = b;
       G.World.setBiome(b);
       G.Audio.sfx('biome');
@@ -614,11 +640,12 @@ G.Game = (() => {
    */
   const Backdrop = (() => {
     let wanderers = [], t = 0, ready = false, biomeT = 0, bi = 0;
-    const CAST = [1, 4, 7, 25, 133, 52, 39, 35, 16, 43, 60, 69, 74, 92, 129, 147, 113, 143, 54, 79];
+    const CAST = [99002, 99003, 99004, 99005, 99006, 99007, 99008, 99009, 99010, 99011];
 
     function init() {
       G.World.reset(4242);
-      G.World.setBiome(0, true);
+      const bio = G.MvpConfig && G.MvpConfig.RUN_BIOME != null ? G.MvpConfig.RUN_BIOME : 0;
+      G.World.setBiome(bio, true);
       G.Camera.x = 0; G.Camera.y = 0;
       wanderers = CAST.map(dex => spawn(dex, true));
       ready = true;
@@ -648,7 +675,8 @@ G.Game = (() => {
       G.Camera.follow(G.Camera.x, G.Camera.y, dt);
 
       biomeT += dt;
-      if (biomeT > 30) { biomeT = 0; bi = (bi + 1) % 3; G.World.setBiome(bi); }
+      if (G.MvpConfig && G.MvpConfig.BIOME_ROTATION === false) { /* un solo bioma */ }
+      else if (biomeT > 30) { biomeT = 0; bi = (bi + 1) % 3; G.World.setBiome(bi); }
 
       for (const wd of wanderers) {
         wd.t -= dt;
@@ -720,16 +748,15 @@ G.Flow = {
   boot() {
     G.UI.initChrome();
     G.LoginUI.init(); G.VocationUI.init(); G.TestUI.init(); G.MenuUI.init(); G.GachaUI.init();
-    G.GoalsUI.init(); G.ProfileUI.init(); G.SettingsUI.init(); G.NewsUI.init(); G.Updater.init();
+    G.GoalsUI.init(); G.SettingsUI.init(); G.NewsUI.init(); G.Updater.init();
     // Tu nombre arriba a la derecha abre tu perfil.
     document.getElementById('user-pill').onclick = () => G.GoalsUI.open('profile');
     G.Audio.music('village');     // suena tras el primer clic (lo exige el navegador)
     G.Game.init();
     // La base de datos (nube o local) recupera la sesión anterior.
-    G.DB.ready().then(restored => {
+    G.DB.ready().then(() => {
       document.getElementById('boot').classList.add('hidden');
-      // En otra tarea: crear el sonido para comprobarlo cuesta ~60 ms y no debe bloquear la carga.
-      setTimeout(() => this.tapToStart(() => { if (restored) this.afterLogin(); else this.toLogin(); }), 0);
+      setTimeout(() => this.tapToStart(() => this.afterLogin()), 0);
     });
   },
   /**
