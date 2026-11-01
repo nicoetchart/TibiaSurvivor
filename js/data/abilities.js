@@ -115,7 +115,7 @@
       id: 'ts-stone-sweep',
       name: 'Barrido pétreo',
       kind: 'melee',
-      type: 'earth',
+      type: 'physical',
       desc: 'Golpe en arco a todo lo que tienes delante.',
       cd: 0.58,
       dmg: 15,

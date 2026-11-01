@@ -82,6 +82,7 @@ G.NeutralRoster = (() => {
 
   function rollRun() {
     bossCache = null;
+    eliteCache = null;
     return { cast: (cfg().ENEMY_UNLOCK || []).map(u => ({ from: u.from, list: available(u.from) })) };
   }
 
@@ -97,6 +98,25 @@ G.NeutralRoster = (() => {
   function bossScale(t) {
     const D = cfg().DIFFICULTY || { bossHpScale: 580, bossDmgScale: 580 };
     return { hp: 1 + t / D.bossHpScale, dmg: 1 + t / D.bossDmgScale, spd: 1 + Math.min(0.2, t / 2000) };
+  }
+
+  let eliteCache = null;
+  function buildElite() {
+    if (eliteCache) return eliteCache;
+    const c = G.CREATURE_BY_ID && G.CREATURE_BY_ID.rune_guard;
+    if (!c) return null;
+    const d = defFor(c);
+    d.name = 'Centinela de élite';
+    d.behavior = 'jumper';
+    d.hp = Math.round(d.hp * 2.4);
+    d.dmg = Math.round(d.dmg * 1.45);
+    d.xp = 85;
+    d.shotDmg = Math.round(d.dmg * 0.7);
+    d.shotCd = 2.4;
+    d.range = 200;
+    d.elite = true;
+    eliteCache = d;
+    return d;
   }
 
   let bossCache = null;
@@ -155,6 +175,7 @@ G.NeutralRoster = (() => {
     rollRun,
     scale,
     bossScale,
+    buildElite,
     bagAt,
     pickAt,
     upcomingDex,

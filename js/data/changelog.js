@@ -2,6 +2,19 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-01', title: ['Fase 6 — vertical slice MVP', 'Phase 6 — MVP vertical slice'], new: [
+    ['Victoria al derrotar al Custodio del umbral; el reloj de 12 min es límite, no premio por supervivencia.',
+     'Win by defeating the Vault Warden; the 12-minute clock is a limit, not a survival win.'],
+    ['Centinela de élite telegrafado a mitad de run, con brillo y etiqueta visible.',
+     'Mid-run elite sentinel with visible glow and ÉLITE tag.'],
+    ['Curva temporal ajustada: jefe a los 9 min, tiers desbloqueados por tramos.',
+     'Tuned timeline: boss at 9 min, enemy tiers unlock in stages.']
+  ], chg: [
+    ['Agotar el tiempo sin vencer al jefe cuenta como derrota.',
+     'Running out of time without beating the boss counts as defeat.'],
+    ['Carta de curación renombrada a Frasco vital (sin referencias legacy en level-up).',
+     'Heal level-up card renamed to Vital Flask (no legacy berry name).']
+  ], fix: [] },
   { d: '2026-11-01', title: ['Fase 5 — pulido post-MVP', 'Phase 5 — post-MVP polish'], new: [
     ['Identidad TibiaSurvivor: textos, legal, PWA y documentación alineados con contenido original.',
      'TibiaSurvivor identity: UI copy, legal notice, PWA and docs aligned with original content.'],
@@ -26,8 +39,8 @@ G.CHANGELOG = [
     ['Perfil local sin login obligatorio: Jugar, Ajustes y estadísticas persistentes.',
      'Local profile without mandatory login: Play, Settings and persistent stats.']
   ], chg: [
-    ['HUD con tiempo restante de cacería; al acabar el límite ganas si sigues en pie.',
-     'HUD shows remaining hunt time; surviving until the limit counts as a victory.'],
+    ['HUD con tiempo restante de cacería y bioma fijo Cueva Cristal en el camino neutral.',
+     'HUD shows remaining hunt time and fixed Crystal Cave biome on the neutral path.'],
     ['Juicio final, grietas y rotación de biomas desactivados en el MVP neutral.',
      'Final judgment, rifts and biome rotation disabled in the neutral MVP.']
   ], fix: [

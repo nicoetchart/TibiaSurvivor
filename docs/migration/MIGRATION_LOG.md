@@ -509,6 +509,69 @@ Autorización explícita de **Subfase 3A — Inventario e interfaces neutrales**
 
 ---
 
+## 2026-11-01 — FASE 6 (Vertical slice MVP)
+
+### Fase
+
+6 — **completed**
+
+### Resumen
+
+Cierre del ciclo jugable neutral: bioma Cueva Cristal fijo, 14 enemigos + jefe, 10 habilidades, tipos physical/fire/energy, élite programado (Centinela de élite @ 300 s), jefe Custodio del umbral @ 540 s, tope 720 s. **Victoria al derrotar al jefe**; agotar tiempo sin vencerlo = derrota.
+
+### Archivos modificados
+
+- `js/data/mvp-config.js` — duración 12 min, `ELITE_AT`, `VICTORY_ON_BOSS`
+- `js/data/neutral-roster.js` — `buildElite()`
+- `js/systems/spawner.js` — spawn élite + intro jefe neutral
+- `js/game.js` — `scheduleVictory`, timeout derrota, `runFrozen`
+- `js/systems/progress.js` — dispara victoria MVP al jefe final
+- `js/entities/enemy.js` — visual élite, tipos `physical` fallback
+- `js/systems/levelup.js` — Frasco vital
+- `js/data/abilities.js`, `js/data/creatures.js` — tipos slice (3)
+- `js/data/changelog.js`, `dev.html`
+- `tools/validate-mvp.js` (nuevo)
+- `docs/migration/MIGRATION_PLAN.md`, `TEST_CHECKLIST.md`, `MIGRATION_LOG.md`
+- Generados: `index.html`, `js/app.min.js`, `version.json` (build)
+
+### Contenido
+
+| Categoría | Detalle |
+|-----------|---------|
+| Vocación | Master Sorcerer / Archimago errante |
+| Habilidades | 10 (`ts-arc-bolt` … `ts-ward-pulse`) |
+| Enemigos | 99002–99015 + jefe 99016 |
+| Élite | Centinela de élite (jumper, recompensa XP 85) |
+
+### Pruebas ejecutadas
+
+| Prueba | Resultado |
+|--------|-----------|
+| `node tools/validate-mvp.js` | OK |
+| `node tools/build.js --sin-seo` | OK |
+| `node tools/smoke-phase6.mjs` | **17/17 PASS** (2026-11-01) |
+| `node tools/validate-mvp.js` | OK |
+
+### Riesgos
+
+- Validación manual de timing (9 min jefe en sesión real) no ejecutada por agente.
+- Cuentas legacy con partner Pokémon siguen camino Pokémon (DEC-019).
+
+### Rollback
+
+Revertir commit lógico F6; conservar motor offline y `ts.*`. Quitar `validate-mvp.js` opcional.
+
+### 2026-11-01 — Validación smoke Fase 6
+
+- `tools/smoke-phase6.mjs` — 17/17 PASS (Playwright + `http://127.0.0.1:8765/dev.html?dev`)
+- `js/game.js` — `debugResume()` para cierre de pantallas en smoke (solo dev/smoke)
+
+### Próximo paso
+
+Commit autorizado cuando el dueño lo pida: `feat(mvp): complete first playable vertical slice`.
+
+---
+
 <!-- Plantilla para entradas futuras
 
 ## YYYY-MM-DD — FASE N

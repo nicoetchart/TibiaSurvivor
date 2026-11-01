@@ -205,6 +205,10 @@ G.Progress = (() => {
     if (G.Judgment.active && e.boss) { G.Judgment.bossDown(); event('kill', { types: e.types || [], boss: false, legend: 0 }); return; }
     const legend = e.legend || (G.Rift.inArena && e.boss) ? e.dex : 0;
     event('kill', { types: e.types || [], boss: !!e.boss, legend });
+    if (G.Content.mode === 'neutral' && G.MvpConfig && G.MvpConfig.VICTORY_ON_BOSS && e.boss && !e.judge && !G.Rift.inArena) {
+      const cr = G.CREATURE_BY_LEGACY && G.CREATURE_BY_LEGACY[e.dex];
+      if (cr && cr.boss && G.Game.scheduleVictory) G.Game.scheduleVictory(2.2);
+    }
   }
 
   // ---------------- logros ----------------

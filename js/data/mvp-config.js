@@ -1,24 +1,29 @@
-/* ============ mvp-config.js — parámetros del MVP jugable (Fase 4) ============
+/* ============ mvp-config.js — parámetros del vertical slice MVP (Fase 6) ============
  * Un solo lugar para duración de run, bioma, curva de spawn y escalado.
  */
 G.MvpConfig = {
-  /** Duración objetivo de la partida (victoria al llegar). */
-  RUN_DURATION_SEC: 900,
+  /** Tope de tiempo: si el jefe sigue vivo, derrota por tiempo agotado. */
+  RUN_DURATION_SEC: 720,
   /** Índice en G.Tiles.BIOMES — 1 = Cueva Cristal. */
   RUN_BIOME: 1,
   BIOME_ROTATION: false,
   USE_JUDGMENT: false,
   DISABLE_RIFTS: true,
+  /** Victoria al derrotar al jefe final (no al agotar el reloj). */
+  VICTORY_ON_BOSS: true,
 
   /** Tramos de desbloqueo de tier de enemigo (tier 0 = básicos … 2 = avanzados). */
   ENEMY_UNLOCK: [
     { from: 0, maxTier: 0 },
-    { from: 100, maxTier: 1 },
-    { from: 320, maxTier: 2 }
+    { from: 90, maxTier: 1 },
+    { from: 280, maxTier: 2 }
   ],
 
-  /** Jefe élite final del MVP (segundos de run). */
-  FINAL_BOSS_AT: 780,
+  /** Élite de mitad de run (segundos). */
+  ELITE_AT: 300,
+
+  /** Jefe final del bioma (segundos de run). */
+  FINAL_BOSS_AT: 540,
 
   SPAWN: {
     base: 1.45,

@@ -24,9 +24,11 @@ G.Spawner = (() => {
   const SHINY_RATE = 1 / 4096;
   let acc = 0, bossIdx = 0, surgeT = 32, announce = null, announceT = 0, preloadT = 0;
   let forceShiny = 0;           // para pruebas: los N próximos salen shiny
+  let eliteSpawned = false;
 
   function reset() {
     acc = 0; bossIdx = 0; surgeT = 32; announce = null; announceT = 0; preloadT = 0;
+    eliteSpawned = false;
     G.Content.roster().rollRun();
     G.Sprites.preload(G.Content.roster().upcomingDex(0, 80));
   }
@@ -115,9 +117,33 @@ G.Spawner = (() => {
     const e = new G.Enemy(b, x, y, scaled(G.Content.roster().bossScale(t), 1 * (players.length > 1 ? 1.4 : 1)), true);
     if (rollShiny(b.dex)) e.makeShiny();
     G.EnemyMgr.add(e);
-    say('¡' + e.name + (e.shiny ? ' shiny' : '') + ' salvaje apareció!', 3.2);
+    const intro = G.Content.mode === 'neutral'
+      ? '¡' + e.name + ' bloquea el umbral!'
+      : '¡' + e.name + (e.shiny ? ' shiny' : '') + ' salvaje apareció!';
+    say(intro, 3.4);
     G.Camera.kick(1.1);
     G.Audio.sfx('boss');
+    return e;
+  }
+
+  function spawnElite(pl, t, def) {
+    const pt = freePoint(pl, Math.random() * 6.2832, isFlyer(def));
+    if (!pt) return null;
+    const roster = G.Content.roster();
+    const e = new G.Enemy(def, pt[0], pt[1], scaled(roster.scale(t), 1 * hpK(t)));
+    e.elite = true;
+    e.scale = Math.min(1.85, (e.scale || 1) * 1.32);
+    e.anim = new G.Sprites.Animator(e.dex, e.scale);
+    e.r = G.Sprites.bodyRadius(e.dex, e.scale);
+    e.bodyH = G.Sprites.bodyHeight(e.dex, e.scale);
+    e.maxHp = e.hp = Math.round(e.maxHp * 1.35);
+    e.dmg *= 1.2;
+    e.xp = Math.round(e.xp * 1.5);
+    G.EnemyMgr.add(e);
+    say('¡Centinela de élite en la caverna!', 3.2);
+    G.Camera.kick(0.65);
+    G.Audio.sfx('boss');
+    G.FX.ring(e.x, e.y, e.r, e.r * 4, '#b48aff', 0.55, 4);
     return e;
   }
 
@@ -128,14 +154,30 @@ G.Spawner = (() => {
     // En la arena de la grieta no sale nada más (y el reloj de jefes espera).
     // En la Sentencia de Arceus, sólo sus legendarios (systems/judgment.js).
     if (G.Rift.inArena || G.Judgment.active) return;
+    if (G.Game.runFrozen && G.Game.runFrozen()) return;
 
     // Precarga lo que va a salir en el próximo minuto.
     preloadT -= dt;
     if (preloadT <= 0) { preloadT = 10; G.Sprites.preload(G.Content.roster().upcomingDex(t, 60)); }
 
+    // --- élite programado (MVP neutral) ---
+    const eliteAt = G.MvpConfig && G.Content.mode === 'neutral' ? G.MvpConfig.ELITE_AT : null;
+    if (eliteAt != null && !eliteSpawned && t >= eliteAt && !G.EnemyMgr.bossAlive()) {
+      const buildElite = G.Content.roster().buildElite;
+      const ed = buildElite ? buildElite() : null;
+      if (ed) {
+        eliteSpawned = true;
+        spawnElite(anchor(), t, ed);
+      }
+    }
+
     // --- jefes ---
     const b = G.Content.roster().BOSSES[bossIdx];
-    if (b && t >= b.at) { spawnBoss(anchor(), t, b); bossIdx++; }
+    if (b && t >= b.at) {
+      spawnBoss(anchor(), t, b);
+      bossIdx++;
+      if (G.Content.mode === 'neutral') say('Derrotarlo cierra la cacería.', 2.8);
+    }
 
     // Combate de jefe: las oleadas bajan al 25% y no hay mareas, para que el
     // jefe sea un momento propio y se le pueda apuntar entre la multitud.

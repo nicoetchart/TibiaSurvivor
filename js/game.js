@@ -21,7 +21,7 @@ G.Game = (() => {
   let pl = null;
   let caught = [];          // shinies conseguidos en esta run
   let biome = -1;
-  let runEnding = false, warnedFinalMin = false;
+  let runEnding = false, warnedFinalMin = false, warnedBossSoon = false, victoryHold = 0;
 
   const st = { get time() { return time; } };
 
@@ -108,6 +108,8 @@ G.Game = (() => {
     time = 0; pendingLevels = 0;
     runEnding = false;
     warnedFinalMin = false;
+    warnedBossSoon = false;
+    victoryHold = 0;
     runReal = performance.now(); tampered = false;
 
     pl = new G.Player(mon, perks, !!save.partnerShiny && G.DB.ownsShiny(mon.dex));
@@ -187,6 +189,21 @@ G.Game = (() => {
     if (!isNew) pl.coins += 300;
     G.Audio.sfx('shinyGet');
   };
+
+  /** Tras derrotar al jefe final del MVP: pausa combate y cierra la run. */
+  function scheduleVictory(delay = 2) {
+    if (state !== 'playing' || victoryHold > 0 || runEnding) return;
+    if (!G.MvpConfig || !G.MvpConfig.VICTORY_ON_BOSS || G.Content.mode !== 'neutral') return;
+    victoryHold = delay;
+    G.Spawner.say('¡Victoria! El umbral queda despejado.', 3.6);
+    G.Projectiles.clear();
+    G.Combat.clearFields();
+    G.Hazards.clear();
+    G.Camera.kick(1.2);
+    G.Audio.sfx('legend');
+  }
+
+  function runFrozen() { return victoryHold > 0 || runEnding; }
 
   function endRun(dead = true, victory = false) {
     if (state === 'over' || !pl) return;
@@ -508,17 +525,36 @@ G.Game = (() => {
       if (deathT > 1.3) { deathT = 0; endRun(true); }
       return;
     }
+
+    if (victoryHold > 0) {
+      victoryHold -= dt;
+      time += dt;
+      pl.update(dt * 0.2);
+      G.EnemyMgr.update(dt * 0.15, pl);
+      G.FX.update(dt);
+      G.Camera.follow(pl.x, pl.y, dt);
+      G.Spawner.tickBanner(dt);
+      if (victoryHold <= 0) endRun(false, true);
+      return;
+    }
+
     time += dt;
 
     const mvpLimit = G.MvpConfig && G.Content.mode === 'neutral' ? G.MvpConfig.RUN_DURATION_SEC : 0;
     if (mvpLimit && !runEnding && time >= mvpLimit) {
-      G.Spawner.say('¡Has completado la cacería!', 3.2);
-      endRun(false, true);
+      if (G.EnemyMgr.bossAlive()) G.Spawner.say('Se agotó el tiempo…', 3);
+      else G.Spawner.say('La cacería termina sin despejar el umbral.', 3);
+      endRun(true, false);
       return;
     }
     if (mvpLimit && !warnedFinalMin && time >= mvpLimit - 60) {
       warnedFinalMin = true;
-      G.Spawner.say('Último minuto de la cacería…', 2.8);
+      G.Spawner.say('Último minuto: el umbral sigue activo.', 2.8);
+    }
+    const bossAt = G.MvpConfig && G.MvpConfig.FINAL_BOSS_AT;
+    if (G.Content.mode === 'neutral' && bossAt && !warnedBossSoon && time >= bossAt - 40 && time < bossAt) {
+      warnedBossSoon = true;
+      G.Spawner.say('Presencia abrumadora en el umbral…', 2.6);
     }
 
     const rotateBiomes = !(G.MvpConfig && G.MvpConfig.BIOME_ROTATION === false);
@@ -728,7 +764,7 @@ G.Game = (() => {
   })();
 
   return {
-    init, startRun, everyone, levelXp, flash, offerBond,
+    init, startRun, everyone, levelXp, flash, offerBond, scheduleVictory, runFrozen,
     /** Para pruebas: salta el reloj de la run. */
     debugTime(t) { tampered = true; time = t; },
     /** Para grabar vídeos: cámara lenta (0,5 = mitad de velocidad). */
@@ -738,6 +774,14 @@ G.Game = (() => {
     quit() { if (state !== 'ui' && state !== 'over') quitRun(); },
     /** Para grabar vídeos: abre las cartas de subir de nivel. */
     debugLevelUp() { tampered = true; pl.level++; pendingLevels++; },
+    /** Smoke / dev: cierra pantallas de elección y vuelve a playing. */
+    debugResume() {
+      if (state === 'levelup' || state === 'paused' || state === 'choice') {
+        state = 'playing';
+        G.UI.hideAll();
+        if (G.RunUI.closeLevelUp) G.RunUI.closeLevelUp();
+      }
+    },
     toUI() { state = 'ui'; Backdrop.restore(); },
     get state() { return state; }, get player() { return pl; }, st
   };

@@ -21,9 +21,9 @@
 | 1 | Motor offline | **completed** (2026-10-31; smoke manual operador PASS post-corrección) |
 | 2 | Namespace y guardado TibiaSurvivor (`ts.*`) | **completed** (2026-10-31) |
 | 3 | Capa neutral de contenido | **completed** (3A–3E, 2026-10-31; gacha y arte de grieta/juicio siguen en el camino legacy) |
-| 4 | Eliminación de contenido Pokémon | pending |
-| 5 | Identidad TibiaSurvivor | pending |
-| 6 | Vertical slice MVP | pending |
+| 4 | Eliminación de contenido Pokémon | **completed** (2026-11-01; runtime neutral sin assets Pokémon en camino principal) |
+| 5 | Identidad TibiaSurvivor | **completed** (2026-11-01; branding, menú MVP, changelog) |
+| 6 | Vertical slice MVP | **completed** (2026-11-01; smoke 17/17 PASS) |
 
 ---
 
@@ -209,7 +209,9 @@ Revertir Fase 3; Pokémon data sigue en disco pero puede reactivarse en HTML.
 
 ## FASE 4 — Eliminación contenido Pokémon
 
-**Estado:** pending
+**Estado:** **completed** (2026-11-01)
+
+Runtime del camino neutral: `dex-minimal.js`, sprites geométricos, sin carga de `pokedex.js` en `dev.html`. Legacy Pokémon permanece en disco para cuentas `partner` dex antiguo (DEC-019). Build producción regenerado.
 
 ### Objetivo
 
@@ -237,7 +239,7 @@ No restaurar 13k PNGs sin git; revert commit lógico y re-añadir scripts desde 
 
 ## FASE 5 — Identidad TibiaSurvivor
 
-**Estado:** pending
+**Estado:** **completed** (2026-11-01)
 
 ### Objetivo
 
@@ -255,11 +257,27 @@ Revert branding; regenerar build.
 
 ## FASE 6 — Vertical slice
 
-**Estado:** pending
+**Estado:** **completed** (2026-11-01)
 
 ### Objetivo
 
 1 bioma, 1 vocación, 10–15 enemigos, 8–12 habilidades, 3 tipos de daño, élite + jefe, 10–15 min, sin red.
+
+### Cierre (2026-11-01)
+
+| Elemento | Valor |
+|----------|--------|
+| Bioma | Cueva Cristal (`RUN_BIOME: 1`) |
+| Vocación | Master Sorcerer → Archimago errante |
+| Enemigos | 14 plantillas + 1 jefe (15 defs) |
+| Habilidades | 10 (`ts-*`) |
+| Tipos de daño activos | physical, fire, energy |
+| Élite | Centinela de élite @ 300 s |
+| Jefe | Custodio del umbral @ 540 s |
+| Duración | 720 s (12 min); victoria al matar al jefe |
+| Persistencia | `ts.*` |
+
+Validación automática: `node tools/validate-mvp.js`. Build: `node tools/build.js` OK (`app.min.js?v=801399882e`).
 
 ### Rollback
 

@@ -43,7 +43,8 @@
       this.behavior = def.behavior;
 
       const types = (G.DEX_BY[def.dex] && G.DEX_BY[def.dex].types) || [];
-      this.types = types.length ? types : ['normal'];
+      this.types = types.length ? types : ['physical'];
+      this.elite = !!def.elite;
       this.atkType = this.types[0];         // tipo de sus golpes (tabla de tipos)
       // Vuelan por encima de rocas y agua sólo los que FLOTAN en su sprite (un
       // Rowlet camina aunque sea Volador). Los jefes, por su tamaño, también.
@@ -672,10 +673,10 @@
       if (alpha <= 0) return;
 
       const gold = this.golden || this.behavior === 'thief' || (this.remote && !this.boss && G.Events.golden);
-      if ((this.boss || this.shiny || gold) && !this.dead) {
+      if ((this.boss || this.elite || this.shiny || gold) && !this.dead) {
         ctx.save();
         ctx.globalAlpha = (gold && !this.boss ? 0.32 : 0.22) + Math.sin(this.bob * 0.5) * 0.06;
-        ctx.fillStyle = this.ai && this.ai.fury ? '#ff4a4a' : this.shiny ? '#9ae6ff' : gold ? '#ffd23f' : '#ffd95e';
+        ctx.fillStyle = this.ai && this.ai.fury ? '#ff4a4a' : this.elite ? '#b48aff' : this.shiny ? '#9ae6ff' : gold ? '#ffd23f' : '#ffd95e';
         ctx.beginPath(); ctx.ellipse(this.x, this.y, this.r * 1.6, this.r * 0.6, 0, 0, 6.2832); ctx.fill();
         ctx.restore();
       }
@@ -713,6 +714,15 @@
       // Apoyos: icono encima, para saber a quién ir primero.
       const SUP = { healer: 'heart', shielder: 'shield', summoner: 'friends' };
       if (SUP[this.behavior]) G.Icons.draw(ctx, SUP[this.behavior], Math.round(this.x - 6), Math.round(this.y - this.bodyH - (this.hp < this.maxHp ? 26 : 18)), 12);
+
+      if (this.elite && !this.boss && this.hp >= this.maxHp * 0.98) {
+        ctx.save();
+        ctx.font = '700 9px Pixelify, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#d4b8ff';
+        ctx.fillText('ÉLITE', this.x, this.y - this.bodyH - 14);
+        ctx.restore();
+      }
 
       if (this.boss || this.hp < this.maxHp) {
         const w = this.boss ? 90 : Math.max(22, this.r * 2);

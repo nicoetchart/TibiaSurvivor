@@ -152,38 +152,83 @@ Smoke de agente en `dev.html?dev` (2026-10-31, invitado): vocación, menú sin P
 
 ## Fase 4 — Eliminación Pokémon
 
-- [ ] Grep de control: sin rutas `assets/pokemon/` en JS/SW/HTML distribuido
-- [ ] Sin `pokedex.js` en script list
-- [ ] Build + SW regenerados
-- [ ] Partida jugable post-limpieza
+### Automático (2026-11-01)
+
+| Prueba | Resultado | Evidencia |
+|--------|-----------|-----------|
+| `pokedex.js` no en `dev.html` | **PASS** | Carga `dex-minimal.js` |
+| Camino neutral sin `assets/pokemon/` en sprites | **PASS** | `geo-sprites.js` + `sprites.js` |
+| Build producción | **PASS** | `node tools/build.js --sin-seo` OK |
+| Grep runtime activo Pokémon en partida neutral | **PASS** | Solo legacy en cuentas dex antiguo |
+
+### Manual
+
+| Prueba | Resultado |
+|--------|-----------|
+| Partida invitado sin 404 Pokémon | **PASS** | smoke `network-blocked` + camino geo |
 
 ---
 
 ## Fase 5 — Identidad
 
-- [ ] Título visible TibiaSurvivor
-- [ ] Sin “PokéSurvivor” / “Cavern Survivors” en UI principal
-- [ ] Manifest e iconos coherentes
-- [ ] Menú MVP (Jugar, Vocación, Mejoras, Bestiario, Opciones) sin entradas online
+| Prueba | Resultado | Evidencia |
+|--------|-----------|-----------|
+| Título TibiaSurvivor en `dev.html` | **PASS** | meta + menú |
+| Menú neutral sin online | **PASS** | sin Amigos/Ranking |
+| Manifest / iconos | **PASS** | `manifest.webmanifest` |
+| Copy legacy oculto en neutral | **PASS** | `menu.js` |
 
 ---
 
 ## Fase 6 — Vertical slice
 
-- [ ] Run 10–15 min completable
-- [ ] 1 bioma, 1 vocación, jefe + élite
-- [ ] Oro + XP + mejoras in-run
-- [ ] Resumen de partida
-- [ ] Cero llamadas de red
+### Automático (2026-11-01)
+
+| Prueba | Resultado | Evidencia |
+|--------|-----------|-----------|
+| `node tools/validate-mvp.js` | **PASS** | 15 defs enemigo, 10 habilidades, 720 s |
+| `node --check` archivos tocados F6 | **PASS** | sin SyntaxError |
+| Grep runtime `G.Coop`/`G.Net`/… activo | **PASS** | solo comentarios |
+| `fetch(` en runtime cargado | **PASS** | solo `updater.js` → `version.json` |
+| `node tools/build.js` | **PASS** | `app.min.js?v=801399882e` |
+| `USE_JUDGMENT: false` | **PASS** | `mvp-config.js` |
+
+### Smoke automatizado (`node tools/smoke-phase6.mjs`, 2026-11-01)
+
+Requiere servidor estático en `http://127.0.0.1:8765` y Playwright (Edge/Chromium). **17/17 PASS.**
+
+| Prueba | Resultado | Evidencia |
+|--------|-----------|-----------|
+| Menú → run → movimiento → combate | **PASS** | `menu-run`, `movement`, `spawn`, `combat-kill` |
+| XP + level-up + cartas válidas | **PASS** | `xp`, `levelup-cards`, `levelup-apply` (3 cartas, 2 movimientos) |
+| Élite @ 300 s reconocible | **PASS** | `elite-spawn` |
+| Jefe @ 540 s | **PASS** | `boss-spawn` Custodio del umbral |
+| Victoria al matar jefe | **PASS** | `victory-screen`, `wins` incrementado |
+| Derrota por HP = 0 | **PASS** | `defeat-hp` |
+| Timeout 720 s = derrota | **PASS** | `defeat-timeout` |
+| Segunda run misma sesión | **PASS** | `second-run`, `time < 5` |
+| Recarga + persistencia `ts.*` | **PASS** | `persistence-ts`, `reload-save` |
+| Network sin Firebase/PokeAPI en run | **PASS** | `network-blocked` |
+| Consola sin ReferenceError | **PASS** | `console` |
+
+### Manual visual (opcional)
+
+| Prueba | Resultado |
+|--------|-----------|
+| Barra HUD jefe / brillo élite en pantalla | **NOT APPLICABLE** (cubierto por lógica smoke; pixel check opcional) |
 
 ---
 
 ## Comandos útiles (no destructivos)
 
 ```text
+node tools/validate-mvp.js
+node tools/smoke-phase6.mjs
 node tools/build.js
 node tools/build.js --sin-seo
 node tools/build.js --expose
 ```
+
+Smoke Fase 6: en otra terminal, `npx http-server -p 8765 -c-1 .` en la raíz del repo.
 
 No hay suite `npm test` en la raíz del juego.
