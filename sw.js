@@ -1,11 +1,8 @@
-/* ============ sw.js — para poder instalar el juego como app ============
- * - Código del juego (html, js, css): primero la red, así cada actualización
- *   llega al momento; si no hay conexión, la última copia guardada.
- * - Sprites, iconos y fuente: no cambian nunca, se sirven de la caché
- *   (se van guardando según se usan: no se descarga todo de golpe).
- * - Firebase y demás servicios de fuera no se tocan.
+/* ============ sw.js — PWA TibiaSurvivor (hosting estático) ============
+ * Código (html, js, css): red primero, caché de respaldo sin conexión.
+ * Arte estático (iconos, fuentes): caché bajo demanda.
  */
-const CODE = 'ps-code-v1', ART = 'ps-art-v1';
+const CODE = 'ts-code-v2', ART = 'ts-art-v1';
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CODE).then(c => c.addAll(['./', './index.html', './css/style.css', './manifest.webmanifest'])).catch(() => {}));
@@ -22,7 +19,7 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
-  const art = /\/assets\/(pokemon|icons|fonts)\//.test(url.pathname);
+  const art = /\/assets\/(icons|fonts)\//.test(url.pathname);
   if (art) {
     e.respondWith(caches.open(ART).then(async c => {
       const hit = await c.match(req);
@@ -37,8 +34,6 @@ self.addEventListener('fetch', e => {
     if (res.ok) { const copy = res.clone(); caches.open(CODE).then(c => c.put(req, copy)); }
     return res;
   }).catch(async () => {
-    // Sin red: la copia guardada. La página de inicio sólo sirve de respaldo
-    // al abrir la web (nunca en lugar de un script o una imagen).
     const hit = await caches.match(req);
     if (hit) return hit;
     if (req.mode === 'navigate') return (await caches.match('./index.html')) || Response.error();

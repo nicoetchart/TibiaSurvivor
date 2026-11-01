@@ -1,6 +1,6 @@
-/* ============ sprites.js — sprites estilo Mundo Misterioso (locales) ============
- * Hojas de SpriteCollab en assets/pokemon/{dex}/{Anim}.png, geometría en
- * G.SPRITE_META (js/data/sprites-meta.js, generado por tools/fetch_sprites.py).
+/* ============ sprites.js — animador de sprites (PNG propio o geo) ============
+ * TibiaSurvivor MVP: criaturas 99001–99099 usan G.GeoSprites (sin PNG).
+ * PNG opcional: assets/… + G.SPRITE_META cuando exista arte con licencia clara.
  *
  *   columnas = fotogramas · filas = 8 direcciones
  *   0 Down · 1 DownRight · 2 Right · 3 UpRight · 4 Up · 5 UpLeft · 6 Left · 7 DownLeft
@@ -81,6 +81,8 @@ G.Sprites = (() => {
   }
 
   function sheet(dex, anim, shiny = false) {
+    if (G.GeoSprites && G.GeoSprites.isGeo(dex)) return null;
+    if (G.Content && G.Content.mode === 'neutral') return null;
     const m = meta(dex);
     shiny = shiny && !!(m && m.sh);
     const name = animName(dex, anim, shiny);

@@ -22,7 +22,10 @@
  * a mano; los logros se dan solos al conseguirlos.
  */
 G.Progress = (() => {
-  const TYPES = Object.keys(G.U.TYPE_NAME);
+  function typePool() {
+    if (G.Content && G.Content.mode === 'neutral' && G.DamageTypes) return G.DamageTypes.ALL.slice();
+    return Object.keys(G.U.TYPE_NAME || {});
+  }
   let achT = 0, toastQ = [], toastT = 0;
 
   /** Claves día/semana para misiones (antes G.Ranking.periodIds). */
@@ -47,7 +50,9 @@ G.Progress = (() => {
 
   function make(def, r) {
     const goal = def.goals[Math.floor(r() * def.goals.length)];
-    const param = def.param === 'type' ? TYPES[Math.floor(r() * TYPES.length)] : null;
+    const pool = typePool();
+    const param = def.param === 'dtype' || def.param === 'type'
+      ? pool[Math.floor(r() * pool.length)] : null;
     return { id: def.id, goal, param, prog: 0, claimed: false, told: false };
   }
 
@@ -65,17 +70,30 @@ G.Progress = (() => {
     const key = String(s.created || 0);
     s.missions = s.missions || {};
     const M = s.missions;
-    if (M.day !== ids.d) {
+    const fix = list => (list || []).filter(m => m && G.MissionDefs.BY[m.id]).map(m => ({
+      id: m.id,
+      goal: Number.isFinite(+m.goal) ? +m.goal : 1,
+      param: m.param || null,
+      prog: Number.isFinite(+m.prog) ? +m.prog : 0,
+      claimed: !!m.claimed,
+      told: !!m.told
+    }));
+    M.daily = fix(M.daily);
+    M.weekly = fix(M.weekly);
+    if (M.day !== ids.d || M.daily.length < 3) {
       M.day = ids.d; M.rerolled = false;
       M.daily = pickSet(G.MissionDefs.daily, 3, rng(ids.d + key));
     }
-    if (M.week !== ids.w) {
+    if (M.week !== ids.w || M.weekly.length < 2) {
       M.week = ids.w;
       M.weekly = pickSet(G.MissionDefs.weekly, 2, rng(ids.w + key));
     }
   }
 
-  function text(m) { return G.MissionDefs.BY[m.id].text(m.goal, m.param); }
+  function text(m) {
+    const def = G.MissionDefs.BY[m.id];
+    return def ? def.text(m.goal, m.param) : '';
+  }
   function done(m) { return m.prog >= m.goal; }
 
   function advance(list, kind, d) {

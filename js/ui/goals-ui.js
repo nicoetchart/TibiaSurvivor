@@ -100,6 +100,7 @@
 
     function achievements(box) {
       const s = G.DB.save;
+      const neutral = G.Content && G.Content.mode === 'neutral';
       const all = G.AchDefs.LIST;
       const got = all.filter(a => s.ach && s.ach[a.id]).length;
       const chips = document.createElement('div');
@@ -122,8 +123,7 @@
       for (const a of list) grid.appendChild(achCard(a, s));
       box.appendChild(grid);
 
-      // Legendarios: uno a uno, con su sprite (en sombra si aún no le has vencido).
-      if (cat === 'legendarios') {
+      if (!neutral && cat === 'legendarios') {
         const legs = all.filter(a => a.dex);
         const beaten = legs.filter(a => s.legends && s.legends[a.dex]).length;
         box.insertAdjacentHTML('beforeend', `<h3 style="margin:14px 0 6px">Legendarios vencidos ${beaten} / ${legs.length}</h3>`);
@@ -159,10 +159,22 @@
 
     function profile(box) {
       const s = G.DB.save;
+      const neutral = G.Content && G.Content.mode === 'neutral';
       s.profile = s.profile || { favs: [], title: '' };
       const P = s.profile;
-      box.insertAdjacentHTML('beforeend', `<p class="sub">Vista previa de tu perfil local (sólo en este navegador).</p>
-        <h3>Tus 3 Pokémon favoritos</h3>`);
+      box.insertAdjacentHTML('beforeend', `<p class="sub">Vista previa de tu perfil local (sólo en este navegador).</p>`);
+      if (neutral) {
+        const st = s.stats || {};
+        box.insertAdjacentHTML('beforeend', `<div class="stats" style="margin:10px 0">
+          <div><span>Expediciones</span><b>${st.runs || 0}</b></div>
+          <div><span>Victorias</span><b>${st.wins || 0}</b></div>
+          <div><span>Mejor tiempo</span><b>${G.U.mmss(st.bestTime || 0)}</b></div>
+          <div><span>Mejor nivel</span><b>${st.bestLevel || 0}</b></div>
+          <div><span>Derrotados</span><b>${(st.totalKills || 0).toLocaleString('es')}</b></div>
+          <div><span>Monedas ganadas</span><b>${(st.coinsEarned || 0).toLocaleString('es')}</b></div>
+        </div>`);
+      } else {
+      box.insertAdjacentHTML('beforeend', `<h3>Tus 3 Pokémon favoritos</h3>`);
       const favs = document.createElement('div');
       favs.className = 'fav-slots';
       for (let i = 0; i < 3; i++) {
@@ -177,6 +189,7 @@
         favs.appendChild(slot);
       }
       box.appendChild(favs);
+      }
 
       const titles = G.Progress.titles();
       box.insertAdjacentHTML('beforeend', `<h3 style="margin-top:14px">Título</h3>`);

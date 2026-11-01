@@ -1,54 +1,53 @@
-/* ============ missions.js — plantillas de misiones diarias y semanales ============
- * Cada día salen 3 diarias y cada semana 2 semanales (hora de España), con
- * objetivos y tipos sorteados. Se completan jugando y el premio se recoge en
- * la pantalla de Misiones. La lógica está en systems/progress.js.
+/* ============ missions.js — misiones diarias y semanales (TibiaSurvivor) ============
+ * Plantillas medibles por G.Progress.event. Recompensas: monedas (y tickets legacy si aplica).
  *
- *   ev      evento que la hace avanzar (ver G.Progress.event)
- *   match   (datos, parámetro) -> ¿cuenta este evento?
- *   value   datos -> cuánto vale; con mode 'max' se queda el mayor, con
- *           'add' (por defecto) se suma (1 si no hay value)
- *   param   'type': sortea un tipo Pokémon para la misión
+ *   ev      evento (ver systems/progress.js)
+ *   match   (datos, param) -> ¿cuenta?
+ *   value   datos -> progreso; mode 'max' conserva el mayor
+ *   param   'dtype' sortea un tipo de daño (G.DamageTypes)
  */
 G.MissionDefs = (() => {
-  const T = t => G.U.TYPE_NAME[t];
-  const min = d => Math.floor(d.time / 60);
+  const dtypeName = t => (G.DamageTypes && G.DamageTypes.NAME[t]) || t;
+  const min = d => Math.floor((d.time || 0) / 60);
 
   const daily = [
-    { id: 'kill', ev: 'kill', goals: [300, 500, 800], reward: { t1: 2, coins: 150 },
-      text: n => `Derrota a ${n} Pokémon` },
-    { id: 'killType', ev: 'kill', param: 'type', goals: [30, 50, 80], reward: { t1: 2, coins: 200 },
-      match: (d, t) => d.types.includes(t), text: (n, t) => `Derrota a ${n} Pokémon de tipo ${T(t)}` },
-    { id: 'survive', ev: 'runEnd', mode: 'max', value: min, goals: [5, 7, 9], reward: { t1: 3, coins: 200 },
-      text: n => `Aguanta ${n} minutos en una run` },
-    { id: 'level', ev: 'runEnd', mode: 'max', value: d => d.level, goals: [8, 12, 15], reward: { t1: 2, coins: 200 },
-      text: n => `Llega al nivel ${n} en una run` },
-    { id: 'boss', ev: 'kill', match: d => d.boss, goals: [1, 2], reward: { t1: 3, coins: 250 },
+    { id: 'ts_kill', ev: 'kill', goals: [120, 200, 350], reward: { coins: 120 },
+      text: n => `Derrota a ${n} criaturas` },
+    { id: 'ts_kill_dtype', ev: 'kill', param: 'dtype', goals: [25, 40, 60], reward: { coins: 150 },
+      match: (d, t) => (d.types || []).includes(t),
+      text: (n, t) => `Derrota a ${n} criaturas de daño ${dtypeName(t)}` },
+    { id: 'ts_survive', ev: 'runEnd', mode: 'max', value: min, goals: [5, 8, 12], reward: { coins: 180 },
+      text: n => `Aguanta ${n} minutos en una expedición` },
+    { id: 'ts_level', ev: 'runEnd', mode: 'max', value: d => d.level || 0, goals: [8, 12, 16], reward: { coins: 160 },
+      text: n => `Alcanza el nivel ${n} en una expedición` },
+    { id: 'ts_boss', ev: 'kill', match: d => d.boss, goals: [1, 2], reward: { coins: 200 },
       text: n => (n === 1 ? 'Derrota a un jefe' : `Derrota a ${n} jefes`) },
-    { id: 'chest', ev: 'chest', goals: [1, 2], reward: { t1: 2, coins: 200 },
+    { id: 'ts_chest', ev: 'chest', goals: [1, 2], reward: { coins: 140 },
       text: n => (n === 1 ? 'Abre un cofre con candado' : `Abre ${n} cofres con candado`) },
-    { id: 'coins', ev: 'runEnd', value: d => d.coins, goals: [100, 200, 300], reward: { t1: 2, coins: 150 },
-      text: n => `Recoge ${n} monedas en tus runs` },
-    { id: 'playType', ev: 'runEnd', param: 'type', mode: 'max', value: min, goals: [3], reward: { t1: 3, coins: 200 },
-      match: (d, t) => d.types.includes(t), text: (n, t) => `Aguanta ${n} minutos con un Pokémon de tipo ${T(t)}` },
-    { id: 'item', ev: 'item', goals: [1], reward: { t1: 2, coins: 150 },
+    { id: 'ts_coins', ev: 'runEnd', mode: 'max', value: d => d.coins || 0, goals: [80, 150, 250], reward: { coins: 120 },
+      text: n => `Recoge ${n} monedas en tus expediciones` },
+    { id: 'ts_hunt_dtype', ev: 'runEnd', param: 'dtype', mode: 'max', value: min,
+      match: (d, t) => (d.types || []).includes(t), goals: [4], reward: { coins: 180 },
+      text: (n, t) => `Aguanta ${n} minutos cazando con daño ${dtypeName(t)}` },
+    { id: 'ts_item', ev: 'item', goals: [1], reward: { coins: 130 },
       text: () => 'Encuentra un objeto equipable' },
-    { id: 'evolve', ev: 'evolve', goals: [1], reward: { t1: 3, coins: 250 },
-      text: () => 'Evoluciona un movimiento' }
+    { id: 'ts_win', ev: 'runEnd', match: d => !!d.victory, goals: [1], reward: { coins: 220 },
+      text: () => 'Completa una expedición (sobrevive hasta el final)' }
   ];
 
   const weekly = [
-    { id: 'wkill', ev: 'kill', goals: [4000, 6000], reward: { t10: 1, coins: 800 },
-      text: n => `Derrota a ${n.toLocaleString('es')} Pokémon` },
-    { id: 'wrift', ev: 'rift', goals: [1, 2], reward: { t10: 1, coins: 1000 },
-      text: n => (n === 1 ? 'Gana una pelea en una grieta' : `Gana ${n} peleas en grietas`) },
-    { id: 'wboss', ev: 'kill', match: d => d.boss, goals: [4, 6], reward: { t10: 1, coins: 900 },
+    { id: 'ts_wkill', ev: 'kill', goals: [2500, 4000], reward: { coins: 600 },
+      text: n => `Derrota a ${n.toLocaleString('es')} criaturas` },
+    { id: 'ts_wboss', ev: 'kill', match: d => d.boss, goals: [3, 5], reward: { coins: 700 },
       text: n => `Derrota a ${n} jefes` },
-    { id: 'wsurvive', ev: 'runEnd', mode: 'max', value: min, goals: [12, 15], reward: { t10: 1, coins: 1000 },
-      text: n => `Aguanta ${n} minutos en una run` },
-    { id: 'wevolve', ev: 'evolve', goals: [3, 5], reward: { t10: 1, coins: 900 },
-      text: n => `Evoluciona ${n} movimientos` },
-    { id: 'wdaily', ev: 'missionDone', match: d => d.daily, goals: [8, 12], reward: { t10: 1, coins: 800 },
-      text: n => `Completa ${n} misiones diarias` }
+    { id: 'ts_wsurvive', ev: 'runEnd', mode: 'max', value: min, goals: [12, 15], reward: { coins: 750 },
+      text: n => `Aguanta ${n} minutos en una sola expedición` },
+    { id: 'ts_wlevel', ev: 'runEnd', mode: 'max', value: d => d.level || 0, goals: [18, 22], reward: { coins: 650 },
+      text: n => `Alcanza el nivel ${n} en una expedición` },
+    { id: 'ts_wdaily', ev: 'missionDone', match: d => d.daily, goals: [6, 10], reward: { coins: 550 },
+      text: n => `Completa ${n} misiones diarias` },
+    { id: 'ts_wins', ev: 'runEnd', match: d => !!d.victory, goals: [2, 4], reward: { coins: 800 },
+      text: n => `Completa ${n} expediciones con éxito` }
   ];
 
   const BY = {};

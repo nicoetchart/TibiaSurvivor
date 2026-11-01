@@ -1,7 +1,6 @@
-PokéSurvivor — licencias
+TibiaSurvivor — licencias
 
-1) CÓDIGO (todo lo que hay en js/, css/, index.html, tools/ y la música de
-   js/data/music.js): licencia MIT.
+1) CÓDIGO (js/, css/, dev.html, tools/, música definida en js/data/music.js): MIT.
 
 MIT License
 
@@ -25,16 +24,16 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-2) CONTENIDO DE TERCEROS (NO cubierto por la licencia MIT):
+2) FUENTES
 
-- assets/pokemon/: sprites de SpriteCollab (https://github.com/PMDCollab/SpriteCollab),
-  licencia CC BY-NC 4.0. Uso NO comercial y con atribución; los autores están
-  en CREDITS.md.
-- assets/fonts/: Pixelify Sans, SIL Open Font License 1.1 (assets/fonts/OFL.txt).
-- js/data/pokedex.js: datos obtenidos de PokeAPI (https://pokeapi.co/).
+- assets/fonts/Pixelify Sans: SIL Open Font License 1.1 (OFL).
 
-3) MARCAS
+3) ASSETS EN EL REPOSITORIO
 
-Pokémon y todos los nombres y personajes relacionados son marcas y propiedad
-de Nintendo, Creatures Inc., GAME FREAK y The Pokémon Company. Este es un
-proyecto de fan sin ánimo de lucro, no afiliado ni aprobado por ellos.
+- El MVP jugable distribuido (dev.html / index.html generado) no incluye sprites
+  de franquicias ajenas. La carpeta assets/pokemon/ u otros datos legacy pueden
+  existir en el repositorio por historial de migración; no forman parte del
+  producto TibiaSurvivor Fase 5.
+
+- Cualquier arte nuevo debe ser original o contar con licencia compatible
+  documentada en el repositorio.

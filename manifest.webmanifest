@@ -1,7 +1,7 @@
 {
-  "name": "PokéSurvivor",
-  "short_name": "PokéSurvivor",
-  "description": "Fan game gratuito: sobrevive a las hordas con tu compañero Pokémon. Sin anuncios.",
+  "name": "TibiaSurvivor",
+  "short_name": "TibiaSurvivor",
+  "description": "Survivor de fantasía pixel art: tensión y progresión de una hunting session clásica.",
   "lang": "es",
   "start_url": "./",
   "scope": "./",

@@ -6,8 +6,8 @@
 G.SettingsUI = (() => {
   const $ = G.UI.$;
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const VERSION = '1.2 · 2026-10-09';
-  const REPO = 'https://github.com/JPTER78/pokesurvivor';
+  const VERSION = 'MVP · Fase 5 · 2026-11-01';
+  const REPO = 'https://github.com/JPTER78/TibiaSurvivor';
   let tab = 'sound';
 
   function init() {
@@ -102,20 +102,18 @@ G.SettingsUI = (() => {
     } else if (tab === 'acc') {
       renderAccount(box);
     } else {
-      box.innerHTML = `<div class="about-logo">PokéSurvivor</div><p class="sub center">Versión ${esc(VERSION)}</p>`
-        + `<p class="sub">Juego de fans <b>gratuito y sin ánimo de lucro</b>: sin anuncios ni compras. Pokémon y sus personajes son propiedad de Nintendo, Creatures y GAME FREAK; este proyecto no está afiliado a ellos.</p>`
+      const neutral = G.Content && G.Content.mode === 'neutral';
+      box.innerHTML = `<div class="about-logo">TibiaSurvivor</div><p class="sub center">Versión ${esc(VERSION)}</p>`
+        + `<p class="sub">Survivor de fantasía pixel art · <b>gratuito</b> · guardado local · sin backend.</p>`
         + section('Créditos')
         + `<ul class="credits">
-             <li><b>Sprites:</b> PMD SpriteCollab y sus artistas (CC BY-NC 4.0).</li>
-             <li><b>Datos de los Pokémon:</b> PokéAPI.</li>
-             <li><b>Música y sonidos:</b> originales, generados por el propio juego.</li>
+             <li><b>Arte MVP:</b> placeholders geométricos (código propio).</li>
+             <li><b>Música y sonidos:</b> originales del proyecto.</li>
              <li><b>Fuente:</b> Pixelify Sans (OFL).</li>
+             ${neutral ? '' : '<li><b>Modo legacy:</b> assets de terceros no incluidos en el build neutral.</li>'}
            </ul>`
         + `<div class="row wrap" style="justify-content:center;gap:8px">
-             ${window.PS_PAGES ? `<a class="btn small" href="${G.I18n.lang === 'en' ? 'en/guide/' : 'guia/'}" target="_blank">Guía y preguntas</a>
-             <a class="btn small" href="${G.I18n.lang === 'en' ? 'en/pokedex/' : 'pokedex/'}" target="_blank">Pokédex</a>` : ''}
              <button class="btn small" data-legal>Aviso legal y privacidad</button>
-             <a class="btn small" href="contacto/" target="_blank" rel="noopener">Contacto</a>
              <a class="btn small" href="${REPO}" target="_blank" rel="noopener">Código (GitHub)</a>
            </div>`;
     }
