@@ -46,16 +46,23 @@ G.HUD = (() => {
     ctx.fillStyle = '#eaf2ff';
     ctx.textAlign = 'left';
     ctx.fillText(pl.mon.name, px, py + 10);
+    if (pl.vocationId === 'master_sorcerer') {
+      ctx.font = F(600, 9);
+      ctx.fillStyle = 'rgba(180,200,255,.75)';
+      ctx.fillText('Master Sorcerer', px, py + 22);
+    }
 
     ctx.font = F(700, 11);
     ctx.fillStyle = '#ffcb3d';
-    ctx.fillText('Nv. ' + pl.level, px, py + 26);
+    ctx.fillText('Nv. ' + pl.level, px, py + (pl.vocationId === 'master_sorcerer' ? 34 : 26));
 
-    bar(ctx, px + 48, py + 17, 168, 11, pl.hp / pl.maxHp, '#ff5f6d');
+    const hpY = pl.vocationId === 'master_sorcerer' ? 25 : 17;
+    const hpLabY = pl.vocationId === 'master_sorcerer' ? 34 : 26;
+    bar(ctx, px + 48, py + hpY, 168, 11, pl.hp / pl.maxHp, '#ff5f6d');
     ctx.font = F(700, 10);
     ctx.fillStyle = 'rgba(255,255,255,.95)';
     ctx.textAlign = 'center';
-    ctx.fillText(Math.ceil(pl.hp) + ' / ' + Math.round(pl.maxHp), px + 48 + 84, py + 26);
+    ctx.fillText(Math.ceil(pl.hp) + ' / ' + Math.round(pl.maxHp), px + 48 + 84, py + hpLabY);
 
     // buffs activos
     const COL = { atk: '#ff6b4d', spd: '#7fe0ff', def: '#b0b8c8', regen: '#5fe08a' };
@@ -321,10 +328,22 @@ G.HUD = (() => {
       ctx.textAlign = 'left';
       ctx.fillText(String(i + 1), x + 3, y + 10);
 
-      // nombre encima del activo (con un vínculo: "Ascuas +2")
       if (on) {
+        const def = m.def || G.Abilities.BY_ID[m.id];
+        const elem = def && (def.element || def.type);
+        const elemName = elem && G.DamageTypes && G.DamageTypes.NAME[elem];
+        if (elemName) {
+          ctx.font = F(600, 8);
+          ctx.textAlign = 'center';
+          ctx.fillStyle = col;
+          ctx.fillText(elemName, x + S / 2, y - 18);
+        }
+        if (def && def.incantation) {
+          ctx.font = F(600, 8);
+          ctx.fillStyle = 'rgba(200,215,240,.72)';
+          ctx.fillText(def.incantation, x + S / 2, y - (elemName ? 28 : 18));
+        }
         ctx.font = F(700, 10);
-        ctx.textAlign = 'center';
         ctx.fillStyle = fused ? BOND : col;
         ctx.fillText(fused ? m.name + ' +' + (g.length - 1) : m.name, x + S / 2, y - 7);
       }

@@ -49,9 +49,12 @@ G.RunUI = (() => {
           ? `<span class="tag-chip" style="background:${c.color}">${c.tag}</span>`
           : `<span class="tag-chip" style="background:${c.color === '#ffd23f' ? '#ffd23f' : '#9fb1c9'}">${c.tag}</span>`;
       if (c.type === 'evo') el.classList.add('evo');
+      const msSub = c.msSub ? `<div class="ms-card-sub">${c.msSub}</div>` : '';
+      const msLvl = c.msCompare ? `<div class="ms-card-lvl">${c.msCompare}</div>` : '';
+      const msCmp = c.msDetail ? `<div class="ms-card-cmp">${c.msDetail}</div>` : '';
       el.innerHTML =
         `<div class="ico" style="background:${c.color}33">${G.Icons.html(c.icon, 32)}</div>
-         <div class="txt"><div class="nm">${c.title} ${tag}</div><div class="ds">${c.desc}</div></div>
+         <div class="txt"><div class="nm">${c.title} ${tag}</div><div class="ds">${c.desc}</div>${msSub}${msLvl}${msCmp}</div>
          <div class="key">${i + 1}</div>`;
       el.dataset.sfx = 'none';             // el juego pone su propio sonido al elegir
       el.onclick = () => pick(i);
@@ -115,6 +118,12 @@ G.RunUI = (() => {
         ${r.t1 ? G.Icons.html('ticket', 22) + ' +' + r.t1 + ' ' : ''}${r.t10 ? G.Icons.html('ticket10', 22) + ' +' + r.t10 + ' ×10' : ''}</b></div>` : ''}
       <div style="grid-column:1/-1"><span>Movimientos</span><b style="font-size:15px">
         ${r.moves.map(m => `${G.Icons.html('move:' + m.id, 16)} ${m.name} Nv.${m.lvl}`).join(' · ') || '—'}</b></div>
+      ${r.msSpells && r.msSpells.length ? `<div style="grid-column:1/-1" class="ms-over-spells"><span>Hechizos (run)</span>
+        <div class="ms-over-table">${r.msSpells.slice(0, 6).map(s =>
+          `<div class="ms-over-row"><b>${s.name}</b><span>Nv.${s.finalLevel}</span>
+           <span>${s.damage.toLocaleString('es')} dmg</span><span>${s.casts} lanz.</span>
+           <span>${s.kills} bajas</span>${s.damageBoss ? `<span class="gold">${s.damageBoss} vs jefe</span>` : ''}</div>`
+        ).join('')}</div></div>` : ''}
       ${r.caught && r.caught.length && !neutral ? `<div style="grid-column:1/-1" class="caught"><span>${G.Icons.html('shiny', 12)} Shinies conseguidos</span>
         <div class="caught-row" id="over-caught"></div></div>` : ''}
       ${r.record ? '<div style="grid-column:1/-1;text-align:center" class="gold">¡Nuevo récord!</div>' : ''}

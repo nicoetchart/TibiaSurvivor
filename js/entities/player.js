@@ -35,7 +35,7 @@ G.Player = class Player {
     this.slots = [];           // huecos: cada uno, una lista de movimientos que se lanzan a la vez
     this.active = 0;           // hueco activo
     this.maxMoves = 4;         // huecos
-    this.bonds = 0;            // vínculos por usar (premio de los legendarios)
+    this.bonds = 0;            // vínculos: centinela de élite, grietas legendarias, etc.
 
     this.buffs = {
       atk: { n: 0, t: 0, amount: 0 },
@@ -73,6 +73,29 @@ G.Player = class Player {
     this.sashT = -999;         // última vez que salvó la Banda Focus
     this.bellHeal = 0;         // curación pendiente del Cascabel Concha
     this.statsTaken = {};      // mejoras de stat cogidas (condición de evolución)
+    this.passiveInst = {};     // pasivas MS (id → instancia con lvl)
+    this.vocationId = null;
+
+    if (G.Content && G.Content.mode === 'neutral' &&
+        (mon.creatureId === 'wander_archmage' || mon.dex === 99001)) {
+      const v = G.Vocations && G.Vocations.BY_ID && G.Vocations.BY_ID.master_sorcerer;
+      const b = v && v.baseStats;
+      if (b) {
+        this.vocationId = v.id;
+        this.maxHp = b.maxHp + (perks.hp || 0);
+        this.hp = this.maxHp;
+        this.baseSpd = mon.spd * (b.movementSpeedMul || 1);
+        this.baseAtk = mon.atk * (b.baseDamageMul || 1);
+        this.critChance = (perks.crit || 0) + (b.criticalChance || 0);
+        this.cdMul = (perks.cdMul || 1) * (1 - (b.cooldownReduction || 0));
+        this.magnet = 78 * (perks.magnetMul || 1) * (b.pickupRadiusMul || 1);
+        this.msBaseMaxHp = this.maxHp;
+      }
+    }
+    this.msPassive = {};
+    this.magicShield = 0;
+    this.magicShieldMax = 0;
+    this.msShieldIdleT = 0;
   }
 
   /** Segundos que hay que estar junto a un compañero caído para levantarlo. */
@@ -83,6 +106,16 @@ G.Player = class Player {
     return Math.floor((8 + level * 6 + Math.pow(level, 1.75) * 1.6) * 4);
   }
 
+  /** Vida máxima que sube en cada nivel de run (XP), además de las cartas. */
+  static get HP_PER_RUN_LEVEL() { return 5; }
+
+  /** Velocidad de movimiento por nivel: log → fuerte al principio, suave al final. */
+  static moveSpeedMulForLevel(level) {
+    const lv = Math.max(1, level | 0);
+    if (lv <= 1) return 1;
+    return 1 + 0.14 * Math.log(lv);
+  }
+
   cy() { return this.y; }
 
   // ---------------- stats efectivos ----------------
@@ -91,16 +124,23 @@ G.Player = class Player {
     const s = this.baseSpd * this.spdMul * (1 + this.buffs.spd.n * this.buffs.spd.amount) * (this.slowT > 0 ? 0.5 : 1);
     const w = G.Weather.speedFor(this.mon.types);
     const slow = this.inLiquid ? G.World.liquidEffect(this.mon.types).slow || 1 : 1;
-    return s * slow * w;
+    const ms = (this.vocationId && G.MasterSorcerer) ? G.MasterSorcerer.effectiveMoveSpeedMul(this) : 1;
+    const lvSpd = Player.moveSpeedMulForLevel(this.level);
+    return s * slow * w * ms * lvSpd;
   }
   get reduction() { return Math.min(0.8, this.dmgReduce + this.buffs.def.n * this.buffs.def.amount); }
-  get regen() { return this.regenFlat + this.buffs.regen.n * this.buffs.regen.amount; }
+  get regen() {
+    const ms = (this.vocationId && G.MasterSorcerer && this.msPassive)
+      ? (this.msPassive.regenFlat || 0) : 0;
+    return this.regenFlat + ms + this.buffs.regen.n * this.buffs.regen.amount;
+  }
 
   // ---------------- movimientos ----------------
   addMove(id) {
     if (this.slots.length >= this.maxMoves || this.hasMove(id)) return false;
     const m = G.Moves.instance(id, 1);
     this.moves.push(m);
+    if (G.MsTelemetry) G.MsTelemetry.onAcquire(this, id, this.level);
     const group = [m];
     this.slots.push(group);
     this.arrange();
@@ -134,6 +174,26 @@ G.Player = class Player {
   }
 
   hasMove(id) { return this.moves.some(m => m.id === id); }
+
+  hasPassive(id) { return !!(this.passiveInst[id]); }
+
+  addPassive(id) {
+    if (this.hasPassive(id) || !G.Abilities || !G.Abilities.BY_ID[id]) return false;
+    const def = G.Abilities.BY_ID[id];
+    if (def.kind !== 'passive') return false;
+    const inst = G.Abilities.instance(id, 1);
+    if (!inst) return false;
+    this.passiveInst[id] = inst;
+    if (G.MasterSorcerer) G.MasterSorcerer.refreshPassives(this);
+    return true;
+  }
+
+  levelPassive(id) {
+    const s = this.passiveInst[id];
+    if (!s || !G.Abilities.levelUp(s)) return false;
+    if (G.MasterSorcerer) G.MasterSorcerer.refreshPassives(this);
+    return true;
+  }
 
   setActive(i) {
     if (i < 0 || i >= this.slots.length || i === this.active) return;
@@ -215,7 +275,9 @@ G.Player = class Player {
     if (this.anim.busy() && this.anim.progress() < 0.65) return;
     const meta = G.Sprites.animMeta(this.dex, anim);
     const len = meta ? meta.d.reduce((a, b) => a + b, 0) / 60 : 0.4;
-    const cd = Math.max(0.12, m.cd * this.cdMul);
+    const cd = (this.vocationId && G.MasterSorcerer)
+      ? G.MasterSorcerer.minCooldownFor(this, m.cd)
+      : Math.max(0.12, m.cd * this.cdMul);
     this.anim.play(anim, { speed: Math.max(1, len / (cd * 0.9)) });
     this.attackFace = 0.35;
   }
@@ -236,7 +298,23 @@ G.Player = class Player {
     // Con un ataque cuerpo a cuerpo activo se recibe un 25 % menos: hay que
     // estar encima de los enemigos para pegar (iban muy por detrás).
     const close = this.activeGroup().some(m => m.kind === 'melee') ? 0.75 : 1;
-    const d = pure ? Math.max(1, amount) : Math.max(1, amount * (1 - this.reduction) * close);
+    let d = pure ? Math.max(1, amount) : Math.max(1, amount * (1 - this.reduction) * close);
+    if (this.magicShieldMax > 0 && this.magicShield > 0 && d > 0) {
+      const absorbed = Math.min(this.magicShield, d);
+      this.magicShield -= absorbed;
+      d -= absorbed;
+      this.msShieldIdleT = 0;
+      if (absorbed >= 1) {
+        G.FX.dmgText(this.x, this.y - this.bodyH - 12, '-' + Math.round(absorbed), '#7eb8ff');
+      }
+    }
+    if (d <= 0) {
+      this.invuln = 0.45;
+      this.flash = 0.14;
+      G.Audio.sfx('hurt');
+      return;
+    }
+    this.msShieldIdleT = 0;
     this.hp -= d;
     this.invuln = 0.45;
     this.flash = 0.14;
@@ -268,6 +346,13 @@ G.Player = class Player {
 
   addMaxHp(amount) { this.maxHp += amount; this.hp += amount; }
 
+  /** Bonos automáticos al subir nivel de run (XP). */
+  onRunLevelUp() {
+    const d = Player.HP_PER_RUN_LEVEL;
+    this.addMaxHp(d);
+    if (this.msBaseMaxHp != null) this.msBaseMaxHp += d;
+  }
+
   /** Devuelve cuántos niveles ha subido (pueden ser varios de golpe). */
   gainXp(amount) {
     this.xp += amount * this.xpMul;
@@ -276,6 +361,7 @@ G.Player = class Player {
       this.xp -= this.xpNext;
       this.level++;
       this.xpNext = Player.xpFor(this.level);
+      this.onRunLevelUp();
       leveled++;
     }
     return leveled;
@@ -328,6 +414,17 @@ G.Player = class Player {
     if (this.power && (this.power.t -= dt) <= 0) { this.power.def.off(this); this.power = null; }
     if (this.regen > 0) this.hp = Math.min(this.maxHp, this.hp + this.regen * dt);
 
+    if (this.magicShieldMax > 0 && G.MasterSorcerer) {
+      this.msShieldIdleT += dt;
+      if (this.msShieldIdleT >= G.MasterSorcerer.SHIELD_REGEN_DELAY &&
+          this.magicShield < this.magicShieldMax) {
+        this.magicShield = Math.min(
+          this.magicShieldMax,
+          this.magicShield + this.magicShieldMax * G.MasterSorcerer.SHIELD_REGEN_RATE * dt
+        );
+      }
+    }
+
     // --- movimiento con colisiones ---
     // (En cooperativo la pausa no para el juego: sólo te quedas quieto.)
     const [ax, ay] = this.frozen ? [0, 0] : G.Input.axis();
@@ -367,12 +464,17 @@ G.Player = class Player {
     // Sin enemigos, apunta a la roca o cofre más cercano.
     const all = G.EnemyMgr.all();
     const m = this.activeMove();
-    const ranged = !!m && (m.kind === 'projectile' || m.kind === 'beam');
-    const threat = G.Projectiles.nearest(all, this.x, this.y, this.r + 24);
-    const boss = all.find(e => e.boss && !e.dead && G.U.dist(this.x, this.y, e.x, e.y) < 330);
-    const tg = (ranged ? boss || threat : threat || boss)
-            || G.Projectiles.nearest(all, this.x, this.y, 520)
-            || G.World.nearestBreakable(this.x, this.y, 200);
+    let tg = null;
+    if (m && m.kind === 'projectile' && m.def && m.def.msTarget && G.Combat.pickStrikeTarget) {
+      tg = G.Combat.pickStrikeTarget(this, m);
+    } else {
+      const ranged = !!m && (m.kind === 'projectile' || m.kind === 'beam');
+      const threat = G.Projectiles.nearest(all, this.x, this.y, this.r + 24);
+      const boss = all.find(e => e.boss && !e.dead && G.U.dist(this.x, this.y, e.x, e.y) < 330);
+      tg = (ranged ? boss || threat : threat || boss)
+        || G.Projectiles.nearest(all, this.x, this.y, 520)
+        || G.World.nearestBreakable(this.x, this.y, 200);
+    }
     this.target = tg;
     if (tg) this.aim = Math.atan2(tg.y - this.y, tg.x - this.x);
     else if (this.walking) this.aim = this.moveAngle;

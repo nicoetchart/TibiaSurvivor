@@ -392,6 +392,13 @@ label { display: block; font-size: 14px; color: var(--muted); margin: 8px 0 4px;
 .card .txt { flex: 1; }
 .card .nm { font-weight: 700; font-size: 18px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .card .ds { color: var(--muted); font-size: 14px; }
+.ms-card-sub { color: #b8c8e8; font-size: 13px; margin-top: 4px; font-style: italic; }
+.ms-card-lvl { color: var(--gold); font-size: 13px; margin-top: 5px; font-weight: 600; }
+.ms-card-cmp { color: #9fd8ff; font-size: 13px; margin-top: 3px; line-height: 1.35; }
+.ms-over-spells { margin-top: 6px; }
+.ms-over-table { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; font-size: 13px; }
+.ms-over-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; padding: 6px 8px; background: rgba(255,255,255,.04); border-radius: 8px; }
+.ms-over-row b { flex: 1 1 120px; font-size: 14px; }
 .card .key { font-size: 13px; color: var(--muted); border: 2px solid rgba(244,248,255,.3); border-radius: 6px; padding: 2px 8px; }
 .tag-chip { font-size: 11px; padding: 2px 7px; border-radius: 5px; color: #10131a; text-shadow: none; font-weight: 700; }
 

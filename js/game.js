@@ -65,13 +65,21 @@ G.Game = (() => {
   /** Pausa sola (sólo en solitario: en grupo los demás siguen). */
   function autoPause() {
     G.Touch.reset();
-    if (state === 'playing') { state = 'paused'; G.RunUI.showPause(); }
+    if (state === 'playing') {
+      state = 'paused';
+      G.Combat.clearFields();
+      G.RunUI.showPause();
+    }
   }
 
   /** Pausa/continúa (tecla Esc o P, o el botón de pausa del móvil). */
   function togglePause() {
-    if (state === 'playing') { state = 'paused'; G.RunUI.showPause(); G.Audio.sfx('pause'); }
-    else if (state === 'paused') { state = 'playing'; G.UI.hideAll(); }
+    if (state === 'playing') {
+      state = 'paused';
+      G.Combat.clearFields();
+      G.RunUI.showPause();
+      G.Audio.sfx('pause');
+    } else if (state === 'paused') { state = 'playing'; G.UI.hideAll(); }
   }
 
   // ---------------- run ----------------
@@ -113,6 +121,7 @@ G.Game = (() => {
     runReal = performance.now(); tampered = false;
 
     pl = new G.Player(mon, perks, !!save.partnerShiny && G.DB.ownsShiny(mon.dex));
+    if (G.MsTelemetry) G.MsTelemetry.reset(pl);
     banked = { t1: 0, t10: 0 };
     caught = [];
     // Atajos: movimientos con hueco fijo (save.pbind[dex] = [id del 1, id del 2, ...]),
@@ -209,6 +218,9 @@ G.Game = (() => {
     if (state === 'over' || !pl) return;
     state = 'over';
     runEnding = true;
+    G.Combat.clearFields();
+    G.Projectiles.clear();
+    G.FX.clear();
     G.Audio.music(null);
     G.Audio.sfx(victory ? 'legend' : dead ? 'gameover' : 'back');
     const save = G.DB.save;
@@ -236,7 +248,13 @@ G.Game = (() => {
     const judge = G.MvpConfig && G.MvpConfig.USE_JUDGMENT ? G.Judgment.summary() : null;
     if (judge) G.Progress.event('judgeEnd', judge);
     G.Judgment.reset();
-    G.Progress.event('runEnd', { time, level: pl.level, coins: pl.coins, types: pl.mon.types, group: false, victory });
+    let msSpells = null;
+    if (G.MsTelemetry && pl.vocationId) {
+      msSpells = G.MsTelemetry.finalize(pl);
+      G.MsTelemetry.logDev(msSpells);
+      save.stats.lastMsSpellLog = msSpells;
+    }
+    G.Progress.event('runEnd', { time, level: pl.level, coins: pl.coins, types: pl.mon.types, group: false, victory, msSpells });
     G.Progress.checkAch();
     G.DB.commit('run');
 
@@ -244,6 +262,7 @@ G.Game = (() => {
       dead, victory, time, level: pl.level, kills: pl.kills, bosses: pl.bosses, coins,
       record: record || bestTime, t1: pl.t1, t10: pl.t10, judge,
       dmgDealt: Math.floor(pl.dmgDealt || 0),
+      msSpells,
       moves: pl.moves, caught,
       breakdown: Object.entries(parts).filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(' · ') +
                  (mul > 1 ? ` · ×${mul.toFixed(2)} Fortuna` : '')
@@ -517,6 +536,7 @@ G.Game = (() => {
       return;
     }
     if (pl.dead && !G.Rift.inArena) {
+      if (deathT === 0) G.Combat.clearFields();
       deathT += dt;
       pl.update(dt);
       G.EnemyMgr.update(dt * 0.3, pl);
@@ -773,7 +793,58 @@ G.Game = (() => {
     /** Abandona la partida en curso (p. ej. al cerrar sesión desde Ajustes). */
     quit() { if (state !== 'ui' && state !== 'over') quitRun(); },
     /** Para grabar vídeos: abre las cartas de subir de nivel. */
-    debugLevelUp() { tampered = true; pl.level++; pendingLevels++; },
+    debugLevelUp() {
+      tampered = true;
+      pl.level++;
+      pl.onRunLevelUp();
+      pendingLevels++;
+    },
+    /**
+     * MS-9 dev: aplica una receta de vertical slice (hechizos/pasivas al nv. 5).
+     * Presets: fire | energy | death | hybrid | defensive
+     */
+    debugMsBuild(preset) {
+      if (!pl || !G.MasterSorcerer || G.Content.mode !== 'neutral') return;
+      tampered = true;
+      const PRESETS = {
+        fire: {
+          spells: ['flame_strike', 'fire_wave', 'great_fire_wave', 'hells_core'],
+          passives: ['master_of_flames']
+        },
+        energy: {
+          spells: ['energy_strike', 'energy_wave', 'energy_beam', 'rage_of_the_skies'],
+          passives: ['master_of_thunder']
+        },
+        death: {
+          spells: ['flame_strike', 'death_strike'],
+          passives: ['master_of_decay', 'aura_of_exposed_weakness']
+        },
+        hybrid: {
+          spells: ['flame_strike', 'energy_strike', 'fire_wave', 'energy_beam'],
+          passives: ['master_of_flames', 'master_of_thunder']
+        },
+        defensive: {
+          spells: ['flame_strike', 'fire_wave'],
+          passives: ['ultimate_healing', 'intense_healing', 'magic_shield', 'strong_haste']
+        }
+      };
+      const b = PRESETS[preset];
+      if (!b) {
+        console.warn('[debugMsBuild] presets:', Object.keys(PRESETS).join(', '));
+        return;
+      }
+      for (const id of b.spells) {
+        if (!pl.hasMove(id)) pl.addMove(id);
+        const m = pl.moves.find(x => x.id === id);
+        while (m && m.lvl < m.def.maxLvl) G.Moves.levelUp(m);
+      }
+      for (const id of b.passives) {
+        if (!pl.hasPassive(id)) pl.addPassive(id);
+        while (pl.passiveInst[id] && pl.passiveInst[id].lvl < pl.passiveInst[id].def.maxLvl) pl.levelPassive(id);
+      }
+      pl.setActive(0);
+      G.UI.toast('Build MS: ' + preset, 2200);
+    },
     /** Smoke / dev: cierra pantallas de elección y vuelve a playing. */
     debugResume() {
       if (state === 'levelup' || state === 'paused' || state === 'choice') {

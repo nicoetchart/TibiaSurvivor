@@ -14,7 +14,7 @@ G.CREATURES = [
     behavior: null,
     sprite: 'geo',
     role: 'player',
-    startAbility: 'ts-arc-bolt'
+    startAbility: 'flame_strike'
   },
   // —— básicos (tier 0) ——
   {
@@ -121,8 +121,8 @@ G.CREATURES = [
     legacyId: 99009,
     name: 'Vocero de veta',
     hp: 22,
-    speed: 48,
-    attack: 1,
+    speed: 44,
+    attack: 0.92,
     damageTypes: ['energy'],
     behavior: 'fan',
     sprite: 'geo',

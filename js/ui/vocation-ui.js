@@ -14,7 +14,10 @@ G.VocationUI = (() => {
     const ability = G.Abilities.BY_ID[v.startingAbility];
     $('voc-name').textContent = v.name;
     $('voc-text').textContent = v.description;
-    $('voc-ability').textContent = ability ? 'Empiezas con ' + ability.name + '.' : '';
+    if (ability) {
+      const inc = ability.incantation ? ' («' + ability.incantation + '»)' : '';
+      $('voc-ability').textContent = 'Empiezas con ' + ability.name + inc + '.';
+    } else $('voc-ability').textContent = '';
     G.UI.chrome(false);
     G.UI.show('scr-vocation');
   }

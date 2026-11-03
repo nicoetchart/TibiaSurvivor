@@ -54,6 +54,8 @@
       this.slow = 0; this.slowT = 0;
       this.burn = 0; this.burnT = 0; this.burnTick = 0;
       this.poison = 0; this.poisonT = 0; this.poisonTick = 0;
+      this.curse = 0; this.curseT = 0;
+      this.electrifiedT = 0;
       this.lavaTick = 0;
       this.kx = 0; this.ky = 0;
       this.touchCd = 0;
@@ -149,8 +151,20 @@
       this.poison = Math.min(8, this.poison + stacks); this.poisonT = 4;
     }
 
+    /** Curse (MS): más daño death recibido; duración limitada. */
+    applyCurse(dur = 3) {
+      this.curse = 1;
+      this.curseT = Math.max(this.curseT, dur);
+    }
+
+    /** Electrified (MS): ligera reducción de velocidad mientras dura. */
+    applyElectrified(dur = 2) {
+      this.electrifiedT = Math.max(this.electrifiedT, dur);
+    }
+
     die() {
       if (this.dead) return;
+      const burning = this.burn > 0;
       this.dead = true;
       this.fade = 0.9;
       this.anim.play('Faint', { hold: true });
@@ -193,6 +207,20 @@
         G.FX.ring(this.x, this.y, this.r, this.r * 7, '#9ae6ff', 0.7, 5);
         if (G.onShinyCaught) G.onShinyCaught(this);
       }
+      if (this.lastHitOwner && this.lastHitAid && G.MsTelemetry) {
+        G.MsTelemetry.onKill(this.lastHitOwner, this.lastHitAid, this);
+      }
+      if (this.sentinelElite && G.Content && G.Content.mode === 'neutral') {
+        const pl = G.Game && G.Game.player ? G.Game.player() : null;
+        if (pl) {
+          pl.bonds++;
+          G.Audio.sfx('legend');
+          G.Spawner.say('¡Vínculo obtenido! Une dos hechizos para lanzarlos a la vez.', 3.2, true);
+          G.FX.dmgText(pl.x, pl.y - pl.bodyH - 10, '¡Vínculo!', '#b48aff', true);
+          G.FX.ring(pl.x, pl.y, 8, 90, '#b48aff', 0.7, 5);
+        }
+      }
+      if (burning && G.Combat && G.Combat.onEnemyDeath) G.Combat.onEnemyDeath(this);
     }
 
     /**
@@ -259,6 +287,8 @@
         if (this.poisonTick <= 0) { this.poisonTick = 0.6; this.hurt(this.maxHp * 0.012 * this.poison + 1, '#d47cf0'); }
         if (this.poisonT <= 0) this.poison = 0;
       }
+      if (this.curseT > 0) { this.curseT -= dt; if (this.curseT <= 0) this.curse = 0; }
+      if (this.electrifiedT > 0) this.electrifiedT -= dt;
       if (this.dead) return;
 
       // --- terreno ---
@@ -273,7 +303,8 @@
         } else if (le.slow) terrainMul = le.slow < 0.5 ? 0.45 : 0.55;
       }
 
-      const spd = this.spd * (1 - this.slow) * terrainMul * G.Weather.speedFor(this.types);
+      const elecMul = this.electrifiedT > 0 ? 0.82 : 1;
+      const spd = this.spd * (1 - this.slow) * elecMul * terrainMul * G.Weather.speedFor(this.types);
       let [dx, dy] = G.U.norm(pl.x - this.x, pl.y - this.y);
       const dist = G.U.dist(this.x, this.y, pl.x, pl.y);
       // Duende del tesoro: huye de ti (en zigzag) en cuanto te acercas.
@@ -542,15 +573,19 @@
 
     shotDmg() { return (this.def.shotDmg || 10) * (this.dmg / this.def.dmg); }
 
-    /** Disparo normal de enemigo (uno, o varios en abanico). */
-    shoot(ax, ay, spread = 0, n = 1, k = 1) {
-      const sp = 190, type = this.atkType;
+    /** Disparo normal de enemigo (uno, o varios en abanico). opts: speed, life, r */
+    shoot(ax, ay, spread = 0, n = 1, k = 1, opts = null) {
+      const o = opts || {};
+      const sp = o.speed != null ? o.speed : 190;
+      const life = o.life != null ? o.life : 2.4;
+      const pr = o.r != null ? o.r : 7;
+      const type = this.atkType;
       const base = Math.atan2(ay, ax);
       for (let i = 0; i < n; i++) {
         const a = base + (n === 1 ? 0 : (i / (n - 1) - 0.5) * spread);
-        const shot = G.Projectiles.spawn({
+        G.Projectiles.spawn({
           x: this.x, y: this.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
-          dmg: this.shotDmg() * k, r: 7, life: 2.4, friendly: false, color: '#ff7a9e', mtype: type,
+          dmg: this.shotDmg() * k, r: pr, life, friendly: false, color: '#ff7a9e', mtype: type,
           vis: G.VFX.forType(type)
         });
       }
@@ -562,7 +597,13 @@
     special(pl, dx, dy) {
       const col = G.U.TYPE_COLOR[this.atkType] || '#ff7a9e';
       switch (this.behavior) {
-        case 'fan': { const n = this.def.fanN || 5; this.shoot(dx, dy, n === 3 ? 0.6 : 0.9, n, 0.65); break; }
+        case 'fan': {
+          const n = Math.min(4, this.def.fanN || 4);
+          const spread = n <= 3 ? 0.48 : 0.56;
+          G.FX.ring(this.x, this.y - G.LIFT, 5, 22, col, 0.22, 1.6);
+          this.shoot(dx, dy, spread, n, 0.52, { speed: 155, life: 1.85, r: 6 });
+          break;
+        }
         case 'beamer':
           // Rayo con aviso: primero se ve la franja en el suelo.
           G.Hazards.add({ kind: 'beam', x: this.x, y: this.y, angle: Math.atan2(dy, dx), len: 360, w: 22,
@@ -703,10 +744,12 @@
         ctx.restore();
       }
 
-      if (this.burn > 0 || this.poison > 0 || (this.net && this.net.st & 3)) {
+      if (this.burn > 0 || this.poison > 0 || this.curse > 0 || this.electrifiedT > 0 || (this.net && this.net.st & 3)) {
         ctx.save();
         ctx.globalAlpha = 0.45;
-        ctx.fillStyle = this.burn > 0 || (this.net && this.net.st & 1) ? '#ff8a3d' : '#c86bdc';
+        ctx.fillStyle = this.burn > 0 || (this.net && this.net.st & 1) ? '#ff8a3d'
+          : this.electrifiedT > 0 ? '#b48aff'
+          : this.curse > 0 ? '#5a4a6a' : '#c86bdc';
         ctx.beginPath(); ctx.ellipse(this.x, this.y, this.r * 1.2, this.r * 0.5, 0, 0, 6.2832); ctx.fill();
         ctx.restore();
       }

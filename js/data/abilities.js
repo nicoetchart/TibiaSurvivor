@@ -211,8 +211,18 @@
     POOL.all.push(m.id);
   }
 
+  function isMasterSorcererCreature(creature) {
+    if (!creature) return false;
+    if (creature.id === 'wander_archmage' || creature.creatureId === 'wander_archmage') return true;
+    if (creature.role === 'player' && G.Content && G.Content.mode === 'neutral') return true;
+    return false;
+  }
+
   function poolFor(creature) {
     if (!creature) return [];
+    if (G.Content && G.Content.mode === 'neutral' && G.MasterSorcerer && isMasterSorcererCreature(creature)) {
+      return G.MasterSorcerer.spellPoolIds().concat(G.MasterSorcerer.passivePoolIds());
+    }
     if (creature.role === 'player' || creature.id === 'wander_archmage') return POOL.all.slice();
     return [];
   }

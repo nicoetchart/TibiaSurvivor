@@ -120,6 +120,8 @@ G.Content = (() => {
     if (!G.Abilities || !G.Abilities.BY_ID) miss.push('Abilities');
     if (!G.DamageTypes) miss.push('DamageTypes');
     if (!G.Vocations) miss.push('Vocations');
+    if (!G.MasterSorcerer || !G.MasterSorcerer.registered) miss.push('MasterSorcerer');
+    else if (!G.MasterSorcerer.validate(true)) miss.push('MasterSorcerer.validate');
     if (miss.length) console.error('[G.Content] faltan módulos:', miss.join(', '));
     return !miss.length;
   }

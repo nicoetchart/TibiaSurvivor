@@ -1,5 +1,6 @@
 /* ============ vocations.js — vocaciones TibiaSurvivor (Fase 3) ============
  * F3: una vocación activa — Master Sorcerer (nombre UI original, DEC-020).
+ * MS-1: baseStats y startingSpellId (baseline); startingAbility sigue MVP hasta MS-2.
  */
 G.Vocations = (() => {
   const LIST = [
@@ -13,8 +14,19 @@ G.Vocations = (() => {
       armor: 0,
       playerCreatureId: 'wander_archmage',
       legacyPartnerId: 99001,
-      startingAbility: 'ts-arc-bolt',
-      description: 'Cazador arcano: proyectiles de energía y control del campo desde lejos.'
+      startingAbility: 'flame_strike',
+      startingSpellId: 'flame_strike',
+      baseStats: {
+        maxHp: 82,
+        movementSpeedMul: 1.04,
+        baseDamageMul: 1.12,
+        attackSpeedMul: 1,
+        cooldownReduction: 0,
+        criticalChance: 0.05,
+        pickupRadiusMul: 1,
+        armor: 0
+      },
+      description: 'Cazador arcano: alto daño elemental, poca armadura, control del campo desde lejos.'
     }
   ];
 

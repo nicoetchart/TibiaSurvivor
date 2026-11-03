@@ -21,13 +21,26 @@ G.Spawner = (() => {
   // La resistencia extra crece con la run: al principio ×3,3 y hasta ×5
   // hacia el minuto 6, cuando ya tienes ataques para tumbarlos.
   const hpK = t => 3.3 + Math.min(1.7, t / 210);
+  /** MVP neutral: sin el ×3,3 legacy de Pokémon; sube despacio los primeros minutos. */
+  function hpMulRun(t) {
+    if (G.Content && G.Content.mode === 'neutral') {
+      return 1.08 + Math.min(0.95, t / 480);
+    }
+    return hpK(t);
+  }
   const SHINY_RATE = 1 / 4096;
   let acc = 0, bossIdx = 0, surgeT = 32, announce = null, announceT = 0, preloadT = 0;
   let forceShiny = 0;           // para pruebas: los N próximos salen shiny
   let eliteSpawned = false;
 
   function reset() {
-    acc = 0; bossIdx = 0; surgeT = 32; announce = null; announceT = 0; preloadT = 0;
+    acc = 0;
+    if (G.Content && G.Content.mode === 'neutral' && G.MvpConfig && G.MvpConfig.SPAWN) {
+      acc = G.MvpConfig.SPAWN.openingAcc != null ? G.MvpConfig.SPAWN.openingAcc : 0;
+    }
+    bossIdx = 0;
+    surgeT = G.Content && G.Content.mode === 'neutral' ? 58 : 32;
+    announce = null; announceT = 0; preloadT = 0;
     eliteSpawned = false;
     G.Content.roster().rollRun();
     G.Sprites.preload(G.Content.roster().upcomingDex(0, 80));
@@ -99,7 +112,7 @@ G.Spawner = (() => {
     const pt = freePoint(pl, angle == null ? Math.random() * 6.2832 : angle, isFlyer(def));
     if (!pt) return null;
     const shiny = rollShiny(def.dex);
-    const e = new G.Enemy(def, pt[0], pt[1], scaled(roster.scale(t), 1 * hpK(t)));
+    const e = new G.Enemy(def, pt[0], pt[1], scaled(roster.scale(t), 1 * hpMulRun(t)));
     e.dmg *= scfg.dmgK; e.xp = Math.round(e.xp * scfg.xpK);
     if (G.EnemyMgr.count >= scfg.cap * scfg.eliteFrom) { e.maxHp = e.hp = Math.round(e.maxHp * 1.6); e.dmg *= 1.25; e.xp = Math.round(e.xp * 1.6); }
     if (shiny) e.makeShiny();
@@ -130,8 +143,9 @@ G.Spawner = (() => {
     const pt = freePoint(pl, Math.random() * 6.2832, isFlyer(def));
     if (!pt) return null;
     const roster = G.Content.roster();
-    const e = new G.Enemy(def, pt[0], pt[1], scaled(roster.scale(t), 1 * hpK(t)));
+    const e = new G.Enemy(def, pt[0], pt[1], scaled(roster.scale(t), 1 * hpMulRun(t)));
     e.elite = true;
+    e.sentinelElite = true;
     e.scale = Math.min(1.85, (e.scale || 1) * 1.32);
     e.anim = new G.Sprites.Animator(e.dex, e.scale);
     e.r = G.Sprites.bodyRadius(e.dex, e.scale);
@@ -140,7 +154,7 @@ G.Spawner = (() => {
     e.dmg *= 1.2;
     e.xp = Math.round(e.xp * 1.5);
     G.EnemyMgr.add(e);
-    say('¡Centinela de élite en la caverna!', 3.2);
+    say('¡Centinela de élite! Al derrotarlo ganas un vínculo entre hechizos.', 3.4);
     G.Camera.kick(0.65);
     G.Audio.sfx('boss');
     G.FX.ring(e.x, e.y, e.r, e.r * 4, '#b48aff', 0.55, 4);
@@ -199,7 +213,9 @@ G.Spawner = (() => {
       const base = Math.random() * 6.2832;
       const target = anchor();
       const scfg = spawnCfg();
-      const n = Math.min(scfg.cap - G.EnemyMgr.count, Math.round((14 + Math.floor(t / 22)) * 1 * 0.4));
+      let surgeN = (14 + Math.floor(t / 22)) * 0.4;
+      if (G.Content.mode === 'neutral' && t < 200) surgeN *= 0.42 + 0.58 * (t / 200);
+      const n = Math.min(scfg.cap - G.EnemyMgr.count, Math.round(surgeN));
       for (let i = 0; i < n; i++) spawnOne(target, t, base + G.U.rand(-0.55, 0.55));
       say(G.Content.mode === 'neutral' ? '¡Oleada en la caverna!' : '¡Marea de Pokémon!', 2.2);
       G.Audio.sfx('surge');

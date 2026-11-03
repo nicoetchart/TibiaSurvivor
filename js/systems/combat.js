@@ -34,27 +34,45 @@ G.Combat = (() => {
       m.t = 0.05;
       return;
     }
-    m.t = Math.max(0.05, m.cd * pl.cdMul);
+    m.t = (pl.vocationId && G.MasterSorcerer)
+      ? G.MasterSorcerer.minCooldownFor(pl, m.cd)
+      : Math.max(0.05, m.cd * pl.cdMul);
     pl.cast(m);
     // Vínculo: su icono destella en el HUD al lanzarse (uno que explota pegado al
     // enemigo, como Ascuas tras Ataque Rápido, casi no se ve).
     m.castAt = performance.now();
 
     run(pl, m);
+    if (!ghost && G.MsTelemetry) G.MsTelemetry.onCast(pl, m.id, m.lvl);
   }
 
   function run(pl, m) {
     switch (m.kind) {
       case 'projectile': fireProjectiles(pl, m); break;
-      case 'melee':      melee(pl, m); break;
-      case 'beam':       beam(pl, m); break;
-      case 'nova':       nova(pl, m); break;
+      case 'melee':
+        if (m.id === 'fire_wave') fireWave(pl, m);
+        else if (m.id === 'great_fire_wave') greatFireWave(pl, m);
+        else melee(pl, m);
+        break;
+      case 'beam':
+        if (m.id === 'energy_wave') energyWave(pl, m);
+        else if (m.id === 'energy_beam') energyBeam(pl, m);
+        else if (m.id === 'great_energy_beam') greatEnergyBeam(pl, m);
+        else beam(pl, m);
+        break;
+      case 'nova':
+        if (m.id === 'hells_core') hellsCore(pl, m);
+        else nova(pl, m);
+        break;
       case 'aura':       aura(pl, m); break;
       case 'buff':       buff(pl, m); break;
       case 'boomerang':  boomerang(pl, m); break;
       case 'chain':      chain(pl, m); break;
       case 'mine':       mines(pl, m); break;
-      case 'meteor':     meteors(pl, m); break;
+      case 'meteor':
+        if (m.id === 'rage_of_the_skies') rageOfTheSkies(pl, m);
+        else meteors(pl, m);
+        break;
       case 'turret':     turret(pl, m); break;
       case 'dash':       dash(pl, m); break;
       case 'trail':      trailPatch(pl, m); break;
@@ -76,12 +94,129 @@ G.Combat = (() => {
   }
 
   function payload(m) {
-    return { burn: m.burn || 0, poison: m.poison || 0, slow: m.slow || 0, knock: m.knock || 0, mtype: m.type, aid: m.id };
+    let burn = m.burn || 0;
+    if (G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'burn_on_hit')) burn = Math.max(burn, 1);
+    return { burn, poison: m.poison || 0, slow: m.slow || 0, knock: m.knock || 0, mtype: m.type, aid: m.id };
+  }
+
+  function moveDef(m) {
+    return (m && m.def) || (m && G.Abilities && G.Abilities.BY_ID[m.id]) || null;
+  }
+
+  /** Objetivo MS: mayor vida en rango o más cercano. */
+  function pickStrikeTarget(pl, m) {
+    const def = moveDef(m);
+    if (!def || !def.msTarget) return null;
+    const maxDist = reach(m);
+    const all = G.EnemyMgr.all();
+    if (def.msTarget === 'max_hp') {
+      let best = null, bestHp = -1;
+      for (const e of all) {
+        if (e.dead || e.remote) continue;
+        if (G.U.dist(pl.x, pl.y, e.x, e.y) > maxDist) continue;
+        if (e.hp > bestHp) { bestHp = e.hp; best = e; }
+      }
+      return best;
+    }
+    if (def.msTarget === 'nearest') {
+      return G.Projectiles.nearest(all, pl.x, pl.y, maxDist);
+    }
+    return null;
+  }
+
+  function applySpellEffects(pl, e, m) {
+    if (!m || ghost) return;
+    if (m.id === 'death_strike' && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'curse')) {
+      e.applyCurse(G.MasterSorcerer.unlockValue(m, 'curse') || 3);
+    }
+    if (m.id === 'energy_strike' && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'electrified')) {
+      e.applyElectrified(G.MasterSorcerer.unlockValue(m, 'electrified') || 2);
+    }
+  }
+
+  function computeStrikeDamage(pl, e, m, dmg) {
+    if (m.type === 'death' && e.curse > 0) dmg *= 1.22;
+    if (m.id === 'death_strike' && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'execute')) {
+      const frac = G.MasterSorcerer.unlockValue(m, 'execute') || 0.15;
+      const hpF = e.hp / Math.max(1, e.maxHp);
+      if (hpF <= frac) {
+        if (e.boss || e.elite) dmg = Math.min(Math.max(dmg, 1) * 1.35, e.maxHp * 0.06);
+        else dmg = Math.max(dmg, e.hp + 1);
+      }
+    }
+    return dmg;
+  }
+
+  /** Flame Strike: onda de fuego en el impacto (desde nv. 1; radio crece con mejoras). */
+  function flameStrikeSplash(owner, strike, primary, col) {
+    if (ghost || !strike || strike.id !== 'flame_strike' || !primary) return;
+    const r = strike.radius || 38;
+    const splashMul = 0.52;
+    G.FX.ring(primary.x, primary.y, 8, r, col, 0.3, 3);
+    for (const e of G.EnemyMgr.queryCircle(primary.x, primary.y, r)) {
+      if (e.dead || e.id === primary.id) continue;
+      let dmg = strike.dmg * owner.atk * splashMul;
+      if (G.MasterSorcerer) dmg *= G.MasterSorcerer.damageMulForType(owner, strike.type);
+      dmg *= typeK(strike.type, e, strike.id, owner);
+      hit(owner, e, dmg, col, e.x - primary.x, e.y - primary.y, 0, strike);
+    }
+  }
+
+  /** Energy Strike: cadena limitada desde el impacto del proyectil. */
+  function msEnergyChainFrom(pl, origin, m, hops) {
+    if (ghost || hops <= 0 || !origin) return;
+    const col = G.U.TYPE_COLOR[m.type];
+    const vis = G.VFX.forMove(m);
+    const radius = 220;
+    const done = new Set([origin.id]);
+    let cur = origin;
+    let fx = origin.x, fy = origin.y - origin.bodyH * 0.5;
+    let k = 0.88;
+    for (let i = 0; i < hops; i++) {
+      let best = null, bd = radius * radius;
+      for (const e of G.EnemyMgr.queryCircle(cur.x, cur.y, radius)) {
+        if (done.has(e.id) || e.dead) continue;
+        const d = G.U.dist2(cur.x, cur.y, e.x, e.y);
+        if (d < bd) { bd = d; best = e; }
+      }
+      if (!best) break;
+      done.add(best.id);
+      const tx = best.x, ty = best.y - best.bodyH * 0.5;
+      G.FX.beam(fx, fy, Math.atan2(ty - fy, tx - fx), Math.hypot(tx - fx, ty - fy), 8, col, vis);
+      applySpellEffects(pl, best, m);
+      let dmg = computeStrikeDamage(pl, best, m, m.dmg * pl.atk * k);
+      hit(pl, best, dmg, col, tx - fx, ty - fy, 0, m);
+      k *= 0.85;
+      fx = tx; fy = ty;
+      cur = best;
+    }
+    if (!ghost) G.Camera.kick(0.04);
+  }
+
+  /** Enemigos válidos más cercanos al jugador (sin repetir). */
+  function pickNearestEnemies(pl, maxDist, count, skip) {
+    const all = G.EnemyMgr.all().filter(e => !e.dead && !e.remote);
+    const picked = [];
+    const used = skip || new Set();
+    for (let n = 0; n < count; n++) {
+      let best = null, bd = maxDist * maxDist;
+      for (const e of all) {
+        if (used.has(e.id)) continue;
+        const d = G.U.dist2(pl.x, pl.y, e.x, e.y);
+        if (d < bd) { bd = d; best = e; }
+      }
+      if (!best) break;
+      used.add(best.id);
+      picked.push(best);
+    }
+    return picked;
   }
 
   /** Tabla de tipos × clima, o ×1 si el ataque es una habilidad TibiaSurvivor. */
-  function typeK(type, e, sourceId) {
-    return G.Content.attackFactor(type, e && e.types, sourceId);
+  function typeK(type, e, sourceId, pl) {
+    let k = G.Content.attackFactor(type, e && e.types, sourceId);
+    if (pl && G.MasterSorcerer) k = G.MasterSorcerer.applyElementalPen(k, pl);
+    return k;
   }
 
   function typeLabel(type, e, sourceId) {
@@ -93,9 +228,20 @@ G.Combat = (() => {
     const vis = G.VFX.forMove(m);
     const n = Math.max(1, m.count | 0);
     const spread = m.spread || 0;
+    const multiTarget = n > 1 && (m.id === 'flame_strike' || m.msMultiTarget);
+    const targets = multiTarget ? pickNearestEnemies(pl, reach(m), n, new Set()) : null;
     for (let i = 0; i < n; i++) {
-      const off = n === 1 ? 0 : (i / (n - 1) - 0.5) * spread * n;
-      const a = pl.aim + off + G.U.rand(-0.03, 0.03);
+      let a = pl.aim + G.U.rand(-0.03, 0.03);
+      if (multiTarget && targets[i]) {
+        const tg = targets[i];
+        a = Math.atan2(tg.y - pl.y, tg.x - pl.x) + G.U.rand(-0.03, 0.03);
+      } else if (!multiTarget) {
+        const off = n === 1 ? 0 : (i / (n - 1) - 0.5) * spread * n;
+        a = pl.aim + off + G.U.rand(-0.03, 0.03);
+      } else {
+        const off = (i / Math.max(1, n - 1) - 0.5) * spread * n;
+        a = pl.aim + off + G.U.rand(-0.03, 0.03);
+      }
       G.Projectiles.spawn(Object.assign({
         x: pl.x + Math.cos(a) * 3, y: pl.y + Math.sin(a) * 3,
         vx: Math.cos(a) * m.speed, vy: Math.sin(a) * m.speed,
@@ -145,19 +291,82 @@ G.Combat = (() => {
     }
   }
 
-  function beam(pl, m) {
+  function spawnFireGround(pl, m, x, y, dur) {
+    const col = G.U.TYPE_COLOR[m.type];
+    const vis = G.VFX.forMove(m);
+    const r = Math.max(20, m.radius * 0.4);
+    fields.push({
+      kind: 'patch', owner: pl, ghost, m, col, vis,
+      x, y, t: 0, life: dur, r, tick: 0.45,
+      dmg: m.dmg * pl.atk * 0.25,
+      msFireGround: true
+    });
+    const mine = fields.filter(o => o.kind === 'patch' && o.owner === pl && o.msFireGround && !o.gone);
+    for (const o of mine.slice(0, Math.max(0, mine.length - 5))) o.gone = true;
+    G.FX.ring(x, y, 4, r, col, 0.28, 2);
+  }
+
+  /** Cono de fuego alineado a `aim`; `scale` < 1 = wave secundaria (Great Fire Wave). */
+  function fireWaveAt(pl, m, aim, scale, hitOnce, allowGround) {
+    const col = G.U.TYPE_COLOR[m.type];
+    const vis = G.VFX.forMove(m);
+    const arc = Math.min(m.arc * scale, 6.2832);
+    const half = arc / 2;
+    const len = m.radius * scale;
+    const ca = Math.cos(aim), sa = Math.sin(aim);
+    const dmgMul = scale >= 0.95 ? 1 : 0.88 * scale;
+    const knock = (m.knock || 0) * Math.min(1, scale + 0.2);
+    G.FX.slash(pl.x, pl.y - G.LIFT * 0.5, aim, len, arc, col, vis);
+    if (ghost) return;
+
+    for (const e of G.EnemyMgr.queryCircle(pl.x, pl.y, len + 12)) {
+      if (hitOnce && hitOnce.has(e.id)) continue;
+      const px = e.x - pl.x, py = e.y - pl.y;
+      const along = px * ca + py * sa;
+      if (along < -e.r * 0.3 || along > len + e.r) continue;
+      if (!inArc(pl.x, pl.y, e.x, e.y, aim, half)) continue;
+      hit(pl, e, m.dmg * pl.atk * dmgMul, col, px, py, knock, m);
+      if (hitOnce) hitOnce.add(e.id);
+    }
+    for (const p of G.World.propsInCircle(pl.x, pl.y, len + 12)) {
+      const px = p.x - pl.x, py = p.y - pl.y;
+      const along = px * ca + py * sa;
+      if (along < 0 || along > len + p.r) continue;
+      if (inArc(pl.x, pl.y, p.x, p.y, aim, half)) G.World.damageProp(p, m.dmg * pl.atk * dmgMul, col);
+    }
+
+    if (allowGround && scale >= 0.95 && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'fire_ground')) {
+      const dur = G.MasterSorcerer.unlockValue(m, 'fire_ground') || 3;
+      const dist = len * 0.55;
+      spawnFireGround(pl, m, pl.x + ca * dist, pl.y + sa * dist * 0.85, dur);
+    }
+  }
+
+  function fireWave(pl, m) {
+    fireWaveAt(pl, m, pl.aim, 1, null, true);
+    if (!ghost) G.Camera.kick(0.06);
+  }
+
+  /** Great Fire Wave (MS): gran cono; nv.5 wave opuesta más pequeña. */
+  function greatFireWave(pl, m) {
+    const rev = G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'reverse_wave');
+    const hitOnce = rev ? new Set() : null;
+    fireWaveAt(pl, m, pl.aim, 1, hitOnce, false);
+    if (rev) fireWaveAt(pl, m, pl.aim + Math.PI, 0.58, hitOnce, false);
+    if (!ghost) G.Camera.kick(0.08);
+  }
+
+  function beamAt(pl, m, aim, hitOnce, dmgMul = 1) {
     const col = G.U.TYPE_COLOR[m.type];
     const w = m.width;
-    const ca = Math.cos(pl.aim), sa = Math.sin(pl.aim);
+    const ca = Math.cos(aim), sa = Math.sin(aim);
 
-    // El rayo se corta en la primera pared.
     let len = m.radius;
     for (let d = 8; d < m.radius; d += 8) {
       if (G.World.isWall(pl.x + ca * d, pl.y + sa * d)) { len = d; break; }
     }
-    G.FX.beam(pl.x, pl.y - G.LIFT, pl.aim, len, w, col, G.VFX.forMove(m));
+    G.FX.beam(pl.x, pl.y - G.LIFT, aim, len, w, col, G.VFX.forMove(m));
     if (ghost) return;
-    G.Camera.kick(0.08);
 
     const mx = pl.x + ca * len / 2, my = pl.y + sa * len / 2;
     const onBeam = (x, y, r) => {
@@ -167,11 +376,192 @@ G.Combat = (() => {
       return Math.abs(-px * sa + py * ca) <= w / 2 + r;
     };
     for (const e of G.EnemyMgr.queryCircle(mx, my, len / 2 + w)) {
-      if (onBeam(e.x, e.y, e.r)) hit(pl, e, m.dmg * pl.atk, col, ca, sa, 0, m);
+      if (hitOnce && hitOnce.has(e.id)) continue;
+      if (onBeam(e.x, e.y, e.r)) {
+        hit(pl, e, m.dmg * pl.atk * dmgMul, col, ca, sa, 0, m);
+        if (hitOnce) hitOnce.add(e.id);
+      }
     }
     for (const p of G.World.propsInCircle(mx, my, len / 2 + w)) {
-      if (onBeam(p.x, p.y, p.r)) G.World.damageProp(p, m.dmg * pl.atk, col);
+      if (onBeam(p.x, p.y, p.r)) G.World.damageProp(p, m.dmg * pl.atk * dmgMul, col);
     }
+  }
+
+  function beam(pl, m) {
+    beamAt(pl, m, pl.aim);
+    if (!ghost) G.Camera.kick(0.08);
+  }
+
+  /** Energy Wave (MS): onda penetrante; nv.5 tres direcciones. */
+  function energyWave(pl, m) {
+    const split = G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'wave_split');
+    const hitOnce = split ? new Set() : null;
+    if (split) {
+      const spread = 0.36;
+      beamAt(pl, m, pl.aim - spread, hitOnce);
+      beamAt(pl, m, pl.aim, hitOnce);
+      beamAt(pl, m, pl.aim + spread, hitOnce);
+      if (!ghost) G.Camera.kick(0.1);
+      return;
+    }
+    beam(pl, m);
+  }
+
+  /** Energy Beam (MS): rayo penetrante; nv.5 segundo pulso breve. */
+  function energyBeam(pl, m) {
+    beamAt(pl, m, pl.aim);
+    if (!ghost && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'beam_persist_double')) {
+      const echoes = fields.filter(o => o.kind === 'beam_echo' && o.owner === pl && !o.gone);
+      for (const o of echoes.slice(0, Math.max(0, echoes.length - 2))) o.gone = true;
+      fields.push({
+        kind: 'beam_echo', owner: pl, ghost, m, aim: pl.aim,
+        t: 0, delay: 0.22, dmgMul: 0.72, done: false, life: 0.55
+      });
+    }
+    if (!ghost) G.Camera.kick(0.08);
+  }
+
+  /** Great Energy Beam (MS): rayo ancho; nv.5 cuatro direcciones cardinales. */
+  function greatEnergyBeam(pl, m) {
+    if (G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'beam_cardinal')) {
+      const hitOnce = new Set();
+      const base = pl.aim;
+      for (let i = 0; i < 4; i++) beamAt(pl, m, base + i * (Math.PI / 2), hitOnce);
+      if (!ghost) G.Camera.kick(0.14);
+      return;
+    }
+    beam(pl, m);
+  }
+
+  /** Tope de daño en jefes/elites para ultimates (no one-shot). */
+  function capUltimateHit(e, dmg) {
+    if (!e) return dmg;
+    if (e.boss) return Math.min(dmg, Math.max(8, e.maxHp * 0.12));
+    if (e.elite) return Math.min(dmg, Math.max(6, e.maxHp * 0.22));
+    return dmg;
+  }
+
+  function hellsCoreRadius(m) {
+    const n = Math.max(8, m.count | 0);
+    return 48 + n * 2.6;
+  }
+
+  /** Explosión radial instantánea (Hell's Core). */
+  function radialBlast(pl, m, x, y, r, dmgMul) {
+    const col = G.U.TYPE_COLOR[m.type];
+    const vis = G.VFX.forMove(m);
+    G.FX.ring(x, y, 10, r, col, 0.38, 4.2);
+    G.FX.burst(x, y - G.LIFT * 0.35, col, 18, 200);
+    if (ghost) return;
+    for (const e of G.EnemyMgr.queryCircle(x, y, r)) {
+      let dmg = capUltimateHit(e, m.dmg * pl.atk * dmgMul);
+      hit(pl, e, dmg, col, e.x - x, e.y - y, m.knock || 0, m);
+      if (e.burn === 0) e.applyBurn(1);
+    }
+    for (const p of G.World.propsInCircle(x, y, r)) G.World.damageProp(p, m.dmg * pl.atk * dmgMul, col);
+    if (G.Camera.sees(x, y, r + 40)) G.Audio.sfx('break');
+  }
+
+  /** Hell's Core (MS): radial + segunda detonación nv.5. */
+  function hellsCore(pl, m) {
+    const col = G.U.TYPE_COLOR[m.type];
+    const r = hellsCoreRadius(m);
+    G.FX.ring(pl.x, pl.y, pl.r * 0.6, r * 0.45, col, 0.18, 1.4);
+    if (ghost) return;
+    radialBlast(pl, m, pl.x, pl.y, r, 1);
+    G.Camera.kick(0.22);
+    if (G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'delayed_detonation')) {
+      const delay = G.MasterSorcerer.unlockValue(m, 'delayed_detonation') || 1;
+      const echoes = fields.filter(o => o.kind === 'hell_core_echo' && o.owner === pl && !o.gone);
+      for (const o of echoes.slice(0, Math.max(0, echoes.length - 1))) o.gone = true;
+      fields.push({
+        kind: 'hell_core_echo', owner: pl, ghost, m, col,
+        x: pl.x, y: pl.y, t: 0, delay, r: r * 0.92, dmgMul: 0.88, done: false, life: delay + 0.55
+      });
+    }
+  }
+
+  function lightningPriority(e) {
+    if (e.boss) return 100;
+    if (e.elite) return 42;
+    return 8;
+  }
+
+  /** Objetivos repartidos para Rage of the Skies (prioriza elites/jefes). */
+  function pickLightningTargets(pl, n, maxDist) {
+    const all = G.EnemyMgr.all().filter(e => !e.dead && !e.remote && G.U.dist(pl.x, pl.y, e.x, e.y) <= maxDist);
+    all.sort((a, b) => lightningPriority(b) - lightningPriority(a));
+    const picked = [];
+    const used = new Set();
+    for (const e of all) {
+      if (picked.length >= n) break;
+      let ok = true;
+      for (const p of picked) {
+        if (G.U.dist2(p.x, p.y, e.x, e.y) < 52 * 52) { ok = false; break; }
+      }
+      if (!ok) continue;
+      picked.push(e);
+      used.add(e.id);
+    }
+    for (const e of all) {
+      if (picked.length >= n) break;
+      if (used.has(e.id)) continue;
+      picked.push(e);
+      used.add(e.id);
+    }
+    while (picked.length < n) {
+      picked.push(null);
+    }
+    return picked;
+  }
+
+  function pickStormTarget(pl, m) {
+    const maxD = reach(m) + 90;
+    const all = G.EnemyMgr.all().filter(e => !e.dead && !e.remote && G.U.dist(pl.x, pl.y, e.x, e.y) <= maxD);
+    if (!all.length) return null;
+    const pri = all.filter(e => e.boss || e.elite);
+    const pool = pri.length && Math.random() < 0.65 ? pri : all;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function strikeLightningAt(pl, m, x, y, dmgMul, col, vis) {
+    const top = y - 190;
+    G.FX.beam(x, top, Math.PI / 2, 190, 12, col, vis);
+    G.FX.ring(x, y, 4, m.radius, col, 0.38, 3.2);
+    if (ghost) return;
+    for (const e of G.EnemyMgr.queryCircle(x, y, m.radius)) {
+      let dmg = capUltimateHit(e, m.dmg * pl.atk * dmgMul);
+      hit(pl, e, dmg, col, e.x - x, e.y - y, 0, m);
+      e.applyElectrified(0.85);
+    }
+    if (G.Camera.sees(x, y, m.radius + 30)) G.Camera.kick(0.06);
+  }
+
+  /** Rage of the Skies (MS): rayos repartidos + tormenta nv.5. */
+  function rageOfTheSkies(pl, m) {
+    const col = G.U.TYPE_COLOR[m.type], vis = G.VFX.forMove(m);
+    const n = Math.max(1, m.count | 0);
+    const maxDist = reach(m);
+    const targets = pickLightningTargets(pl, n, maxDist);
+    for (let i = 0; i < n; i++) {
+      const e = targets[i];
+      const x = e ? e.x + G.U.rand(-10, 10) : pl.x + G.U.rand(-160, 160);
+      const y = e ? e.y + G.U.rand(-8, 8) : pl.y + G.U.rand(-130, 130);
+      fields.push({
+        kind: 'meteor', owner: pl, ghost, m, col, vis, x, y,
+        t: -i * 0.08, fall: 0.52, r: m.radius, dmg: m.dmg * pl.atk, msUltimate: true
+      });
+    }
+    if (!ghost && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'lightning_storm')) {
+      const dur = G.MasterSorcerer.unlockValue(m, 'lightning_storm') || 3;
+      const storms = fields.filter(o => o.kind === 'lightning_storm' && o.owner === pl && !o.gone);
+      for (const o of storms) o.gone = true;
+      fields.push({
+        kind: 'lightning_storm', owner: pl, ghost, m, col, vis,
+        t: 0, life: dur, tick: 0.12, interval: 0.36, r: m.radius, dmgMul: 0.58
+      });
+    }
+    if (!ghost) G.Audio.sfx('zap');
   }
 
   function aura(pl, m) {
@@ -359,15 +749,24 @@ G.Combat = (() => {
   function blast(f, r, k = 1) {
     if (f.ghost) return;
     const pl = f.owner, m = f.m;
-    for (const e of G.EnemyMgr.queryCircle(f.x, f.y, r)) hit(pl, e, f.dmg * k, f.col, e.x - f.x, e.y - f.y, m.knock || 0, m);
-    for (const p of G.World.propsInCircle(f.x, f.y, r)) G.World.damageProp(p, f.dmg * k, f.col);
+    const base = f.dmg != null ? f.dmg : m.dmg * pl.atk;
+    for (const e of G.EnemyMgr.queryCircle(f.x, f.y, r)) {
+      let dmg = base * k;
+      if (f.msUltimate) dmg = capUltimateHit(e, dmg);
+      hit(pl, e, dmg, f.col, e.x - f.x, e.y - f.y, m.knock || 0, m);
+      if (f.msFireGround && e.burn === 0) e.applyBurn(1);
+      if (f.msUltimate && m.type === 'energy') e.applyElectrified(0.75);
+    }
+    for (const p of G.World.propsInCircle(f.x, f.y, r)) G.World.damageProp(p, base * k, f.col);
   }
 
   function updateFields(dt) {
     for (let i = fields.length - 1; i >= 0; i--) {
       const f = fields[i];
       f.t += dt;
-      if (f.gone || !f.owner || (f.life && f.t >= f.life && f.kind !== 'mine')) { fields.splice(i, 1); continue; }
+      if (f.gone || !f.owner || (f.life && f.t >= f.life && f.kind !== 'mine' && f.kind !== 'hell_core_echo' && f.kind !== 'lightning_storm')) {
+        fields.splice(i, 1); continue;
+      }
       if (f.kind === 'mine') {
         const armed = f.t >= f.arm;
         const trig = armed && G.EnemyMgr.queryCircle(f.x, f.y, 14).length > 0;
@@ -403,6 +802,30 @@ G.Combat = (() => {
           }
         }
         if (f.kick > 0) f.kick -= dt;
+      } else if (f.kind === 'beam_echo') {
+        if (!f.done && f.t >= f.delay) {
+          f.done = true;
+          beamAt(f.owner, f.m, f.aim, null, f.dmgMul || 0.72);
+        }
+      } else if (f.kind === 'hell_core_echo') {
+        if (!f.done && f.t >= f.delay) {
+          f.done = true;
+          radialBlast(f.owner, f.m, f.x, f.y, f.r, f.dmgMul || 0.88);
+          if (!f.ghost) G.Camera.kick(0.18);
+        }
+        if (f.done && f.t >= f.delay + 0.35) { fields.splice(i, 1); continue; }
+      } else if (f.kind === 'lightning_storm') {
+        if (f.t >= f.life) { fields.splice(i, 1); continue; }
+        f.tick -= dt;
+        if (f.tick <= 0) {
+          f.tick = f.interval || 0.36;
+          const pl = f.owner;
+          if (!pl || pl.dead) { fields.splice(i, 1); continue; }
+          const tg = pickStormTarget(pl, f.m);
+          const x = tg ? tg.x : pl.x + G.U.rand(-120, 120);
+          const y = tg ? tg.y : pl.y + G.U.rand(-90, 90);
+          strikeLightningAt(pl, f.m, x, y, f.dmgMul || 0.58, f.col, f.vis);
+        }
       } else if (f.kind === 'patch') {
         f.tick -= dt;
         if (f.tick <= 0) { f.tick = 0.5; blast(f, f.r); }
@@ -446,6 +869,22 @@ G.Combat = (() => {
         ctx.globalAlpha = 0.3;
         ctx.fillStyle = '#000';
         ctx.beginPath(); ctx.ellipse(f.x, f.y, 11, 4.5, 0, 0, 6.2832); ctx.fill();
+      } else if (f.kind === 'hell_core_echo' && !f.done) {
+        const k = Math.min(1, f.t / Math.max(0.05, f.delay));
+        ctx.globalAlpha = 0.12 + k * 0.28;
+        ctx.strokeStyle = f.col;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 6]);
+        ctx.beginPath();
+        ctx.ellipse(f.x, f.y, f.r * (0.45 + k * 0.55), f.r * 0.38 * (0.45 + k * 0.55), 0, 0, 6.2832);
+        ctx.stroke();
+      } else if (f.kind === 'lightning_storm') {
+        const a = Math.min(1, (f.life - f.t) * 1.2, f.t * 2);
+        ctx.globalAlpha = 0.08 * a;
+        ctx.fillStyle = f.col;
+        ctx.beginPath();
+        ctx.ellipse(f.owner.x, f.owner.y, reach(f.m) * 0.55, reach(f.m) * 0.35, 0, 0, 6.2832);
+        ctx.fill();
       }
       ctx.restore();
     }
@@ -532,15 +971,43 @@ G.Combat = (() => {
   const isCrit = pl => !ghost && pl.critChance > 0 && Math.random() < pl.critChance;
 
   function hit(pl, e, dmg, col, dx, dy, knock, m) {
-    const k = typeK(m.type, e, m.id);
+    applySpellEffects(pl, e, m);
+    dmg = computeStrikeDamage(pl, e, m, dmg);
+    if (G.MasterSorcerer) dmg *= G.MasterSorcerer.damageMulForType(pl, m.type);
+    const k = typeK(m.type, e, m.id, pl);
     const crit = isCrit(pl);
     dmg *= k * (crit ? CRIT_MUL : 1);
+    if (!ghost) {
+      e.lastHitAid = m.id;
+      e.lastHitOwner = pl;
+      if (G.MsTelemetry) G.MsTelemetry.onHit(pl, m.id, dmg, e, m.lvl);
+    }
     e.hurt(dmg, col, dx, dy, knock, crit ? 'crit' : typeLabel(m.type, e, m.id));
     if (!ghost) pl.onDealt(dmg);
     pl.dmgDealt += dmg;
-    if (m.burn) e.applyBurn(m.burn);
+    const pay = payload(m);
+    if (pay.burn) e.applyBurn(pay.burn);
     if (m.poison) e.applyPoison(m.poison);
     if (m.slow) e.applySlow(m.slow);
+  }
+
+  /** Flame Strike nv.5: explosión pequeña si el enemigo muere ardiendo. */
+  function onEnemyDeath(e) {
+    if (ghost || !e || e.burn <= 0 || !e.lastHitOwner) return;
+    const pl = e.lastHitOwner;
+    const m = pl.moves.find(x => x.id === 'flame_strike');
+    if (!m || !G.MasterSorcerer || !G.MasterSorcerer.hasUnlock(m, 'burn_kill_explosion')) return;
+    const col = G.U.TYPE_COLOR[m.type] || '#ff7b3d';
+    const r = 38;
+    const dmg = m.dmg * pl.atk * 0.5;
+    G.FX.ring(e.x, e.y, 6, r, col, 0.32, 3);
+    G.FX.burst(e.x, e.y - G.LIFT * 0.4, col, 10, 130);
+    if (G.Camera.sees(e.x, e.y, r)) G.Audio.sfx('break');
+    for (const o of G.EnemyMgr.queryCircle(e.x, e.y, r)) {
+      if (o.dead || o.id === e.id) continue;
+      hit(pl, o, dmg, col, o.x - e.x, o.y - e.y, 0, m);
+    }
+    for (const p of G.World.propsInCircle(e.x, e.y, r)) G.World.damageProp(p, dmg, col);
   }
 
   // ---------------- colisiones ----------------
@@ -640,16 +1107,38 @@ G.Combat = (() => {
           break;
         }
 
-        const crit = isCrit(pl);
-        const k = (p.mtype ? typeK(p.mtype, e, p.aid) : 1) * (crit ? CRIT_MUL : 1);
-        e.hurt(p.dmg * k, p.color, p.vx || (e.x - pl.x), p.vy || (e.y - pl.y), p.knock,
+        const owner = p.owner || pl;
+        const strike = p.aid && owner ? owner.moves.find(x => x.id === p.aid) : null;
+        if (p.aid && owner) {
+          e.lastHitAid = p.aid;
+          e.lastHitOwner = owner;
+        }
+        if (strike) applySpellEffects(owner, e, strike);
+        const crit = isCrit(owner);
+        let raw = p.dmg;
+        if (strike) raw = computeStrikeDamage(owner, e, strike, raw);
+        if (G.MasterSorcerer && p.mtype) raw *= G.MasterSorcerer.damageMulForType(owner, p.mtype);
+        const k = (p.mtype ? typeK(p.mtype, e, p.aid, owner) : 1) * (crit ? CRIT_MUL : 1);
+        const dealt = raw * k;
+        if (!ghost && G.MsTelemetry && p.aid) G.MsTelemetry.onHit(owner, p.aid, dealt, e, strike && strike.lvl);
+        e.hurt(dealt, p.color, p.vx || (e.x - pl.x), p.vy || (e.y - pl.y), p.knock,
                crit ? 'crit' : p.mtype ? typeLabel(p.mtype, e, p.aid) : null);
         if (Math.random() < 0.5) G.FX.sp('impact', p.vis ? p.vis.pal : 'normal', e.x, e.y - e.bodyH * 0.5, { life: 0.12, scale: 1 });
-        pl.dmgDealt += p.dmg * k;
-        pl.onDealt(p.dmg * k);
+        owner.dmgDealt += dealt;
+        owner.onDealt(dealt);
         if (p.burn) e.applyBurn(p.burn);
         if (p.poison) e.applyPoison(p.poison);
         if (p.slow) e.applySlow(p.slow);
+        if (strike && p.aid === 'flame_strike' && !p._msSplashed) {
+          p._msSplashed = true;
+          flameStrikeSplash(owner, strike, e, p.color);
+        }
+        if (strike && p.aid === 'energy_strike' && !p._msChained &&
+            G.MasterSorcerer && G.MasterSorcerer.hasUnlock(strike, 'chain_on_hit')) {
+          p._msChained = true;
+          const hops = G.MasterSorcerer.unlockValue(strike, 'chain_on_hit') || 2;
+          msEnergyChainFrom(owner, e, strike, hops);
+        }
 
         if (!p.orb) {
           if (p.pierce > 0) { p.pierce--; }
@@ -676,6 +1165,6 @@ G.Combat = (() => {
     }
   }
 
-  return { tick, resolve, ghostCast, ghostOrbit, updateFields, drawGroundFields, drawAirFields, clearFields,
+  return { tick, resolve, ghostCast, ghostOrbit, updateFields, drawGroundFields, drawAirFields, clearFields, onEnemyDeath, pickStrikeTarget,
            get fieldCount() { return fields.length; } };
 })();

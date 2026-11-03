@@ -48,6 +48,7 @@ G.ContentBridge = (() => {
   function installAbilityAliases() {
     if (!G.Moves || !G.Abilities) return;
     for (const a of G.Abilities.ALL) {
+      if (a.kind === 'passive') continue;
       if (!G.Moves.BY_ID[a.id]) G.Moves.BY_ID[a.id] = a;
     }
   }

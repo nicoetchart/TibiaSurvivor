@@ -3,7 +3,7 @@
  */
 G.NeutralRoster = (() => {
   const TIER_STATS = [
-    { hp: 20, spd: 56, dmg: 6, xp: 4 },
+    { hp: 18, spd: 54, dmg: 5, xp: 4 },
     { hp: 34, spd: 58, dmg: 9, xp: 7 },
     { hp: 48, spd: 54, dmg: 12, xp: 11 },
     { hp: 72, spd: 60, dmg: 16, xp: 18 }
@@ -41,7 +41,7 @@ G.NeutralRoster = (() => {
     const ti = tier;
     const CD = {
       ranged: 2.1 - ti * 0.12,
-      fan: 3.0 - ti * 0.12,
+      fan: 3.35 - ti * 0.1,
       beamer: 4.0 - ti * 0.15,
       zoner: 4.2 - ti * 0.15,
       healer: 3.2,
@@ -49,15 +49,16 @@ G.NeutralRoster = (() => {
       jumper: 3.8 - ti * 0.1
     };
     if (CD[behavior]) {
-      d.shotDmg = Math.round(d.dmg * (behavior === 'fan' ? 0.72 : 0.78));
+      d.shotDmg = Math.round(d.dmg * (behavior === 'fan' ? 0.62 : 0.78));
       d.shotCd = +CD[behavior].toFixed(2);
-      d.range = (behavior === 'beamer' ? 250 : behavior === 'healer' || behavior === 'summoner' ? 220 : 185) + ti * 8;
+      d.range = (behavior === 'beamer' ? 250 : behavior === 'healer' || behavior === 'summoner' ? 220
+        : behavior === 'fan' ? 168 : 185) + ti * 8;
     }
     if (behavior === 'summoner') {
       const min = c.minionLegacyId || 99002;
       d.minion = min;
     }
-    if (behavior === 'fan') d.fanN = ti < 1 ? 3 : 5;
+    if (behavior === 'fan') d.fanN = ti < 1 ? 3 : 4;
     if (behavior === 'zoner') d.zones = ti < 1 ? 1 : ti < 2 ? 2 : 3;
     if (behavior === 'bomber') { d.spd = Math.round(d.spd * 1.2); d.hp = Math.round(d.hp * 0.85); }
     if (behavior === 'runner') { d.hp = Math.round(d.hp * 0.75); d.dmg = Math.round(d.dmg * 0.9); }
@@ -168,7 +169,23 @@ G.NeutralRoster = (() => {
     const curvePow = S.curvePow != null ? S.curvePow : 1.55;
     const curveMul = S.curveMul != null ? S.curveMul : 0.48;
     const density = S.density != null ? S.density : 0.26;
-    return (base + t * perSec + Math.pow(t / 60, curvePow) * curveMul) * density;
+    let r = (base + t * perSec + Math.pow(t / 60, curvePow) * curveMul) * density;
+    const grace = S.earlyGraceSec != null ? S.earlyGraceSec : 0;
+    const earlyMul = S.earlyRateMul != null ? S.earlyRateMul : 1;
+    if (grace > 0 && t < grace) r *= earlyMul + (1 - earlyMul) * (t / grace);
+    const warmSec = S.earlyWarmupSec != null ? S.earlyWarmupSec : 0;
+    const warmMul = S.earlyWarmupMul != null ? S.earlyWarmupMul : 1;
+    if (warmSec > 0 && t < warmSec) {
+      r *= 1 + (warmMul - 1) * (1 - t / warmSec);
+    }
+    const midAt = S.midDipAt;
+    if (midAt != null) {
+      const w = S.midDipWidth != null ? S.midDipWidth : 90;
+      const midMul = S.midDipMul != null ? S.midDipMul : 0.75;
+      const d = Math.abs(t - midAt) / w;
+      if (d < 1) r *= midMul + (1 - midMul) * d;
+    }
+    return r;
   }
 
   return {
