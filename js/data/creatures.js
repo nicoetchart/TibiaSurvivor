@@ -6,7 +6,7 @@ G.CREATURES = [
   {
     id: 'wander_archmage',
     legacyId: 99001,
-    name: 'Archimago errante',
+    name: 'Master Sorcerer',
     hp: 100,
     speed: 102,
     attack: 1.08,

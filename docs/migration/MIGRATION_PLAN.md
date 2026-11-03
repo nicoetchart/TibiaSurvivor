@@ -268,7 +268,7 @@ Revert branding; regenerar build.
 | Elemento | Valor |
 |----------|--------|
 | Bioma | Cueva Cristal (`RUN_BIOME: 1`) |
-| Vocación | Master Sorcerer → Archimago errante |
+| Vocación | Master Sorcerer |
 | Enemigos | 14 plantillas + 1 jefe (15 defs) |
 | Habilidades | 10 (`ts-*`) |
 | Tipos de daño activos | physical, fire, energy |

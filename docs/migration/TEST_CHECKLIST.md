@@ -139,7 +139,7 @@ Flujo repetido: login o perfil → selección Pokémon → **Jugar** → movimie
 
 ## Fase 3 — Contenido neutral
 
-Smoke de agente en `dev.html?dev` (2026-10-31, invitado): vocación, menú sin Pokédex/Mejoras/Gacha, partida con Archimago errante y enemigo del roster. Figuras geométricas comprobadas en canvas (píxeles de color, sin petición a `assets/pokemon/99001`).
+Smoke de agente en `dev.html?dev` (2026-10-31, invitado): vocación, menú sin Pokédex/Mejoras/Gacha, partida con Master Sorcerer y enemigo del roster. Figuras geométricas comprobadas en canvas (píxeles de color, sin petición a `assets/pokemon/99001`).
 
 - [x] Partida sin nombres Pokémon en HUD del camino nuevo (el nombre visible es la criatura neutral)
 - [x] Una vocación jugable

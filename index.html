@@ -7,6 +7,27 @@
 <title>TibiaSurvivor – Survivor de fantasía pixel art</title>
 <meta name="description" content="Un survivor de fantasía pixel art donde cada partida reproduce la tensión y progresión de una hunting session de un MMORPG clásico. Gratis en navegador, sin descargas.">
 
+<link rel="canonical" href="./">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0a1430">
+<meta name="color-scheme" content="dark">
+<!-- Compartir en redes (WhatsApp, Discord, Twitter/X...) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="TibiaSurvivor">
+<meta property="og:locale" content="es_ES">
+<meta property="og:url" content="./">
+<meta property="og:title" content="TibiaSurvivor – Hunting session subterránea">
+<meta property="og:description" content="Survivor de fantasía pixel art: 15 min de cacería, habilidades, jefes y progreso local.">
+<meta property="og:image" content="assets/icons/icon-512.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="TibiaSurvivor — fantasía pixel art subterránea">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="TibiaSurvivor">
+<meta name="twitter:description" content="Survivor de fantasía pixel art en el navegador.">
+<meta name="twitter:image" content="assets/icons/icon-512.png">
+<script>window.PS_PAGES = false;</script>
+
 <link rel="manifest" href="manifest.webmanifest">
 <!-- Google sólo enseña en los resultados iconos de 48 px o múltiplos -->
 <link rel="icon" href="favicon.ico" sizes="any">
@@ -20,6 +41,40 @@
 <meta name="apple-mobile-web-app-title" content="TibiaSurvivor">
 <link rel="preload" href="assets/fonts/PixelifyPS-400.ttf" as="font" type="font/ttf" crossorigin>
 <link rel="preload" href="assets/fonts/PixelifyPS-700.ttf" as="font" type="font/ttf" crossorigin>
+
+<!-- Datos estructurados para Google (tipo de página: videojuego gratuito) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "./#web",
+      "url": "./",
+      "name": "TibiaSurvivor",
+      "inLanguage": "es"
+    },
+    {
+      "@type": ["VideoGame", "WebApplication"],
+      "@id": "./#juego",
+      "name": "TibiaSurvivor",
+      "url": "./",
+      "description": "Survivor de fantasía pixel art: expediciones de cacería, habilidades, jefes y progreso persistente local.",
+      "image": "assets/icons/icon-512.png",
+      "inLanguage": "es",
+      "genre": ["Roguelike", "Bullet heaven", "Acción", "Supervivencia"],
+      "gamePlatform": ["Navegador web", "PC", "Android", "iOS"],
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Cualquiera con navegador web moderno",
+      "playMode": ["SinglePlayer"],
+      "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 1 },
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR", "availability": "https://schema.org/InStock" },
+      "isPartOf": { "@id": "./#web" }
+    }
+  ]
+}
+</script>
 
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -385,6 +440,6 @@
 </section>
 
 <!-- datos generados -->
-<script defer src="js/app.min.js?v=3f47a31654"></script>
+<script defer src="js/app.min.js?v=6efe4b0076"></script>
 </body>
 </html>

@@ -439,7 +439,7 @@ Autorización explícita de **Subfase 3A — Inventario e interfaces neutrales**
 
 - `js/data/neutral-roster.js` — `G.NeutralRoster` (6 enemigos, sin jefe)
 - `js/data/content-api.js` — `G.Content.roster()`
-- `js/data/content-bridge.js` — `@ts-adapter-f3` copia en `G.DEX_BY` ids 99001–99007; habilidad inicial en el archimago
+- `js/data/content-bridge.js` — `@ts-adapter-f3` copia en `G.DEX_BY` ids 99001–99007; habilidad inicial en Master Sorcerer (99001)
 - `js/systems/spawner.js`, `js/systems/events.js` — leen `G.Content.roster()`
 - `dev.html`, `js/main.js` — script y `NEED`
 - `js/data/changelog.js`
@@ -538,7 +538,7 @@ Cierre del ciclo jugable neutral: bioma Cueva Cristal fijo, 14 enemigos + jefe, 
 
 | Categoría | Detalle |
 |-----------|---------|
-| Vocación | Master Sorcerer / Archimago errante |
+| Vocación | Master Sorcerer |
 | Habilidades | 10 (`ts-arc-bolt` … `ts-ward-pulse`) |
 | Enemigos | 99002–99015 + jefe 99016 |
 | Élite | Centinela de élite (jumper, recompensa XP 85) |

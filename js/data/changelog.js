@@ -2,6 +2,10 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-02', title: ['Nombre del avatar', 'Avatar name'], chg: [
+    ['La criatura del jugador (99001) se muestra como Master Sorcerer, igual que la vocación.',
+     'The player creature (99001) is shown as Master Sorcerer, matching the vocation name.']
+  ], new: [], fix: [] },
   { d: '2026-11-01', title: ['Fase 6 — vertical slice MVP', 'Phase 6 — MVP vertical slice'], new: [
     ['Victoria al derrotar al Custodio del umbral; el reloj de 12 min es límite, no premio por supervivencia.',
      'Win by defeating the Vault Warden; the 12-minute clock is a limit, not a survival win.'],
