@@ -19,8 +19,13 @@ G.MvpConfig = {
     { from: 320, maxTier: 2 }
   ],
 
-  /** Centinela de élite (segundos): 1:45 de run. */
-  ELITE_AT: 105,
+  /** Centinelas de élite: primer spawn aleatorio y luego cada ~2:30 (segundos). */
+  ELITE: {
+    firstMinSec: 105,
+    firstMaxSec: 135,
+    intervalSec: 150,
+    intervalJitterSec: 18
+  },
 
   /** Jefe final del bioma (segundos de run). */
   FINAL_BOSS_AT: 600,

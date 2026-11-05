@@ -36,9 +36,16 @@ function okNum(n, label) {
 const cfg = G.MvpConfig;
 okNum(cfg.RUN_DURATION_SEC, 'RUN_DURATION_SEC');
 okNum(cfg.FINAL_BOSS_AT, 'FINAL_BOSS_AT');
-okNum(cfg.ELITE_AT, 'ELITE_AT');
+const E = cfg.ELITE;
+if (!E || E.firstMinSec == null) err('ELITE.firstMinSec missing');
+else {
+  okNum(E.firstMinSec, 'ELITE.firstMinSec');
+  okNum(E.firstMaxSec, 'ELITE.firstMaxSec');
+  okNum(E.intervalSec, 'ELITE.intervalSec');
+  if (E.firstMaxSec < E.firstMinSec) err('ELITE.firstMaxSec < firstMinSec');
+  if (E.firstMinSec >= cfg.FINAL_BOSS_AT) err('ELITE.firstMinSec must be < FINAL_BOSS_AT');
+}
 if (cfg.FINAL_BOSS_AT >= cfg.RUN_DURATION_SEC) err('FINAL_BOSS_AT must be < RUN_DURATION_SEC');
-if (cfg.ELITE_AT >= cfg.FINAL_BOSS_AT) err('ELITE_AT must be < FINAL_BOSS_AT');
 if (cfg.RUN_DURATION_SEC < 600 || cfg.RUN_DURATION_SEC > 900) err('RUN_DURATION_SEC outside 10–15 min band');
 
 const enemies = G.CREATURES.filter(c => c.role === 'enemy');
@@ -87,4 +94,4 @@ if (errors.length) {
 }
 console.log('validate-mvp OK:',
   `${enemies.length} enemy defs, ${G.Abilities.ALL.length} abilities,`,
-  `run ${cfg.RUN_DURATION_SEC}s, boss @ ${cfg.FINAL_BOSS_AT}s, elite @ ${cfg.ELITE_AT}s`);
+  `run ${cfg.RUN_DURATION_SEC}s, boss @ ${cfg.FINAL_BOSS_AT}s, elite ${E.firstMinSec}-${E.firstMaxSec}s then ~${E.intervalSec}s`);

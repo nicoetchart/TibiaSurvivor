@@ -31,7 +31,39 @@ G.Spawner = (() => {
   const SHINY_RATE = 1 / 4096;
   let acc = 0, bossIdx = 0, surgeT = 32, announce = null, announceT = 0, preloadT = 0;
   let forceShiny = 0;           // para pruebas: los N próximos salen shiny
-  let eliteSpawned = false;
+  let nextEliteAt = Infinity;
+
+  function eliteCfg() {
+    if (!G.MvpConfig || G.Content.mode !== 'neutral') return null;
+    const E = G.MvpConfig.ELITE;
+    if (E && E.firstMinSec != null) return E;
+    if (G.MvpConfig.ELITE_AT != null) {
+      const at = G.MvpConfig.ELITE_AT;
+      return { firstMinSec: at, firstMaxSec: at, intervalSec: 150, intervalJitterSec: 18 };
+    }
+    return null;
+  }
+
+  function rollFirstEliteAt() {
+    const E = eliteCfg();
+    if (!E) { nextEliteAt = Infinity; return; }
+    const lo = E.firstMinSec;
+    const hi = E.firstMaxSec != null ? E.firstMaxSec : lo;
+    nextEliteAt = Math.floor(G.U.rand(lo, hi + 1));
+  }
+
+  function scheduleEliteAfterSpawn(t) {
+    const E = eliteCfg();
+    if (!E) return;
+    const base = E.intervalSec != null ? E.intervalSec : 150;
+    const j = E.intervalJitterSec != null ? E.intervalJitterSec : 0;
+    const gap = j > 0 ? G.U.rand(base - j, base + j + 1) : base;
+    nextEliteAt = t + Math.max(60, gap);
+  }
+
+  function sentinelAlive() {
+    return G.EnemyMgr.all().some(e => e.sentinelElite && !e.dead);
+  }
 
   function reset() {
     acc = 0;
@@ -41,7 +73,7 @@ G.Spawner = (() => {
     bossIdx = 0;
     surgeT = G.Content && G.Content.mode === 'neutral' ? 58 : 32;
     announce = null; announceT = 0; preloadT = 0;
-    eliteSpawned = false;
+    rollFirstEliteAt();
     G.Content.roster().rollRun();
     G.Sprites.preload(G.Content.roster().upcomingDex(0, 80));
   }
@@ -174,15 +206,13 @@ G.Spawner = (() => {
     preloadT -= dt;
     if (preloadT <= 0) { preloadT = 10; G.Sprites.preload(G.Content.roster().upcomingDex(t, 60)); }
 
-    // --- élite programado (MVP neutral) ---
-    const eliteAt = G.MvpConfig && G.Content.mode === 'neutral' ? G.MvpConfig.ELITE_AT : null;
-    if (eliteAt != null && !eliteSpawned && t >= eliteAt && !G.EnemyMgr.bossAlive()) {
+    // --- centinelas de élite (MVP neutral, recurrentes) ---
+    const bossCap = G.MvpConfig && G.MvpConfig.FINAL_BOSS_AT;
+    if (eliteCfg() && t >= nextEliteAt && !G.EnemyMgr.bossAlive() && !sentinelAlive() &&
+        (bossCap == null || t < bossCap)) {
       const buildElite = G.Content.roster().buildElite;
       const ed = buildElite ? buildElite() : null;
-      if (ed) {
-        eliteSpawned = true;
-        spawnElite(anchor(), t, ed);
-      }
+      if (ed && spawnElite(anchor(), t, ed)) scheduleEliteAfterSpawn(t);
     }
 
     // --- jefes ---

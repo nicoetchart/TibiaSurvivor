@@ -166,7 +166,8 @@ async function main() {
   else fail('levelup-apply', JSON.stringify(afterCard));
 
   await page.evaluate(() => {
-    G.Game.debugTime((G.MvpConfig && G.MvpConfig.ELITE_AT != null ? G.MvpConfig.ELITE_AT : 105) + 8);
+    const E = G.MvpConfig && G.MvpConfig.ELITE;
+    G.Game.debugTime((E && E.firstMaxSec != null ? E.firstMaxSec : 135) + 8);
     for (let i = 0; i < 120; i++) G.Spawner.update(0.05, [G.Game.player], G.Game.st.time);
   });
   const elite = await page.evaluate(() =>

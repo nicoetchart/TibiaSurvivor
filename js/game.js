@@ -88,8 +88,9 @@ G.Game = (() => {
     const save = G.DB.save;
     G.Content.syncFromSave(save);
     const mon = G.DEX_BY[save.partner];
-    const startId = G.Content.startingMoveId(mon);
-    if (!mon || !Number.isFinite(mon.hp) || !Number.isFinite(mon.spd) || !Number.isFinite(mon.atk) || !startId || !G.Moves.BY_ID[startId]) {
+    const startIds = G.Content.startingMoveIds(mon);
+    if (!mon || !Number.isFinite(mon.hp) || !Number.isFinite(mon.spd) || !Number.isFinite(mon.atk) ||
+        !startIds.length || startIds.some(id => !G.Moves.BY_ID[id])) {
       G.UI.toast('No se pudo crear al personaje.');
       return;
     }
@@ -127,7 +128,7 @@ G.Game = (() => {
     // Atajos: movimientos con hueco fijo (save.pbind[dex] = [id del 1, id del 2, ...]),
     // antes de aprender nada: addMove ya los coloca.
     (save.pbind && save.pbind[mon.dex] || []).forEach((id, i) => { if (id) pl.bind[id] = i; });
-    pl.addMove(startId);
+    for (const id of startIds) pl.addMove(id);
     // Mejora "Veto": movimientos que no quieres que te salgan.
     pl.banned = new Set((save.pban && save.pban[mon.dex] || []).slice(0, perks.bans));
     // Mejora "Repertorio": un segundo movimiento de ataque al azar.

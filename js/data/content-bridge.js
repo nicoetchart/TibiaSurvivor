@@ -32,6 +32,7 @@ G.ContentBridge = (() => {
   function stampPlayerAbility() {
     const v = G.Vocations && G.Vocations.defaultVocation && G.Vocations.defaultVocation();
     const c = v && G.CREATURE_BY_ID && G.CREATURE_BY_ID[v.playerCreatureId];
+    if (c && v.startingSpellIds && v.startingSpellIds.length) c.startAbilities = v.startingSpellIds.slice();
     if (c && v.startingAbility) c.startAbility = v.startingAbility;
   }
 

@@ -11,13 +11,18 @@ G.VocationUI = (() => {
 
   function start() {
     const v = G.Vocations.defaultVocation();
-    const ability = G.Abilities.BY_ID[v.startingAbility];
+    const ids = v.startingSpellIds && v.startingSpellIds.length ? v.startingSpellIds : [v.startingAbility];
+    const names = ids.map(id => {
+      const a = G.Abilities.BY_ID[id];
+      if (!a) return id;
+      const inc = a.incantation ? ' («' + a.incantation + '»)' : '';
+      return a.name + inc;
+    });
     $('voc-name').textContent = v.name;
     $('voc-text').textContent = v.description;
-    if (ability) {
-      const inc = ability.incantation ? ' («' + ability.incantation + '»)' : '';
-      $('voc-ability').textContent = 'Empiezas con ' + ability.name + inc + '.';
-    } else $('voc-ability').textContent = '';
+    $('voc-ability').textContent = names.length
+      ? 'Empiezas con ' + names.join(' y ') + '.'
+      : '';
     G.UI.chrome(false);
     G.UI.show('scr-vocation');
   }

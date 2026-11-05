@@ -211,13 +211,14 @@
         G.MsTelemetry.onKill(this.lastHitOwner, this.lastHitAid, this);
       }
       if (this.sentinelElite && G.Content && G.Content.mode === 'neutral') {
-        const pl = G.Game && G.Game.player ? G.Game.player() : null;
+        const pl = G.Game ? G.Game.player : null;
         if (pl) {
           pl.bonds++;
           G.Audio.sfx('legend');
           G.Spawner.say('¡Vínculo obtenido! Une dos hechizos para lanzarlos a la vez.', 3.2, true);
           G.FX.dmgText(pl.x, pl.y - pl.bodyH - 10, '¡Vínculo!', '#b48aff', true);
           G.FX.ring(pl.x, pl.y, 8, 90, '#b48aff', 0.7, 5);
+          if (G.Game.offerBond) setTimeout(() => G.Game.offerBond(false), 0);
         }
       }
       if (burning && G.Combat && G.Combat.onEnemyDeath) G.Combat.onEnemyDeath(this);

@@ -2,6 +2,33 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-03', title: ['Rage of the Skies', 'Rage of the Skies'], chg: [
+    ['Rage of the Skies: radio de impacto 50 px.', 'Rage of the Skies: strike radius 50 px.']
+  ], new: [], fix: [] },
+  { d: '2026-11-03', title: ['Ultimates MS', 'MS ultimates'], chg: [
+    ["Hell's Core y Rage of the Skies: daño base a la mitad (140 / 110).",
+     "Hell's Core and Rage of the Skies: half base damage (140 / 110)."]
+  ], new: [], fix: [] },
+  { d: '2026-11-03', title: ['Inicio MS', 'MS start'], chg: [
+    ['Vuelve Flame Strike (exori flam) al inicio; Hell\'s Core y Rage of the Skies solo en cartas (nv. run 10).',
+     'Flame Strike (exori flam) is the starter again; ultimates only from level-up cards (run level 10).']
+  ], new: [], fix: [] },
+  { d: '2026-11-03', title: ['Ultimates MS — radio', 'MS ultimates — radius'], chg: [
+    ["Hell's Core: radio 200 px; Rage of the Skies: 80 px por rayo.",
+     "Hell's Core: 200 px radius; Rage of the Skies: 80 px per strike."]
+  ], new: [], fix: [] },
+  { d: '2026-11-03', title: ['Ultimates MS', 'MS ultimates'], chg: [
+    ["Hell's Core y Rage of the Skies: radio 500 px, cooldown a la mitad y daño ×10 (base).",
+     "Hell's Core and Rage of the Skies: 500 px radius, half cooldown and ×10 base damage."]
+  ], new: [], fix: [] },
+  { d: '2026-11-03', title: ['Centinelas de élite', 'Elite sentinels'], chg: [
+    ['Centinelas: primer spawn aleatorio entre 1:45 y 2:15; luego uno cada ~2:30 (con variación). No se apilan si sigue vivo el anterior.',
+     'Elite sentinels: first spawn random between 1:45–2:15; then about every 2:30 (with jitter). Skips spawn while one is still alive.']
+  ], new: [], fix: [] },
+  { d: '2026-11-03', title: ['Vínculo del centinela', 'Elite sentinel bond'], fix: [
+    ['Al matar al centinela de élite se otorgaba mal el vínculo (G.Game.player); ahora abre la elección al instante si puedes unir dos hechizos.',
+     'Elite sentinel bond grant was broken (G.Game.player); bond picker opens right away when two spells can be fused.']
+  ], new: [], chg: [] },
   { d: '2026-11-03', title: ['Vocero de veta (abanico)', 'Seam Speaker (fan attack)'], fix: [
     ['Vocero de veta: cono más estrecho, proyectiles más lentos, menos daño y más tiempo entre disparos.',
      'Seam Speaker: narrower cone, slower shots, less damage and longer cooldown.']

@@ -62,16 +62,25 @@ G.Content = (() => {
     return mode;
   }
 
-  function startingMoveId(mon) {
+  function startingMoveIds(mon) {
     if (mode === 'neutral') {
-      if (mon && mon.startAbility) return mon.startAbility;
-      const c = mon && getCreature(mon.creatureId || mon.dex);
-      if (c && c.startAbility) return c.startAbility;
+      const c = mon && getCreature(mon.creatureId || mon.legacyId || mon.dex);
+      if (c && c.startAbilities && c.startAbilities.length) return c.startAbilities.slice();
       const v = getVocation('master_sorcerer');
-      return v && v.startingAbility;
+      if (v && v.startingSpellIds && v.startingSpellIds.length) return v.startingSpellIds.slice();
+      if (mon && mon.startAbility) return [mon.startAbility];
+      if (c && c.startAbility) return [c.startAbility];
+      if (v && v.startingAbility) return [v.startingAbility];
+      return [];
     }
-    if (!mon) return null;
-    return G.startMoveOf(mon.dex);
+    if (!mon) return [];
+    const id = G.startMoveOf(mon.dex);
+    return id ? [id] : [];
+  }
+
+  function startingMoveId(mon) {
+    const ids = startingMoveIds(mon);
+    return ids.length ? ids[0] : null;
   }
 
   function learnPool(mon) {
@@ -135,6 +144,7 @@ G.Content = (() => {
     setMode,
     syncFromSave,
     startingMoveId,
+    startingMoveIds,
     learnPool,
     isNeutralLegacyId,
     getCreature,

@@ -442,6 +442,7 @@ G.Combat = (() => {
   }
 
   function hellsCoreRadius(m) {
+    if (m.radius != null && m.radius > 0) return m.radius;
     const n = Math.max(8, m.count | 0);
     return 48 + n * 2.6;
   }
