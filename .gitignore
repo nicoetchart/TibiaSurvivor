@@ -3,6 +3,10 @@ videos/
 
 # Cachés de los scripts de descarga
 tools/cache/
+tools/cache/tibia-client/
+tools/tibia-client.local.json
+**/Tibia.spr
+**/Tibia.dat
 __pycache__/
 
 # Firebase / emulador / logs
@@ -10,6 +14,7 @@ __pycache__/
 *-debug.log
 *.log
 node_modules/
+tools/node_modules/
 
 # Sistema
 Thumbs.db

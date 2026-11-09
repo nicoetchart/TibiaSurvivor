@@ -1,0 +1,422 @@
+/* ============ TibiaSurvivor — UI (Fase 3: tokens HUD, títulos, run) ============
+ * Cliente RPG ~10+, solo CSS. Activación: <html data-ui="tibia">.
+ * Colores HUD: leídos por js/ui/tibia-theme.js → js/ui/hud.js.
+ */
+
+html[data-ui="tibia"] {
+  --ts-font-bump: 2px;
+  --ts-bg-deep: #0c0b0a;
+  --ts-panel-top: #454039;
+  --ts-panel-bot: #2c2823;
+  --ts-panel-inset: #1a1815;
+  --ts-border-outer: #080706;
+  --ts-border: #5c564d;
+  --ts-border-light: #9a9183;
+  --ts-text: #e8deca;
+  --ts-muted: #a89f90;
+  --ts-accent: #c9a227;
+  --ts-accent-dark: #7a5f12;
+  --ts-accent-text: #2a1f08;
+  --ts-btn-top: #565045;
+  --ts-btn-bot: #3a352f;
+  --ts-btn-gold-top: #e8c65a;
+  --ts-btn-gold-bot: #b8861a;
+  --ts-danger-soft: #e8a0a0;
+  --ts-link: #d4bc6a;
+  --ts-hp: #c45c5c;
+  --ts-green: #6ba86b;
+  --ts-xp0: #5a6b3a;
+  --ts-xp1: #c9a227;
+  --ts-hud-sub: rgba(168, 159, 144, 0.88);
+  --ts-hud-slot: rgba(18, 16, 14, 0.88);
+  --ts-hud-slot-on: rgba(36, 33, 28, 0.96);
+  --ts-hud-stroke: rgba(154, 145, 131, 0.38);
+  --ts-font-family: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+  --ts-font-title: var(--ts-font-family);
+  --font: var(--ts-font-family);
+
+  /* Puente con style.css (tema PMD) */
+  --ink: var(--ts-text);
+  --muted: var(--ts-muted);
+  --box1: var(--ts-panel-top);
+  --box2: var(--ts-panel-bot);
+  --edge: var(--ts-border-light);
+  --edge-in: var(--ts-border);
+  --edge-out: var(--ts-border-outer);
+  --gold: var(--ts-accent);
+  --gold2: var(--ts-accent-dark);
+  --shadow: #000;
+}
+
+html[data-ui="tibia"] body {
+  background: var(--ts-bg-deep);
+  color: var(--ts-text);
+  font-family: var(--ts-font-family);
+  -webkit-font-smoothing: antialiased;
+}
+
+html[data-ui="tibia"] button,
+html[data-ui="tibia"] input,
+html[data-ui="tibia"] select,
+html[data-ui="tibia"] textarea,
+html[data-ui="tibia"] .btn,
+html[data-ui="tibia"] .menu-item,
+html[data-ui="tibia"] .tab,
+html[data-ui="tibia"] .chip,
+html[data-ui="tibia"] .field,
+html[data-ui="tibia"] .toast,
+html[data-ui="tibia"] .pill {
+  font-family: var(--ts-font-family);
+}
+
+html[data-ui="tibia"] canvas#game {
+  font-family: var(--ts-font-family);
+}
+
+/* ---------- fondos de pantalla ---------- */
+html[data-ui="tibia"] .scr.dim,
+html[data-ui="tibia"] #scr-login {
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(72, 66, 58, 0.32), transparent 55%),
+    radial-gradient(circle at 50% 50%, rgba(12, 11, 10, 0.2), rgba(6, 5, 4, 0.94) 72%);
+}
+
+html[data-ui="tibia"] #scr-menu {
+  background:
+    radial-gradient(ellipse at 28% 50%, rgba(50, 46, 40, 0.55), transparent 50%),
+    linear-gradient(90deg, rgba(8, 7, 6, 0.92), rgba(14, 13, 11, 0.88) 45%, rgba(18, 16, 14, 0.95));
+}
+
+html[data-ui="tibia"] .menu-right {
+  background: linear-gradient(90deg, transparent, rgba(8, 7, 6, 0.75) 24%);
+}
+
+/* ---------- paneles ---------- */
+html[data-ui="tibia"] .box {
+  background: linear-gradient(180deg, var(--ts-panel-top), var(--ts-panel-bot));
+  border: 2px solid var(--ts-border);
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px var(--ts-border-outer),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.32),
+    0 16px 40px rgba(0, 0, 0, 0.45);
+  color: var(--ts-text);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+html[data-ui="tibia"] .panel,
+html[data-ui="tibia"] .cell,
+html[data-ui="tibia"] .mission,
+html[data-ui="tibia"] .ach,
+html[data-ui="tibia"] .fr-row,
+html[data-ui="tibia"] .answer {
+  border-radius: 3px;
+  border-color: rgba(92, 86, 77, 0.55);
+}
+
+html[data-ui="tibia"] .panel {
+  background: rgba(0, 0, 0, 0.22);
+  border: 2px solid rgba(92, 86, 77, 0.45);
+}
+
+html[data-ui="tibia"] .stage {
+  border-radius: 4px;
+  border: 2px solid var(--ts-border);
+  background:
+    radial-gradient(ellipse at 50% 88%, rgba(90, 80, 60, 0.18), transparent 58%),
+    linear-gradient(180deg, rgba(28, 26, 22, 0.92), rgba(14, 13, 11, 0.96));
+  box-shadow: 0 0 0 1px var(--ts-border-outer), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* ---------- tipografía / enlaces ---------- */
+html[data-ui="tibia"] .sub,
+html[data-ui="tibia"] .note,
+html[data-ui="tibia"] label {
+  color: var(--ts-muted);
+}
+
+html[data-ui="tibia"] .login-tag {
+  color: var(--ts-muted);
+  font-size: 16px;
+  text-align: center;
+  margin: 0 0 14px;
+  line-height: 1.4;
+}
+
+html[data-ui="tibia"] .logo .t1 {
+  color: var(--ts-accent);
+  text-shadow: 1px 1px 0 var(--ts-accent-dark), 2px 2px 0 rgba(0, 0, 0, 0.85);
+  letter-spacing: 0.5px;
+}
+
+html[data-ui="tibia"] .logo .t2 {
+  color: var(--ts-text);
+  letter-spacing: 4px;
+  opacity: 0.92;
+}
+
+html[data-ui="tibia"] a:not(.btn),
+html[data-ui="tibia"] .legal-link {
+  color: var(--ts-link);
+}
+
+html[data-ui="tibia"] .err {
+  color: var(--ts-danger-soft);
+}
+
+/* ---------- botones ---------- */
+html[data-ui="tibia"] .btn {
+  border: 2px solid var(--ts-border-light);
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--ts-btn-top), var(--ts-btn-bot));
+  box-shadow: 0 0 0 1px var(--ts-border-outer), 0 3px 0 #151310;
+  color: var(--ts-text);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+html[data-ui="tibia"] .btn:hover {
+  filter: brightness(1.08);
+}
+
+html[data-ui="tibia"] .btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 1px var(--ts-border-outer), 0 1px 0 #151310;
+}
+
+html[data-ui="tibia"] .btn.gold {
+  background: linear-gradient(180deg, var(--ts-btn-gold-top), var(--ts-btn-gold-bot));
+  border-color: #f0dfa0;
+  color: var(--ts-accent-text);
+  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+html[data-ui="tibia"] .btn.ghost {
+  border-color: rgba(154, 145, 131, 0.45);
+  background: rgba(0, 0, 0, 0.15);
+  box-shadow: none;
+}
+
+html[data-ui="tibia"] .btn.ghost:active {
+  box-shadow: none;
+}
+
+html[data-ui="tibia"] .btn:disabled {
+  filter: grayscale(0.4) brightness(0.65);
+}
+
+/* ---------- formularios y tabs ---------- */
+html[data-ui="tibia"] .field,
+html[data-ui="tibia"] select.field {
+  background: var(--ts-panel-inset);
+  border: 2px solid var(--ts-border);
+  border-radius: 3px;
+  color: var(--ts-text);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+html[data-ui="tibia"] .field:focus {
+  border-color: var(--ts-border-light);
+  outline: none;
+}
+
+html[data-ui="tibia"] .tabs .tab {
+  background: var(--ts-panel-inset);
+  border: 2px solid transparent;
+  border-radius: 3px;
+  color: var(--ts-muted);
+}
+
+html[data-ui="tibia"] .tabs .tab.on {
+  border-color: var(--ts-border-light);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.12));
+  color: var(--ts-text);
+}
+
+html[data-ui="tibia"] .gen-tab {
+  border-radius: 3px;
+  border-color: rgba(92, 86, 77, 0.5);
+}
+
+html[data-ui="tibia"] .gen-tab.on {
+  border-color: var(--ts-accent);
+  background: rgba(201, 162, 39, 0.12);
+}
+
+html[data-ui="tibia"] .chip {
+  border-radius: 3px;
+  border-color: rgba(92, 86, 77, 0.55);
+}
+
+html[data-ui="tibia"] .chip.on {
+  border-color: var(--ts-accent);
+  color: var(--ts-accent);
+}
+
+/* ---------- menú principal ---------- */
+html[data-ui="tibia"] .menu-item:hover,
+html[data-ui="tibia"] .menu-item:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+html[data-ui="tibia"] .menu-item.play {
+  color: var(--ts-accent);
+}
+
+html[data-ui="tibia"] .menu-item::before {
+  opacity: 0;
+}
+
+html[data-ui="tibia"] .menu-item:hover::before,
+html[data-ui="tibia"] .menu-item:focus-visible::before {
+  opacity: 0.35;
+  filter: sepia(0.6) hue-rotate(-10deg);
+}
+
+html[data-ui="tibia"] .partner-card .lv {
+  color: var(--ts-muted);
+}
+
+/* ---------- topbar ---------- */
+html[data-ui="tibia"] .topbar .pill {
+  border-radius: 3px;
+  background: linear-gradient(180deg, rgba(50, 46, 42, 0.95), rgba(28, 26, 23, 0.98));
+  border: 2px solid var(--ts-border);
+  box-shadow: 0 0 0 1px var(--ts-border-outer), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+html[data-ui="tibia"] .topbar .btn.small.ghost {
+  border-radius: 3px;
+}
+
+html[data-ui="tibia"] .credits-line {
+  color: rgba(168, 159, 144, 0.65);
+}
+
+/* ---------- nivel / partida (DOM) ---------- */
+html[data-ui="tibia"] .card {
+  border-radius: 4px;
+  border-color: rgba(92, 86, 77, 0.45);
+}
+
+html[data-ui="tibia"] .card:hover {
+  border-color: var(--ts-border-light);
+}
+
+html[data-ui="tibia"] .progress {
+  border-radius: 3px;
+}
+
+html[data-ui="tibia"] .progress i {
+  background: var(--ts-accent);
+}
+
+html[data-ui="tibia"] .stat .bar i,
+html[data-ui="tibia"] .mission .bar i,
+html[data-ui="tibia"] .ach .bar i {
+  background: var(--ts-accent);
+}
+
+/* ---------- toasts y avisos ---------- */
+html[data-ui="tibia"] .toast,
+html[data-ui="tibia"] .ach-pop {
+  border-radius: 4px;
+  background: rgba(20, 18, 16, 0.96);
+  border: 2px solid var(--ts-border);
+  box-shadow: 0 0 0 1px var(--ts-border-outer);
+}
+
+html[data-ui="tibia"] .bestiary-run-toast {
+  border-radius: 4px;
+  background: rgba(16, 14, 12, 0.94);
+  border-color: rgba(201, 162, 39, 0.5);
+}
+
+/* ---------- boot / tap ---------- */
+html[data-ui="tibia"] .boot {
+  background: var(--ts-bg-deep);
+}
+
+html[data-ui="tibia"] .boot-in h1 {
+  color: var(--ts-accent);
+  text-shadow: 1px 1px 0 var(--ts-accent-dark), 2px 2px 0 #000;
+}
+
+html[data-ui="tibia"] .boot-in a {
+  color: var(--ts-link);
+}
+
+html[data-ui="tibia"] .tapstart {
+  background: radial-gradient(ellipse at center, rgba(12, 11, 10, 0.35), rgba(6, 5, 4, 0.88));
+}
+
+html[data-ui="tibia"] .tapstart .boot-in p {
+  color: var(--ts-text);
+}
+
+html[data-ui="tibia"] #rotate {
+  background: rgba(8, 7, 6, 0.94);
+}
+
+/* ---------- scrollbars ---------- */
+html[data-ui="tibia"] ::-webkit-scrollbar-thumb {
+  background: rgba(154, 145, 131, 0.35);
+  border-radius: 4px;
+}
+
+/* ---------- tipografía (serif en toda la UI) ---------- */
+html[data-ui="tibia"] .box h1,
+html[data-ui="tibia"] .box h2,
+html[data-ui="tibia"] .box h3,
+html[data-ui="tibia"] .logo .t1,
+html[data-ui="tibia"] .boot-in h1,
+html[data-ui="tibia"] .about-logo,
+html[data-ui="tibia"] .news-day h3 {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- overlays de run (nivel, pausa, fin) ---------- */
+html[data-ui="tibia"] #scr-levelup .ms-card-sub,
+html[data-ui="tibia"] #scr-bond .sub {
+  color: var(--ts-muted);
+  font-style: normal;
+}
+
+html[data-ui="tibia"] .ms-card-lvl {
+  color: var(--ts-accent);
+}
+
+html[data-ui="tibia"] .ms-card-cmp {
+  color: var(--ts-link);
+}
+
+html[data-ui="tibia"] .ms-over-row {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(92, 86, 77, 0.35);
+  border-radius: 3px;
+}
+
+html[data-ui="tibia"] .stats > div {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(92, 86, 77, 0.4);
+  border-radius: 3px;
+}
+
+html[data-ui="tibia"] kbd {
+  border-color: rgba(154, 145, 131, 0.45);
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--ts-text);
+}
+
+html[data-ui="tibia"] .support-ask {
+  border-color: rgba(201, 162, 39, 0.45);
+  background: rgba(201, 162, 39, 0.08);
+  border-radius: 4px;
+}
+
+html[data-ui="tibia"] .topbar .coin {
+  width: 20px;
+  height: 20px;
+}

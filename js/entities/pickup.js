@@ -18,7 +18,7 @@ G.Pickups = (() => {
     heal:  { color: '#5fe08a', glow: '#1f8f4d', r: 6.5 },
     magnet:{ color: '#ff9ed8', glow: '#b03d84', r: 6.5 },
     bomb:  { color: '#ff7b3d', glow: '#b03d10', r: 6.5 },
-    coin:  { color: '#ffd23f', glow: '#b8860b', r: 5.5 },
+    coin:  { color: '#e8c65a', glow: '#b8861a', r: 6 },
     ticket:   { color: '#ffd23f', glow: '#c08a10', r: 7 },
     ticket10: { color: '#c47bff', glow: '#8a3fd0', r: 8 },
     item:     { color: '#ffd23f', glow: '#c08a10', r: 9 }       // value = id del objeto
@@ -171,11 +171,23 @@ G.Pickups = (() => {
         ctx.lineTo(p.x, y + r); ctx.lineTo(p.x - r * 0.78, y);
         ctx.closePath(); ctx.fill();
       } else if (p.kind === 'coin') {
-        // Moneda que gira: elipse que se estrecha.
-        const sx = Math.max(0.25, Math.abs(Math.cos(p.t * 0.9)));
-        ctx.beginPath(); ctx.ellipse(p.x, y, r * sx, r, 0, 0, 6.2832); ctx.fill();
-        ctx.fillStyle = '#b8860b';
-        ctx.beginPath(); ctx.ellipse(p.x, y, r * sx * 0.5, r * 0.5, 0, 0, 6.2832); ctx.fill();
+        const sx = Math.max(0.32, Math.abs(Math.cos(p.t * 0.9)));
+        const useIcon = G.TibiaTheme && G.TibiaTheme.enabled();
+        if (useIcon) {
+          const sz = 22;
+          ctx.save();
+          ctx.translate(p.x, y);
+          ctx.scale(sx, 1);
+          const tibiaCoin = G.TibiaSprites && G.TibiaSprites.enabled
+            && G.TibiaSprites.drawItem(ctx, 'gold_coin', 0, 0, sz);
+          if (!tibiaCoin) G.Icons.draw(ctx, 'goldcoin', -sz / 2, -sz / 2, sz);
+          ctx.restore();
+          continue;
+        } else {
+          ctx.beginPath(); ctx.ellipse(p.x, y, r * sx, r, 0, 0, 6.2832); ctx.fill();
+          ctx.fillStyle = '#b8860b';
+          ctx.beginPath(); ctx.ellipse(p.x, y, r * sx * 0.5, r * 0.5, 0, 0, 6.2832); ctx.fill();
+        }
       } else {
         // Baya, imán y bomba: su icono pixel art.
         const ICON = { heal: 'berry', magnet: 'magnet', bomb: 'bomb', ticket: 'ticket', ticket10: 'ticket10' };

@@ -67,7 +67,7 @@ if (G.Bestiary) {
   const playable = new Set(
     G.CREATURES.filter(c => c.role === 'enemy' && c.bestiary && c.bestiary.enabled).map(c => c.id)
   );
-  playable.add('sentinel_elite');
+  playable.add('minotaur_guard');
   const catalogIds = new Set(catalog.map(e => e.creatureId));
   for (const id of playable) {
     if (!catalogIds.has(id)) err(`Bestiary missing catalog entry for playable ${id}`);

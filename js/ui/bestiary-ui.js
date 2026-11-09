@@ -16,10 +16,12 @@ G.BestiaryUI = (() => {
   };
 
   const DIFF_LABEL = {
+    harmless: 'Inofensiva',
     trivial: 'Trivial',
     easy: 'Fácil',
     medium: 'Media',
     hard: 'Difícil',
+    challenging: 'Desafiante',
     elite: 'Élite',
     boss: 'Jefe'
   };
@@ -232,8 +234,20 @@ G.BestiaryUI = (() => {
       if (canReveal('stage2', 'speed', catalog) && cr) s2.push(['Velocidad', cr.speed]);
       if (canReveal('stage2', 'abilities', catalog) && cr && cr.behavior) s2.push(['Patrón', cr.behavior]);
       if (canReveal('stage2', 'resistances', catalog)) {
-        const types = cr && cr.damageTypes && cr.damageTypes.length ? cr.damageTypes.join(', ') : null;
-        if (types) s2.push(['Daño usado', types]);
+        const DT = G.DamageTypes;
+        const dmg = cr && cr.damageTypes && cr.damageTypes.length
+          ? (DT && DT.names ? DT.names(cr.damageTypes) : cr.damageTypes.join(', ')) : null;
+        if (dmg) s2.push(['Daño usado', dmg]);
+        const fmt = (label, list) => {
+          if (!list || !list.length) return null;
+          return [label, DT && DT.names ? DT.names(list) : list.join(', ')];
+        };
+        const w = fmt('Debilidades', cr && cr.weaknesses);
+        const r = fmt('Fortalezas', cr && cr.resistances);
+        const i = fmt('Inmunidades', cr && cr.immunities);
+        if (w) s2.push(w);
+        if (r) s2.push(r);
+        if (i) s2.push(i);
       }
     }
     addSection('Análisis', s2);
@@ -297,7 +311,7 @@ G.BestiaryUI = (() => {
       el.className = 'panel upg-item';
       el.innerHTML =
         `<div class="ic">${G.Icons.html(icon, 32)}</div>` +
-        `<div><b>${esc(title)}</b> <span style="color:var(--muted);font-size:13px">${esc(sub)}</span></div>` +
+        `<div><b>${esc(title)}</b> <span style="color:var(--muted);font-size:15px">${esc(sub)}</span></div>` +
         `<div class="upg-btns"><button type="button" class="btn small ${maxed ? '' : 'gold'}" data-buy ${maxed ? 'disabled' : ''}>` +
         (maxed ? 'Completado' : '<span class="gold">' + cost + ' pts</span>') + '</button></div>';
       const btn = el.querySelector('[data-buy]');
@@ -314,7 +328,7 @@ G.BestiaryUI = (() => {
       el.className = 'panel upg-item';
       el.innerHTML =
         `<div class="ic">${G.Icons.html(u.icon, 32)}</div>` +
-        `<div><b>${esc(u.name)}</b> <span style="color:var(--muted);font-size:13px">${esc(u.unit)}</span>` +
+        `<div><b>${esc(u.name)}</b> <span style="color:var(--muted);font-size:15px">${esc(u.unit)}</span>` +
         `<div class="pips">${pips}</div></div>` +
         `<div class="upg-btns"><button type="button" class="btn small ${maxed ? '' : 'gold'}" data-buy ${maxed || pts < cost ? 'disabled' : ''}>` +
         (maxed ? 'Máx.' : cost + ' pts') + '</button></div>';
@@ -380,7 +394,7 @@ G.BestiaryUI = (() => {
       el.innerHTML =
         `<div class="ic">${G.Icons.html('medal3', 32)}</div>` +
         `<div><b>${esc(c.name || c.id)}</b>` +
-        `<span style="color:var(--muted);font-size:13px;display:block;margin-top:4px">${esc(c.description || '')}</span>` +
+        `<span style="color:var(--muted);font-size:15px;display:block;margin-top:4px">${esc(c.description || '')}</span>` +
         `<small class="sub">${esc(c.trigger)} · cd ${c.cooldownMs} ms</small></div>` +
         `<div class="upg-btns"></div>`;
       const btns = el.querySelector('.upg-btns');

@@ -67,6 +67,10 @@ G.Icons = (() => {
     coin: { pal: { y: '#ffd23f', o: '#c08a10', w: '#fff4b0' }, rows: [
       '....kkkk....', '..kkyyyykk..', '.kyywwyyyyk.', '.kywyyyyyok.', 'kyyyyooyyyok', 'kywyoyyoyyok',
       'kyyyoyyoyyok', 'kyyyyooyyyok', '.kyyyyyyyok.', '.kooyyyyook.', '..kkooookk..', '....kkkk....'] },
+    /** Monedas apiladas (skin TibiaSurvivor, topbar / loot). */
+    goldcoin: { pal: { y: '#e8c65a', o: '#b8861a', d: '#7a5f12', e: '#5c564d' }, rows: [
+      '............', '....eeee....', '..eeooee....', '.eoyyyyoe...', '.eyyyddyeoe.', 'eoyyyddyyoe.',
+      'eoyyyooyyoe.', 'eoyyyooyyoe.', '.eyyyyyyoe..', '.eooyyyyoe..', '..eeooee....', '....eeee....'] },
     cards: { pal: { a: '#ffd23f', b: '#4fb4ff', w: '#e6f4ff' }, rows: [
       '............', '.kkkkkk.....', '.kaaaaakkkk.', '.kaaaakbbbbk', '.kaaaakbwwbk', '.kaaaakbwwbk',
       '.kaaaakbbbbk', '.kaaaakbwwbk', '.kkkkkkbwwbk', '......kbbbbk', '......kkkkkk', '............'] },
@@ -288,7 +292,17 @@ G.Icons = (() => {
     return cv;
   }
 
+  function coinId() {
+    return typeof document !== 'undefined' && document.documentElement.getAttribute('data-ui') === 'tibia'
+      ? 'goldcoin' : 'coin';
+  }
+
+  function resolveName(name) {
+    return name === 'coin' ? coinId() : name;
+  }
+
   function canvas(name) {
+    name = resolveName(name);
     let cv = cache.get(name);
     if (cv) return cv;
     if (name.startsWith('move:')) {
@@ -304,6 +318,7 @@ G.Icons = (() => {
   }
 
   function url(name) {
+    name = resolveName(name);
     let u = urls.get(name);
     if (!u) {
       // Los de interfaz, directamente de su dibujo; los emblemas (tipos, movimientos), del canvas.
@@ -371,11 +386,13 @@ G.Icons = (() => {
 
   /** <img> pixelado para el DOM. */
   function html(name, size = 20, cls = '') {
+    name = resolveName(name);
     const cv = canvas(name), w = snap(name, size), h = w * cv.height / cv.width;
     return `<img class="pix ${cls}" src="${url(name)}" width="${w}" height="${h}" alt="" draggable="false">`;
   }
 
   function draw(ctx, name, x, y, size) {
+    name = resolveName(name);
     const cv = canvas(name);
     const s2 = snap(name, size);
     x += (size - s2) / 2; y += (size - s2) / 2; size = s2;
@@ -420,5 +437,5 @@ G.Icons = (() => {
     r.setProperty('--ico-cursor', `url("${url('cursor')}")`);
   }
 
-  return { canvas, url, html, draw, twinkle, rarity, RARITY_BALL, installCss, UI, TYPE_GLYPH };
+  return { canvas, url, html, draw, twinkle, rarity, RARITY_BALL, installCss, coinId, UI, TYPE_GLYPH };
 })();

@@ -1,68 +1,68 @@
-/* ============ bestiary-tips.js — consejos tácticos del vertical slice (BST-9) ============ */
+/* ============ bestiary-tips.js — consejos tácticos (criaturas Tibia) ============ */
 G.BESTIARY_TIPS = {
-  'bestiary.cave_filament.tip1': {
-    es: 'Aparece en oleadas: un hechizo en área limpia varios sin gastar mucho tiempo.',
-    en: 'It spawns in packs: an area spell clears several without much downtime.'
+  'bestiary.cat.tip1': {
+    es: 'Oleadas tempranas: un hechizo en área barato limpia gatos sin perder tempo.',
+    en: 'Early swarms: a cheap area spell clears cats without losing tempo.'
   },
-  'bestiary.ember_wisp.tip1': {
-    es: 'Carga en línea recta; esquiva lateral y contraataca cuando frena.',
-    en: 'Charges in a straight line; sidestep and punish when it stops.'
-  },
-  'bestiary.pit_scuttler.tip1': {
-    es: 'Es muy rápido pero frágil: priorízalo antes de que te corte la retirada.',
-    en: 'Very fast but fragile: deal with it before it cuts off your escape.'
-  },
-  'bestiary.gravel_mite.tip1': {
-    es: 'Aguanta más de lo que parece; no lo dejes vivo mientras curas a otros.',
-    en: 'Tougher than it looks; do not leave it up while you heal off others.'
-  },
-  'bestiary.spore_puff.tip1': {
-    es: 'Mantén obstáculos entre tú y el proyectil; no persigas en campo abierto.',
-    en: 'Keep obstacles between you and its shots; avoid chasing in the open.'
-  },
-  'bestiary.dust_spirit.tip1': {
-    es: 'Daño energético a distancia: acércate en ventanas tras cada ráfaga.',
-    en: 'Energy damage at range: close in during gaps between bursts.'
-  },
-  'bestiary.flint_crawler.tip1': {
-    es: 'Te persigue sin pausa; retrocede hacia zonas donde los proyectiles colisionan.',
-    en: 'Relentless chase; kite backward into spots where spells collide with terrain.'
-  },
-  'bestiary.seam_speaker.tip1': {
-    es: 'Abanico de tiros: gira para no recibir varios impactos a la vez.',
-    en: 'Fan of shots: strafe so you do not eat multiple hits at once.'
-  },
-  'bestiary.rune_guard.tip1': {
-    es: 'Refuerza a otros constructos; elimínalo si ves aliados con escudo o curación.',
-    en: 'Bolsters other constructs; delete it when you see shields or healing nearby.'
-  },
-  'bestiary.brood_hatcher.tip1': {
-    es: 'Corta la cadena matando al incubador antes de que sature la sala.',
-    en: 'Break the chain by killing the hatcher before it floods the room.'
-  },
-  'bestiary.cinder_wraith.tip1': {
-    es: 'Marca zonas de fuego en el suelo; no vuelvas sobre las mismas baldosas.',
-    en: 'Marks fire on the ground; do not step back on the same tiles.'
-  },
-  'bestiary.crystal_shade.tip1': {
-    es: 'Rayo sostenido: rompe la línea de visión un instante y vuelve a presionar.',
-    en: 'Sustained beam: break line of sight briefly, then pressure again.'
-  },
-  'bestiary.ash_mender.tip1': {
-    es: 'Si cura a la élite o al grupo, convierte al mender en objetivo principal.',
-    en: 'If it heals elites or clusters, make the mender your primary target.'
-  },
-  'bestiary.iron_stalker.tip1': {
-    es: 'Salta sobre tu posición: no te plantes al disparar un hechizo largo.',
+  'bestiary.dog.tip1': {
+    es: 'Salta sobre tu hueco; no te plantes mientras canalizas un hechizo largo.',
     en: 'Jumps on your position; do not stand still during long casts.'
   },
-  'bestiary.vault_warden.tip1': {
-    es: 'Jefe del umbral: reserva defensas para las embestidas y ráfagas del minuto final.',
-    en: 'Threshold boss: save defensives for charges and late-minute bursts.'
+  'bestiary.deer.tip1': {
+    es: 'Muy rápido y frágil: elimínalo antes de que corte tu ruta de huida.',
+    en: 'Very fast and fragile: drop it before it blocks your escape route.'
   },
-  'bestiary.sentinel_elite.tip1': {
-    es: 'Centinela único por run: derrotarlo abre el vínculo de hechizos si tienes huecos.',
-    en: 'One sentinel per run: beating it opens spell fusion when you have room.'
+  'bestiary.rabbit.tip1': {
+    es: 'Corta tu retirada: no solo huyas en línea recta o te interceptará.',
+    en: 'Cuts off your retreat: do not flee in a straight line or it will intercept.'
+  },
+  'bestiary.bug.tip1': {
+    es: 'Resiste tierra; el fuego rompe su caparazón más rápido que golpes físicos.',
+    en: 'Resists earth; fire breaks its shell faster than physical hits.'
+  },
+  'bestiary.troll.tip1': {
+    es: 'Débil a muerte y tierra; persigue sin pausa pero es blando si lo kiteas.',
+    en: 'Weak to death and earth; chases relentlessly but is soft if you kite it.'
+  },
+  'bestiary.wolf.tip1': {
+    es: 'Embiste tras apuntar: esquiva lateral en el dash y contraataca.',
+    en: 'Charges after aiming: sidestep the dash and punish.'
+  },
+  'bestiary.orc_shaman.tip1': {
+    es: 'Cura al grupo; priorízalo antes de que revivan oleadas enteras.',
+    en: 'Heals the pack; prioritize it before it refills whole waves.'
+  },
+  'bestiary.minotaur.tip1': {
+    es: 'Cuerpo a cuerpo pesado; débil a hielo y muerte, resiste fuego.',
+    en: 'Heavy melee bruiser; weak to ice and death, resists fire.'
+  },
+  'bestiary.wasp.tip1': {
+    es: 'Muy rápida y frágil: acaba con ella antes de que te corte el paso.',
+    en: 'Very fast and fragile: drop it before it blocks your path.'
+  },
+  'bestiary.fire_devil.tip1': {
+    es: 'Inmune al fuego; hielo o sagrado. No pises las marcas flameantes del suelo.',
+    en: 'Immune to fire—use ice or holy. Do not stand on burning floor marks.'
+  },
+  'bestiary.ghoul.tip1': {
+    es: 'Inmune a muerte; sagrado penetra. Mucha vida: no lo dejes mientras curas.',
+    en: 'Immune to death; holy penetrates. High HP: do not ignore it while you heal off.'
+  },
+  'bestiary.bonelord.tip1': {
+    es: 'Abanico de rayos: gira para no recibir varios impactos seguidos.',
+    en: 'Fan of beams: strafe so you do not eat several hits in a row.'
+  },
+  'bestiary.hero.tip1': {
+    es: 'Tanque lento: necesita muchos golpes; usa daño sostenido, no bursts cortos.',
+    en: 'Slow tank: takes many hits; use sustained damage, not short bursts.'
+  },
+  'bestiary.demon.tip1': {
+    es: 'Jefe infernal: reserva defensas para embestidas y ráfagas del minuto final.',
+    en: 'Infernal boss: save defensives for charges and late-minute bursts.'
+  },
+  'bestiary.minotaur_guard.tip1': {
+    es: 'Very Rare: escuda a aliados; bórralo antes de cargar contra el jefe.',
+    en: 'Very Rare: shields allies; delete it before you push the boss.'
   }
 };
 

@@ -1,0 +1,8 @@
+{
+  "name": "tibiasurvivor-tools",
+  "private": true,
+  "dependencies": {
+    "pngjs": "^7.0.0",
+    "protobufjs": "^7.4.0"
+  }
+}

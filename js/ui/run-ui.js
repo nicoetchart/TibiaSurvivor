@@ -113,10 +113,10 @@ G.RunUI = (() => {
       ${r.judge ? `<div style="grid-column:1/-1"><span>Ante el juicio</span><b class="gold">${G.U.mmss(r.judge.time)} · ${r.judge.bosses} ${r.judge.bosses === 1 ? 'guardián' : 'guardianes'}</b></div>` : ''}
       <div style="grid-column:1/-1"><span>${neutral ? 'Monedas ganadas' : 'Pokémonedas ganadas'}</span>
         <b class="gold"><span class="coin"></span> +${r.coins}</b>
-        <div style="font-size:12px;color:var(--muted)">${r.breakdown}</div></div>
+        <div style="font-size:14px;color:var(--muted)">${r.breakdown}</div></div>
       ${!neutral && (r.t1 || r.t10) ? `<div style="grid-column:1/-1"><span>Tickets del gacha</span><b>
         ${r.t1 ? G.Icons.html('ticket', 22) + ' +' + r.t1 + ' ' : ''}${r.t10 ? G.Icons.html('ticket10', 22) + ' +' + r.t10 + ' ×10' : ''}</b></div>` : ''}
-      <div style="grid-column:1/-1"><span>Movimientos</span><b style="font-size:15px">
+      <div style="grid-column:1/-1"><span>Movimientos</span><b style="font-size:17px">
         ${r.moves.map(m => `${G.Icons.html('move:' + m.id, 16)} ${m.name} Nv.${m.lvl}`).join(' · ') || '—'}</b></div>
       ${r.msSpells && r.msSpells.length ? `<div style="grid-column:1/-1" class="ms-over-spells"><span>Hechizos (run)</span>
         <div class="ms-over-table">${r.msSpells.slice(0, 6).map(s =>

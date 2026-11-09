@@ -5,16 +5,21 @@
 G.Bestiary = (() => {
   const VERSION = 1;
 
-  const DIFFICULTIES = ['trivial', 'easy', 'medium', 'hard', 'elite', 'boss'];
+  /** Alineado con TibiaWiki Bestiary/Difficulties (ordinarias + very rare élite/boss MVP). */
+  const DIFFICULTIES = ['harmless', 'trivial', 'easy', 'medium', 'hard', 'challenging', 'elite', 'boss'];
 
-  /** @type {Record<string, { stage1: number, stage2: number, final: number, points: number }>} */
+  /** stage1/2/final = primer / segundo / tercer detalle; points = charm points al completar (ordinario). */
   const THRESHOLDS_BY_DIFFICULTY = {
-    trivial: { stage1: 10, stage2: 50, final: 150, points: 1 },
-    easy: { stage1: 10, stage2: 40, final: 100, points: 3 },
-    medium: { stage1: 5, stage2: 25, final: 75, points: 5 },
-    hard: { stage1: 5, stage2: 15, final: 40, points: 8 },
-    elite: { stage1: 1, stage2: 5, final: 15, points: 10 },
-    boss: { stage1: 1, stage2: 3, final: 5, points: 15 }
+    harmless: { stage1: 5, stage2: 10, final: 25, points: 1 },
+    trivial: { stage1: 10, stage2: 100, final: 250, points: 5 },
+    easy: { stage1: 25, stage2: 250, final: 500, points: 15 },
+    medium: { stage1: 50, stage2: 500, final: 1000, points: 25 },
+    hard: { stage1: 100, stage2: 1000, final: 2500, points: 50 },
+    challenging: { stage1: 200, stage2: 2000, final: 5000, points: 100 },
+    /** Very Rare (dificultad Medium): 2 / 3 / 5 muertes, charm points ×2. */
+    elite: { stage1: 2, stage2: 3, final: 5, points: 50 },
+    /** Nemesis (Bosstiary): 1 / 3 / 5; recompensa alineada a tier Challenging. */
+    boss: { stage1: 1, stage2: 3, final: 5, points: 100 }
   };
 
   const REVEAL_FIELDS = {
@@ -30,15 +35,17 @@ G.Bestiary = (() => {
   /** Entradas de catálogo sin fila propia en G.CREATURES (spawn usa otra plantilla). */
   const EXTRA_ENTRIES = [
     {
-      id: 'sentinel_elite',
-      baseCreatureId: 'rune_guard',
-      name: 'Centinela de élite',
-      description: 'Variante reforzada del guardián de runas; aparece una vez por run.',
-      nameKey: 'creature.sentinel_elite.name',
-      descriptionKey: 'creature.sentinel_elite.description',
-      family: 'construct',
-      difficulty: 'elite',
-      tags: ['jumper', 'ground'],
+      id: 'minotaur_guard',
+      baseCreatureId: 'minotaur',
+      name: 'Minotaur Guard',
+      description: 'Very Rare del bestiario: escolta blindada del laberinto; una vez por run.',
+      nameKey: 'creature.minotaur_guard.name',
+      descriptionKey: 'creature.minotaur_guard.description',
+      family: 'humanoid',
+      difficulty: 'elite', // Very Rare (Tibia)
+      tags: ['melee', 'ground'],
+      weaknesses: ['ice', 'death'],
+      resistances: ['fire', 'holy', 'physical'],
       bestiary: {
         enabled: true,
         entryType: 'elite',
@@ -49,7 +56,7 @@ G.Bestiary = (() => {
           stage2: ['damage', 'speed', 'abilities', 'resistances'],
           stage3: ['drops', 'tips', 'statistics']
         },
-        tipKeys: ['bestiary.sentinel_elite.tip1'],
+        tipKeys: ['bestiary.minotaur_guard.tip1'],
         /** En runtime, instancias con sentinelElite mapean a este id (BST-3). */
         runtimeFlag: 'sentinelElite'
       }

@@ -67,6 +67,12 @@ Color: primer tipo de daño (`G.DamageTypes.COLOR`).
 - Sin meta / PNG: `Animator.draw` usa geo o círculo gris (`#6b7a94`), nunca entidad invisible.
 - `bodyRadius` / `bodyHeight` derivan de meta o defaults seguros (sin NaN).
 
+## Sprites estilo cliente Tibia
+
+Ver **`docs/TIBIA_SPRITES_BASELINE.md`**: atlas PNG exportados offline, `G.TibiaSprites`,
+mapa en `js/data/tibia-sprite-map.js`, activación con `?sprites=tibia`. Sin export, geo sigue activo.
+
 ## Licencias
 
 Solo MIT (código), OFL (Pixelify Sans) u obra propia con licencia explícita en el repo.
+Sprites Tibia: documentar en `assets/tibia/LICENSE.md` (no subir `.spr`/`.dat`).

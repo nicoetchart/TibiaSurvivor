@@ -129,12 +129,14 @@ uso **no comercial** y con atribución a sus artistas.
 Stats base y nombres en español: [PokeAPI](https://pokeapi.co/),
 descargados una vez y guardados en `js/data/pokedex.js`.
 
-## Fuente
+## Fuente (interfaz)
 
-[Pixelify Sans](https://github.com/eifetx/Pixelify-Sans) (SIL Open Font License 1.1,
-licencia en `assets/fonts/OFL.txt`). El juego usa una versión modificada,
-"Pixelify PS", con los números redibujados para distinguirlos mejor
-(`tools/make_font.py`).
+[Crimson Pro](https://fonts.google.com/specimen/Crimson+Pro) por Jacques Le Bailly /
+Font Bureau (SIL Open Font License 1.1). En el repo: `assets/fonts/CrimsonPro-Variable.ttf`
+y `assets/fonts/CrimsonPro-OFL.txt`.
+
+Pixelify Sans (OFL) permanece en `assets/fonts/` por herramientas legacy (`tools/make_font.py`);
+no se carga en la interfaz de TibiaSurvivor.
 
 ## Marca
 

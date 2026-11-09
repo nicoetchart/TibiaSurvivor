@@ -109,7 +109,8 @@ G.SettingsUI = (() => {
         + `<ul class="credits">
              <li><b>Arte MVP:</b> placeholders geométricos (código propio).</li>
              <li><b>Música y sonidos:</b> originales del proyecto.</li>
-             <li><b>Fuente:</b> Pixelify Sans (OFL).</li>
+             <li><b>Interfaz:</b> Crimson Pro (SIL OFL 1.1).</li>
+             <li><b>Iconos:</b> pixel art procedural (código propio).</li>
              ${neutral ? '' : '<li><b>Modo legacy:</b> assets de terceros no incluidos en el build neutral.</li>'}
            </ul>`
         + `<div class="row wrap" style="justify-content:center;gap:8px">

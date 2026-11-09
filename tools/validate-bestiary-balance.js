@@ -35,8 +35,8 @@ const normalWeights = G.CREATURES
   .filter(c => c.role === 'enemy' && !c.boss && c.bestiary && c.bestiary.enabled);
 const weightSum = normalWeights.reduce((a, c) => a + (c.spawnWeight || 1), 0);
 
-const elite = G.Bestiary.getCatalogEntry('sentinel_elite');
-const boss = G.Bestiary.getCatalogEntry('vault_warden');
+const elite = G.Bestiary.getCatalogEntry('minotaur_guard');
+const boss = G.Bestiary.getCatalogEntry('demon');
 
 for (const row of catalog) {
   const entry = G.Bestiary.getCatalogEntry(row.creatureId);
@@ -59,11 +59,11 @@ for (const row of catalog) {
   if (row.entryType === 'normal' && runsToFinal < 2.5) {
     note(`${row.creatureId}: ~${runsToFinal.toFixed(1)} runs to final (may be fast)`);
   }
-  if (row.entryType === 'boss' && th.final > 8) {
-    err(`boss ${row.creatureId}: final ${th.final} > 8 (at most ~1 kill/run)`);
+  if (row.entryType === 'boss' && th.final > 5) {
+    err(`boss ${row.creatureId}: final ${th.final} > 5 (Nemesis-style cap)`);
   }
-  if (row.entryType === 'elite' && th.final > 35) {
-    note(`elite ${row.creatureId}: final ${th.final} may need many runs (~${runsToFinal.toFixed(0)})`);
+  if (row.entryType === 'elite' && th.final > 5) {
+    note(`elite ${row.creatureId}: Tibia very rare final ${th.final}`);
   }
   if (runsToFinal > 90) {
     note(`${row.creatureId}: ~${runsToFinal.toFixed(0)} runs to final (heavy grind risk)`);

@@ -38,7 +38,9 @@
     if (broken()) return;
     G.I18n.startDom();
     // Espera a la fuente pixel para que la UI no salte al cargarla.
-    const ready = document.fonts && document.fonts.load ? document.fonts.load('16px Pixelify') : Promise.resolve();
+    const tibiaUi = document.documentElement.getAttribute('data-ui') === 'tibia';
+    const fontProbe = '18px "Crimson Pro"';
+    const ready = document.fonts && document.fonts.load ? document.fonts.load(fontProbe) : Promise.resolve();
     ready.catch(() => {}).then(() => G.Flow.boot());
   }
   if (document.readyState === 'loading') addEventListener('DOMContentLoaded', boot);

@@ -2,6 +2,46 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-09', title: ['Criaturas oficiales de Tibia', 'Official Tibia creatures'], fix: [
+    ['Sprites Tibia: ancla al centro del tile (no de la tira) y direcciones N/S alineadas con el cliente.',
+     'Tibia sprites: anchor at tile center (not full strip) and N/S directions match the client.'],
+    ['Walk en criaturas Tibia: el Animator ya no fuerza Idle sin SPRITE_META; pies afinados en tiles 64px.',
+     'Tibia creature Walk: Animator no longer forces Idle without SPRITE_META; 64px foot anchor tuned.'],
+    ['Sprites Tibia: tiras idle/walk separadas, escala drawMul, anclas y recorte seguro (sin huecos al parar/atacar).',
+     'Tibia sprites: separate idle/walk strips, drawMul scale, anchors and safe clip (no gaps on stop/attack).'],
+    ['Ajuste global de sprites Tibia (`tibia-sprite-tuning.js`): escala 32/64, offset pies/sombra y atajos Ctrl en ?dev.',
+     'Global Tibia sprite tuning (tibia-sprite-tuning.js): 32/64 scale, foot/shadow offset and Ctrl shortcuts in ?dev.'],
+    ['Atajos ?dev: Ctrl+Shift/Alt con [ ] y ; \' afinan escala y footDy por tile 32 o 64 sin tocar cada lookType.',
+     'Dev shortcuts: Ctrl+Shift/Alt with [ ] and ; \' tune scale and footDy per 32 or 64 tile without per lookType edits.'],
+    ['Sprites Tibia: anclas desde bbox del PNG al importar; tiers visualTiers/big igualan criaturas 32px y 64px (minotaur vs troll).',
+     'Tibia sprites: bbox PNG anchors on import; visualTiers/big normalizes 32px and 64px creatures (minotaur vs troll).'],
+    ['Sprites Tibia modo natural (como Pokémon): `naturalSize` por defecto, meta w/h/ax/ay/s por criatura; tiers opcionales si `naturalSize: false`.',
+     'Tibia natural sprite mode (Pokémon-like): naturalSize default, per-creature w/h/ax/ay/s meta; optional tiers when naturalSize: false.']
+  ], new: [
+    ['Línea base de sprites Tibia: mapa lookType/outfit, `G.TibiaSprites` y export offline (`?sprites=tibia`; sin PNG, geo como fallback).',
+     'Tibia sprite baseline: lookType/outfit map, G.TibiaSprites and offline export (?sprites=tibia; geo fallback until PNGs).'],
+    ['Importador `tools/import_tibia_grouped.mjs`: copia strips agrupados a `assets/tibia/creatures/` y metadatos de animación.',
+     'Importer tools/import_tibia_grouped.mjs: copies grouped strips to assets/tibia/creatures/ with animation meta.'],
+    ['Las 15 plantillas enemigas del MVP son criaturas de Tibia (Cat, Demon, etc.; nombres siempre en inglés) con dificultad de bestiario, descripciones y consejos alineados a TibiaWiki.',
+     'MVP’s 15 enemy templates are Tibia creatures (Cat, Demon, etc.) with bestiary difficulty, descriptions and tips aligned to TibiaWiki.'],
+    ['Debilidades, fortalezas e inmunidades elementales por criatura; el daño en combate y el detalle del bestiario las muestran.',
+     'Per-creature elemental weaknesses, resistances and immunities; combat damage and bestiary detail reflect them.'],
+    ['Élite Very Rare: Minotaur Guard. Jefe Nemesis: Demon.',
+     'Very Rare elite: Minotaur Guard. Nemesis boss: Demon.']
+  ], chg: [
+    ['Comportamientos del roster Tibia revisados (p. ej. Orc Shaman curador, Minotaur Guard escudero, Ghoul tanque).',
+     'Tibia roster behaviors revised (e.g. Orc Shaman healer, Minotaur Guard shielder, Ghoul tank).'],
+    ['Umbrales de muertes y charm points por dificultad alineados con TibiaWiki (Harmless → Challenging; élite Very Rare; jefe Nemesis).',
+     'Kill thresholds and charm points per difficulty aligned with TibiaWiki (Harmless → Challenging; elite Very Rare; boss Nemesis).'],
+    ['Interfaz estilo cliente RPG (piedra/cueva): menú, bestiario, vocación, ajustes y HUD en partida; tema azul PMD sustituido en modo TibiaSurvivor.',
+     'RPG-client UI (stone/cave): menu, bestiary, vocation, settings and in-run HUD; blue PMD theme replaced in TibiaSurvivor mode.'],
+    ['HUD y DOM comparten tokens CSS; moneda de la barra superior en oro apilado; títulos en serif; pantallas de nivel, pausa y fin de run alineadas al tema.',
+     'HUD and DOM share CSS tokens; top bar gold-stack coin icon; serif panel titles; level-up, pause and run-end screens match the theme.'],
+    ['Toda la interfaz usa la misma serif (Georgia); texto en canvas vía tibia-theme; monedas en suelo con icono goldcoin; landings SEO con pages.css alineado.',
+     'Full UI uses the same serif (Georgia); canvas text via tibia-theme; floor coins use goldcoin icon; SEO landings use aligned pages.css.'],
+    ['Interfaz con Crimson Pro (OFL) empaquetada en lugar de Georgia; precarga y canvas alineados.',
+     'UI uses bundled Crimson Pro (OFL) instead of Georgia; preload and canvas text aligned.']
+  ], fix: [] },
   { d: '2026-11-05', title: ['Bestiario en menú', 'Bestiary screen'], new: [
     ['Nueva pantalla Bestiario en el menú (MVP neutral): catálogo, filtros, detalle por etapas y saldo de puntos.',
      'New Bestiary screen in the menu (neutral MVP): catalog, filters, stage-based detail and point balance.'],

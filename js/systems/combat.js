@@ -212,15 +212,25 @@ G.Combat = (() => {
     return picked;
   }
 
+  function defenseProfile(e) {
+    if (!e) return null;
+    return {
+      types: e.types || ['physical'],
+      weaknesses: e.weaknesses || [],
+      resistances: e.resistances || [],
+      immunities: e.immunities || []
+    };
+  }
+
   /** Tabla de tipos × clima, o ×1 si el ataque es una habilidad TibiaSurvivor. */
   function typeK(type, e, sourceId, pl) {
-    let k = G.Content.attackFactor(type, e && e.types, sourceId);
+    let k = G.Content.attackFactor(type, defenseProfile(e), sourceId);
     if (pl && G.MasterSorcerer) k = G.MasterSorcerer.applyElementalPen(k, pl);
     return k;
   }
 
   function typeLabel(type, e, sourceId) {
-    return G.Content.effectivenessLabel(type, e && e.types, sourceId);
+    return G.Content.effectivenessLabel(type, defenseProfile(e), sourceId);
   }
 
   function fireProjectiles(pl, m) {

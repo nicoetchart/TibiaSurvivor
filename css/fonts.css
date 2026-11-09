@@ -1,0 +1,11 @@
+/* ============ Tipografía UI — Crimson Pro (SIL OFL 1.1) ============
+ * Variable font empaquetado en assets/fonts/CrimsonPro-Variable.ttf
+ * Licencia: assets/fonts/CrimsonPro-OFL.txt
+ */
+@font-face {
+  font-family: 'Crimson Pro';
+  src: url('../assets/fonts/CrimsonPro-Variable.ttf') format('truetype');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}

@@ -49,11 +49,14 @@ G.MenuUI = (() => {
     $('menu-partner').classList.toggle('shiny', shiny);
     $('menu-partner-name').innerHTML = mon.name + (shiny ? ' ' + G.Icons.html('shiny', 24) : '');
     $('menu-partner-info').innerHTML = neutral
-      ? (mon.types || []).map(t => `<span class="chip on" style="font-size:12px">${t}</span>`).join(' ')
+      ? (() => {
+          const v = G.Content.getVocation('master_sorcerer');
+          return (v ? v.name : 'Vocación') + ' · Cueva Cristal';
+        })()
       : G.UI.typeChips(mon.types) + ' ' + G.UI.stars(mon.rarity);
     // Normal / shiny a mano, aquí mismo (en el móvil no se encontraba en la ficha).
     const seg = $('menu-shiny');
-    seg.classList.toggle('hidden', !G.DB.ownsShiny(mon.dex));
+    seg.classList.toggle('hidden', neutral || !G.DB.ownsShiny(mon.dex));
     seg.lastChild.innerHTML = G.Icons.html('shiny', 12) + ' Shiny';
     seg.querySelectorAll('button').forEach(b => {
       b.classList.toggle('on', (b.dataset.v === '1') === shiny);
@@ -197,7 +200,7 @@ G.MenuUI = (() => {
           <button class="${viewShiny ? '' : 'on'}" data-v="0">Normal</button>
           <button class="${viewShiny ? 'on' : ''}" data-v="1">${G.Icons.html('shiny', 12)} Shiny</button></div>` : ''}
       <div class="center">
-        <div style="color:var(--muted);font-size:13px">Nº ${String(p.dex).padStart(3, '0')} · ${GEN_NAMES[p.gen - 1]}</div>
+        <div style="color:var(--muted);font-size:15px">Nº ${String(p.dex).padStart(3, '0')} · ${GEN_NAMES[p.gen - 1]}</div>
         <h3>${own ? p.name : '???'}</h3>
         <div style="color:${G.Gacha.RARITY_COLOR[p.rarity]}">${G.UI.stars(p.rarity, 24)} ${G.Gacha.RARITY_NAME[p.rarity]}</div>
         <div style="margin:6px 0">${own ? G.UI.typeChips(p.types) : ''}</div>
@@ -206,7 +209,7 @@ G.MenuUI = (() => {
         ${bar('Vida', p.hp, max.hp, p.hp)}
         ${bar('Ataque', p.atk, max.atk, '×' + p.atk.toFixed(2))}
         ${bar('Velocidad', p.spd, max.spd, p.spd)}
-        <p style="font-size:14px;margin:10px 0 4px">Empieza con <b class="gold">${G.Moves.BY_ID[G.startMoveOf(dex)].name}</b></p>
+        <p style="font-size:16px;margin:10px 0 4px">Empieza con <b class="gold">${G.Moves.BY_ID[G.startMoveOf(dex)].name}</b></p>
         <p class="move-icons" title="Movimientos que puede aprender">
           ${G.Moves.poolFor(p).map(id => `<span title="${G.Moves.BY_ID[id].name}">${G.Icons.html('move:' + id, 16)}</span>`).join('')}</p>
         ${usingThis
@@ -268,7 +271,7 @@ G.MenuUI = (() => {
       el.innerHTML = `
         <div class="ic">${G.Icons.html(u.icon, 32)}</div>
         <div>
-          <b>${u.name}</b> <span style="color:var(--muted);font-size:13px">${u.unit}</span>
+          <b>${u.name}</b> <span style="color:var(--muted);font-size:15px">${u.unit}</span>
           <div class="pips">${Array.from({ length: u.max }, (_, i) => `<i class="${i < lvl ? 'on' : ''}"></i>`).join('')}</div>
         </div>
         <div class="upg-btns">

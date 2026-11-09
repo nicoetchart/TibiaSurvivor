@@ -104,19 +104,16 @@ G.NeutralRoster = (() => {
   let eliteCache = null;
   function buildElite() {
     if (eliteCache) return eliteCache;
-    const c = G.CREATURE_BY_ID && G.CREATURE_BY_ID.rune_guard;
+    const c = G.CREATURE_BY_ID && G.CREATURE_BY_ID.minotaur;
     if (!c) return null;
     const d = defFor(c);
-    d.name = 'Centinela de élite';
-    d.behavior = 'jumper';
+    d.name = 'Minotaur Guard';
+    d.behavior = 'shielder';
     d.hp = Math.round(d.hp * 2.4);
     d.dmg = Math.round(d.dmg * 1.45);
     d.xp = 85;
-    d.shotDmg = Math.round(d.dmg * 0.7);
-    d.shotCd = 2.4;
-    d.range = 200;
     d.elite = true;
-    d.bestiaryCreatureId = 'sentinel_elite';
+    d.bestiaryCreatureId = 'minotaur_guard';
     eliteCache = d;
     return d;
   }
@@ -124,7 +121,7 @@ G.NeutralRoster = (() => {
   let bossCache = null;
   function buildBoss() {
     if (bossCache) return bossCache;
-    const c = G.CREATURE_BY_ID && G.CREATURE_BY_ID.vault_warden;
+    const c = G.CREATURE_BY_ID && G.CREATURE_BY_ID.demon;
     if (!c) return null;
     const d = defFor(c);
     d.hp = Math.round(c.hp * 1.35);

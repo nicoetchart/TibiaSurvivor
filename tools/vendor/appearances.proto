@@ -1,0 +1,28 @@
+syntax = "proto2";
+package Canary.protobuf.appearances;
+
+message SpriteInfo {
+  optional uint32 pattern_width = 1;
+  optional uint32 pattern_height = 2;
+  optional uint32 pattern_depth = 3;
+  optional uint32 layers = 4;
+  repeated uint32 sprite_id = 5;
+}
+
+message FrameGroup {
+  optional uint32 fixed_frame_group = 1;
+  optional uint32 id = 2;
+  optional SpriteInfo sprite_info = 3;
+}
+
+message Appearance {
+  optional uint32 id = 1;
+  repeated FrameGroup frame_group = 2;
+}
+
+message Appearances {
+  repeated Appearance object = 1;
+  repeated Appearance outfit = 2;
+  repeated Appearance effect = 3;
+  repeated Appearance missile = 4;
+}

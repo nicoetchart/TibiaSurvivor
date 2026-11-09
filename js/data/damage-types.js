@@ -25,17 +25,43 @@ G.DamageTypes = (() => {
     holy: 'Sagrado'
   };
 
-  /** Multiplicador atacante → defensor(es). F3: siempre 1. */
+  const WEAK_MULT = 1.25;
+  const RESIST_MULT = 0.7;
+  const IMMUNE_MULT = 0;
+
+  /** Multiplicador atacante → defensor (tipos Tibia o perfil { weaknesses, resistances, immunities }). */
   function mult(atk, def) {
-    if (!atk || !def) return 1;
+    if (!atk) return 1;
+    if (!def) return 1;
+    let weak = [];
+    let resist = [];
+    let immune = [];
+    if (Array.isArray(def)) {
+      // legacy: sin tabla por tipo
+    } else if (def && typeof def === 'object') {
+      weak = def.weaknesses || [];
+      resist = def.resistances || [];
+      immune = def.immunities || [];
+    } else return 1;
+    if (immune.includes(atk)) return IMMUNE_MULT;
+    if (weak.includes(atk)) return WEAK_MULT;
+    if (resist.includes(atk)) return RESIST_MULT;
     return 1;
   }
 
   function label(m) {
-    return m > 1.05 ? 'super' : m < 0.95 ? 'weak' : null;
+    if (m <= IMMUNE_MULT + 0.01) return 'immune';
+    if (m >= WEAK_MULT - 0.02) return 'weak';
+    if (m <= RESIST_MULT + 0.02) return 'resist';
+    return null;
   }
 
-  return { ALL, COLOR, NAME, mult, label };
+  function names(types) {
+    if (!types || !types.length) return '—';
+    return types.map(t => NAME[t] || t).join(', ');
+  }
+
+  return { ALL, COLOR, NAME, mult, label, names, WEAK_MULT, RESIST_MULT, IMMUNE_MULT };
 })();
 
 /* Colores y nombres que el HUD ya lee en G.U (sin pisar fuego/hielo Pokémon). */

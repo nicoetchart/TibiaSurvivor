@@ -60,34 +60,34 @@ G.Bestiary.sanitizeSave(migrated);
 G.Bestiary.init(migrated);
 ok(migrated.bestiary && migrated.bestiary.entries, 'migrate-like empty bestiary');
 
-const merged = G.Bestiary.getEntry('cave_filament');
-ok(merged && merged.creatureId === 'cave_filament' && merged.progress.kills === 0, 'getEntry merge');
+const merged = G.Bestiary.getEntry('cat');
+ok(merged && merged.creatureId === 'cat' && merged.progress.kills === 0, 'getEntry merge');
 
 const th = G.Bestiary.thresholdsForDifficulty('easy');
 ok(G.Bestiary.deriveStage(0, th, false) === 'unknown', 'stage unknown');
 ok(G.Bestiary.deriveStage(1, th, true) === 'discovered', 'stage discovered');
-ok(G.Bestiary.deriveStage(10, th, true) === 'stage_1', 'stage 1 at threshold');
-ok(G.Bestiary.deriveStage(100, th, true) === 'completed', 'stage completed');
+ok(G.Bestiary.deriveStage(25, th, true) === 'stage_1', 'stage 1 at threshold (Tibia easy)');
+ok(G.Bestiary.deriveStage(500, th, true) === 'completed', 'stage completed (Tibia easy)');
 
 G.Bestiary.init(save);
 G.Bestiary.beginRun('test-run');
 const fake = {
   id: 9001,
   dex: 99002,
-  def: { creatureId: 'cave_filament', dex: 99002 },
+  def: { creatureId: 'cat', dex: 99002 },
   boss: false,
   dead: true
 };
 ok(G.Bestiary.tryCreditDefeat(fake), 'credit once');
 ok(fake._bestiaryCredited, 'bestiary credited flag');
-ok(save.bestiary.entries.cave_filament && save.bestiary.entries.cave_filament.kills === 1, 'kill persisted');
+ok(save.bestiary.entries.cat && save.bestiary.entries.cat.kills === 1, 'kill persisted');
 ok(!G.Bestiary.tryCreditDefeat(fake), 'no double credit');
 ok(G.Bestiary.getRunAdvances().length >= 1, 'run advance recorded');
 G.Bestiary.endRun();
 
-const bossPts = G.Bestiary.getCatalogEntry('vault_warden').rewardPoints;
+const bossPts = G.Bestiary.getCatalogEntry('demon').rewardPoints;
 const saveRecon = { name: 'recon', bestiary: G.Bestiary.createDefaultSave() };
-saveRecon.bestiary.entries.vault_warden = {
+saveRecon.bestiary.entries.demon = {
   kills: 5,
   rewarded: false,
   firstSeenAt: 1,
@@ -95,7 +95,7 @@ saveRecon.bestiary.entries.vault_warden = {
   runsEncountered: 0
 };
 G.Bestiary.init(saveRecon);
-ok(saveRecon.bestiary.entries.vault_warden.rewarded, 'reconcile grants completion');
+ok(saveRecon.bestiary.entries.demon.rewarded, 'reconcile grants completion');
 ok(saveRecon.bestiary.currency.earned === bossPts, 'reconcile adds earned once');
 G.Bestiary.init(saveRecon);
 ok(saveRecon.bestiary.currency.earned === bossPts, 'no double grant on re-init');
@@ -107,13 +107,13 @@ for (let i = 0; i < 5; i++) {
   G.Bestiary.tryCreditDefeat({
     id: 9100 + i,
     dex: 99016,
-    def: { creatureId: 'vault_warden', dex: 99016 },
+    def: { creatureId: 'demon', dex: 99016 },
     boss: true,
     dead: true
   });
 }
-ok(savePts.bestiary.entries.vault_warden.kills === 5, 'boss kills to completion');
-ok(savePts.bestiary.entries.vault_warden.rewarded, 'boss entry rewarded');
+ok(savePts.bestiary.entries.demon.kills === 5, 'boss kills to completion');
+ok(savePts.bestiary.entries.demon.rewarded, 'boss entry rewarded');
 ok(G.Bestiary.getRunPointsEarned() === bossPts, 'run points tracked');
 ok(G.Bestiary.getAvailablePoints() === bossPts, 'available balance');
 

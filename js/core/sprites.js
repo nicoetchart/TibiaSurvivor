@@ -49,6 +49,15 @@ G.Sprites = (() => {
   }
 
   function animName(dex, anim, shiny = false) {
+    if (G.TibiaSprites && G.TibiaSprites.enabled && G.TibiaSprites.hasCreature(dex)) {
+      if (G.TibiaSprites.frameMetaForDex(dex, anim)) return anim;
+      if (G.TibiaSprites.frameMetaForDex(dex, 'Walk')) return 'Walk';
+      if (G.TibiaSprites.frameMetaForDex(dex, 'Charge')) return 'Charge';
+      if (G.TibiaSprites.frameMetaForDex(dex, 'Shoot')) return 'Shoot';
+      if (G.TibiaSprites.frameMetaForDex(dex, 'Attack')) return 'Attack';
+      if (G.TibiaSprites.frameMetaForDex(dex, 'Idle')) return 'Idle';
+      return 'Idle';
+    }
     const m = meta(dex);
     if (!m) return null;
     shiny = shiny && !!m.sh;
@@ -58,6 +67,10 @@ G.Sprites = (() => {
 
   /** Geometría de una animación (la shiny sólo difiere en casos raros). */
   function animMeta(dex, anim, shiny = false) {
+    if (G.TibiaSprites && G.TibiaSprites.enabled && G.TibiaSprites.hasCreature(dex)) {
+      const tm = G.TibiaSprites.frameMetaForDex(dex, anim);
+      if (tm) return tm;
+    }
     if (G.GeoSprites && G.GeoSprites.isGeo(dex)) return G.GeoSprites.frameMeta(anim);
     const m = meta(dex);
     if (!m) return null;
@@ -110,15 +123,17 @@ G.Sprites = (() => {
 
   /** Precarga todas las animaciones de esos Pokémon. */
   function preload(dexes, timeout = 8000, shiny = false) {
+    const tibia = G.TibiaSprites && G.TibiaSprites.enabled
+      ? G.TibiaSprites.preloadDexes(dexes, timeout) : Promise.resolve();
     const hs = [];
     for (const d of dexes) for (const a of ANIMS) { const s = sheet(d, a, shiny); if (s) hs.push(s); }
-    return new Promise(res => {
+    return Promise.all([tibia, new Promise(res => {
       const t0 = performance.now();
       (function check() {
         if (hs.every(h => h.ready || h.failed) || performance.now() - t0 > timeout) return res();
         setTimeout(check, 50);
       })();
-    });
+    })]).then(() => {});
   }
 
   /** Ángulo de pantalla (atan2(dy,dx)) -> fila de dirección 0..7. */
@@ -126,21 +141,43 @@ G.Sprites = (() => {
     return ((Math.round((Math.PI / 2 - a) / (Math.PI / 4)) % 8) + 8) % 8;
   }
 
+  function tibiaMul(dex) {
+    if (G.TibiaSprites && G.TibiaSprites.enabled && G.TibiaSprites.hasCreature(dex)) {
+      const m = G.TibiaSprites.frameMetaForDex(dex, 'Idle');
+      if (m) return G.TibiaSprites.effectiveDrawMul(dex, m);
+    }
+    return 1;
+  }
+
   /** Radio de colisión aproximado a partir del tamaño del sprite. */
   function bodyRadius(dex, scale = 1) {
     const m = animMeta(dex, 'Idle');
     const w = m ? m.w : 32;
-    return G.U.clamp(w * 0.22, 5, 26) * PX * scale;
+    const mul = tibiaMul(dex);
+    return G.U.clamp(w * 0.22, 5, 26) * PX * scale * mul;
   }
 
   /** Alto visual aproximado (para barras de vida y números de daño). */
   function bodyHeight(dex, scale = 1) {
     const m = animMeta(dex, 'Idle');
-    return (m ? m.ay : 24) * PX * scale;
+    const mul = tibiaMul(dex);
+    if (G.TibiaSprites && G.TibiaSprites.enabled && G.TibiaSprites.hasCreature(dex) && m) {
+      const tun = G.TibiaSprites.resolveTuning(dex, m);
+      return (m.ay + tun.footDy) * PX * scale * mul;
+    }
+    return (m ? m.ay : 24) * PX * scale * mul;
   }
 
   /** Sombra elíptica bajo los pies, tamaño según el ShadowSize de PMD. */
   function drawShadow(ctx, dex, x, y, scale = 1) {
+    if (G.TibiaSprites && G.TibiaSprites.enabled && G.TibiaSprites.hasCreature(dex)) {
+      const rx = G.TibiaSprites.shadowRadius(dex, scale);
+      ctx.fillStyle = 'rgba(0,0,0,.34)';
+      ctx.beginPath();
+      ctx.ellipse(x, y, rx, rx * 0.42, 0, 0, 6.2832);
+      ctx.fill();
+      return;
+    }
     const m = meta(dex);
     const s = m ? m.s : 1;
     const rx = [5, 8, 12][G.U.clamp(s, 0, 2)] * PX * scale;
@@ -229,6 +266,9 @@ G.Sprites = (() => {
 
     /** Dibuja con los pies en (x, y). opts: { flash, alpha } */
     draw(ctx, x, y, opts = {}) {
+      if (G.TibiaSprites && G.TibiaSprites.enabled && G.TibiaSprites.hasCreature(this.dex)) {
+        if (G.TibiaSprites.drawCreatureFrame(ctx, this.dex, x, y, this.scale, this.cur, this.frame, this.dir, opts)) return;
+      }
       if (G.GeoSprites && G.GeoSprites.isGeo(this.dex)) {
         G.GeoSprites.draw(ctx, this.dex, x, y, this.scale, this.cur, this.frame, opts);
         return;

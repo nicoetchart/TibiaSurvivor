@@ -93,7 +93,7 @@ No se requieren secretos ni APIs externas para jugar.
 
 ## Licencia
 
-Código MIT — ver [LICENSE](LICENSE). Assets visibles del MVP: placeholders propios + Pixelify Sans (OFL). **No incluyas sprites o datos de otras franquicias** sin licencia clara.
+Código MIT — ver [LICENSE](LICENSE). Assets visibles del MVP: placeholders propios + Crimson Pro (OFL, `assets/fonts/`). **No incluyas sprites o datos de otras franquicias** sin licencia clara.
 
 ## GDD
 

@@ -2,7 +2,17 @@
  * Se dibuja en coordenadas de PANTALLA (sin la transformación de cámara).
  */
 G.HUD = (() => {
-  const F = (w, s) => `${w} ${s}px Pixelify,"Segoe UI",system-ui,sans-serif`;
+  const F = (w, s) => (G.TibiaTheme ? G.TibiaTheme.font(w, s) : `${w} ${s}px Pixelify,"Segoe UI",system-ui,sans-serif`);
+
+  function palette() {
+    if (G.TibiaTheme) return G.TibiaTheme.hudPalette();
+    return {
+      text: '#eaf2ff', sub: 'rgba(180,200,255,.75)', lv: '#ffcb3d', hp: '#ff5f6d',
+      xp0: '#4fd1ff', xp1: '#a98bff', muted: '#8fa3c4', warn: '#ffb0b8',
+      slot: 'rgba(10,16,28,.8)', slotOn: 'rgba(20,30,50,.95)', stroke: 'rgba(140,170,210,.22)',
+      accent: '#ffcb3d', slotR: 12, pillR: 7,
+    };
+  }
 
   function roundRect(ctx, x, y, w, h, r) {
     ctx.beginPath();
@@ -30,35 +40,36 @@ G.HUD = (() => {
     ctx.textBaseline = 'alphabetic';
     G.Touch.clearButtons();
     const touch = G.Touch.active;
+    const P = palette();
 
     // ---------- barra de experiencia (borde superior) ----------
     const xpF = pl.xp / pl.xpNext;
     ctx.fillStyle = 'rgba(0,0,0,.5)';
     ctx.fillRect(0, 0, w, 7);
     const g = ctx.createLinearGradient(0, 0, w, 0);
-    g.addColorStop(0, '#4fd1ff'); g.addColorStop(1, '#a98bff');
+    g.addColorStop(0, P.xp0); g.addColorStop(1, P.xp1);
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w * G.U.clamp(xpF, 0, 1), 7);
 
     // ---------- vida + nivel ----------
     const px = 16, py = 20;
     ctx.font = F(800, 13);
-    ctx.fillStyle = '#eaf2ff';
+    ctx.fillStyle = P.text;
     ctx.textAlign = 'left';
     ctx.fillText(pl.mon.name, px, py + 10);
     if (pl.vocationId === 'master_sorcerer') {
       ctx.font = F(600, 9);
-      ctx.fillStyle = 'rgba(180,200,255,.75)';
+      ctx.fillStyle = P.sub;
       ctx.fillText('Master Sorcerer', px, py + 22);
     }
 
     ctx.font = F(700, 11);
-    ctx.fillStyle = '#ffcb3d';
+    ctx.fillStyle = P.lv;
     ctx.fillText('Nv. ' + pl.level, px, py + (pl.vocationId === 'master_sorcerer' ? 34 : 26));
 
     const hpY = pl.vocationId === 'master_sorcerer' ? 25 : 17;
     const hpLabY = pl.vocationId === 'master_sorcerer' ? 34 : 26;
-    bar(ctx, px + 48, py + hpY, 168, 11, pl.hp / pl.maxHp, '#ff5f6d');
+    bar(ctx, px + 48, py + hpY, 168, 11, pl.hp / pl.maxHp, P.hp);
     ctx.font = F(700, 10);
     ctx.fillStyle = 'rgba(255,255,255,.95)';
     ctx.textAlign = 'center';
@@ -75,7 +86,7 @@ G.HUD = (() => {
       ctx.font = F(800, 9);
       const txt = LBL[k] + ' ×' + b.n;
       const tw = ctx.measureText(txt).width + 12;
-      roundRect(ctx, bx, py + 34, tw, 15, 7);
+      roundRect(ctx, bx, py + 34, tw, 15, P.pillR);
       ctx.fillStyle = 'rgba(0,0,0,.5)'; ctx.fill();
       ctx.fillStyle = COL[k];
       ctx.fillText(txt, bx + 6, py + 45);
@@ -91,13 +102,13 @@ G.HUD = (() => {
       const left = Math.max(0, mvpLimit - st.time);
       ctx.fillText(G.U.mmss(left), w / 2, 42);
       ctx.font = F(600, 10);
-      ctx.fillStyle = left <= 60 ? '#ffb0b8' : '#8fa3c4';
+      ctx.fillStyle = left <= 60 ? P.warn : P.muted;
       ctx.fillText('RESTANTE  ·  ' + G.U.mmss(st.time) + ' transcurrido', w / 2, 58);
     } else {
       ctx.fillText(G.U.mmss(st.time), w / 2, 42);
     }
     ctx.font = F(600, 10);
-    ctx.fillStyle = '#8fa3c4';
+    ctx.fillStyle = P.muted;
     ctx.fillText(G.World.biomeName().toUpperCase() + '  ·  ' + pl.kills + ' DERROTADOS  ·  ' + pl.coins + ' MONEDAS', w / 2, 74);
 
     // ---------- clima (arriba a la derecha) ----------
@@ -108,7 +119,7 @@ G.HUD = (() => {
       const txt = wx.name.toUpperCase() + ' · ' + Math.ceil(wx.left) + 's';
       const tw = ctx.measureText(txt).width + 40;
       const x0 = w - tw - 16 - (touch ? 56 : 0), y0 = 14;
-      roundRect(ctx, x0, y0, tw, 26, 9);
+      roundRect(ctx, x0, y0, tw, 26, P.pillR + 2);
       ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fill();
       G.Icons.draw(ctx, wx.icon, x0 + 6, y0 + 3, 20);
       ctx.fillStyle = wx.color;
@@ -119,7 +130,7 @@ G.HUD = (() => {
     const boss = G.EnemyMgr.all().find(e => e.boss && !e.dead);
     if (boss) {
       const bw = Math.min(420, w - 80);
-      bar(ctx, (w - bw) / 2, 70, bw, 12, boss.hp / boss.maxHp, '#ffcb3d');
+      bar(ctx, (w - bw) / 2, 70, bw, 12, boss.hp / boss.maxHp, P.accent);
       ctx.font = F(800, 10);
       ctx.fillStyle = '#20160a';
       ctx.fillText(boss.name.toUpperCase(), w / 2, 80);
@@ -154,7 +165,7 @@ G.HUD = (() => {
       ctx.font = F(800, 9);
       ctx.textAlign = 'left';
       const tw = ctx.measureText(txt).width + 12;
-      roundRect(ctx, bx, py + 34, tw, 15, 7);
+      roundRect(ctx, bx, py + 34, tw, 15, P.pillR);
       ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fill();
       ctx.fillStyle = pw.def.color;
       ctx.fillText(txt, bx + 6, py + 45);
@@ -246,7 +257,7 @@ G.HUD = (() => {
       ctx.save();
       ctx.globalAlpha = a;
       ctx.font = F(800, 22);
-      ctx.fillStyle = '#ffcb3d';
+      ctx.fillStyle = P.accent;
       ctx.strokeStyle = 'rgba(0,0,0,.7)'; ctx.lineWidth = 4;
       ctx.strokeText(ban.text, w / 2, h * 0.3);
       ctx.fillText(ban.text, w / 2, h * 0.3);
@@ -275,12 +286,12 @@ G.HUD = (() => {
       const col = m ? G.U.TYPE_COLOR[m.type] : '#4a5468';
 
       // fondo
-      roundRect(ctx, x, y, S, S, 12);
-      ctx.fillStyle = on ? 'rgba(20,30,50,.95)' : 'rgba(10,16,28,.8)';
+      roundRect(ctx, x, y, S, S, P.slotR);
+      ctx.fillStyle = on ? P.slotOn : P.slot;
       ctx.fill();
       ctx.lineWidth = on ? 2.5 : fused || (m && m.evolved) ? 2 : 1.2;
       // Vínculo: borde rosa. Evolucionado: dorado.
-      ctx.strokeStyle = fused ? BOND : m && m.evolved ? '#ffd23f' : on ? col : 'rgba(140,170,210,.22)';
+      ctx.strokeStyle = fused ? BOND : m && m.evolved ? P.accent : on ? col : P.stroke;
       ctx.stroke();
 
       if (!m) continue;
@@ -303,7 +314,7 @@ G.HUD = (() => {
         const cdFrac = cdOf(m);
         if (cdFrac > 0) {
           ctx.save();
-          roundRect(ctx, x, y, S, S, 12); ctx.clip();
+          roundRect(ctx, x, y, S, S, P.slotR); ctx.clip();
           ctx.fillStyle = 'rgba(0,0,0,.6)';
           ctx.fillRect(x, y, S, S * cdFrac);
           ctx.restore();
@@ -324,7 +335,7 @@ G.HUD = (() => {
 
       // tecla
       ctx.font = F(800, 9);
-      ctx.fillStyle = fused ? BOND : on ? col : 'rgba(180,200,230,.6)';
+      ctx.fillStyle = fused ? BOND : on ? col : P.muted;
       ctx.textAlign = 'left';
       ctx.fillText(String(i + 1), x + 3, y + 10);
 
@@ -340,7 +351,7 @@ G.HUD = (() => {
         }
         if (def && def.incantation) {
           ctx.font = F(600, 8);
-          ctx.fillStyle = 'rgba(200,215,240,.72)';
+          ctx.fillStyle = P.sub;
           ctx.fillText(def.incantation, x + S / 2, y - (elemName ? 28 : 18));
         }
         ctx.font = F(700, 10);
@@ -364,17 +375,17 @@ G.HUD = (() => {
     // ---------- objeto equipado (a la izquierda de los movimientos) ----------
     {
       const ix = sx - S - 18, iy = sy;
-      roundRect(ctx, ix, iy, S, S, 12);
-      ctx.fillStyle = pl.item ? 'rgba(40,30,10,.9)' : 'rgba(10,16,28,.55)';
+      roundRect(ctx, ix, iy, S, S, P.slotR);
+      ctx.fillStyle = pl.item ? 'rgba(40,30,10,.9)' : P.slot;
       ctx.fill();
       ctx.lineWidth = pl.item ? 2 : 1;
-      ctx.strokeStyle = pl.item ? '#ffd23f' : 'rgba(140,170,210,.18)';
+      ctx.strokeStyle = pl.item ? P.accent : P.stroke;
       ctx.stroke();
       if (pl.item) {
         G.Icons.draw(ctx, pl.item, ix + (S - 36) / 2, iy + (S - 36) / 2, 36);
         ctx.font = F(700, 9);
         ctx.textAlign = 'center';
-        ctx.fillStyle = '#ffd23f';
+        ctx.fillStyle = P.accent;
         ctx.fillText(G.Items.BY[pl.item].name, ix + S / 2, iy - 6);
       }
     }
@@ -383,10 +394,10 @@ G.HUD = (() => {
     if (touch) {
       const sa = G.Touch.safeArea();
       const bx = w - 52 - Math.min(44, sa.right), by = 12 + Math.min(20, sa.top), bs = 40;
-      roundRect(ctx, bx, by, bs, bs, 10);
-      ctx.fillStyle = 'rgba(10,16,28,.7)'; ctx.fill();
-      ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(244,248,255,.8)'; ctx.stroke();
-      ctx.fillStyle = '#f4f8ff';
+      roundRect(ctx, bx, by, bs, bs, P.pillR + 3);
+      ctx.fillStyle = P.slotOn; ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = P.stroke; ctx.stroke();
+      ctx.fillStyle = P.text;
       ctx.fillRect(bx + 13, by + 11, 5, 18); ctx.fillRect(bx + 22, by + 11, 5, 18);
       G.Touch.addButton(bx, by, bs, bs, () => G.Game.togglePause(), 8);
     }
@@ -395,7 +406,7 @@ G.HUD = (() => {
     if (st.time < 14) {
       ctx.font = F(600, 10);
       ctx.textAlign = 'center';
-      ctx.fillStyle = 'rgba(180,200,230,.55)';
+      ctx.fillStyle = P.muted;
       ctx.fillText(touch ? 'Arrastra el dedo para moverte  ·  toca un ataque para cambiarlo'
                          : 'WASD moverse  ·  1-4 / Q / E o clic en un ataque para cambiarlo  ·  Esc pausa', w / 2, h - 4);
     }

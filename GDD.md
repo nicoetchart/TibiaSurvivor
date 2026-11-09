@@ -7,7 +7,7 @@ Documento de diseño alineado con el **repositorio actual** (MVP Fase 4 + pulido
 - **Fantasía:** una expedición corta bajo tierra — preparación, tensión creciente, botín y supervivencia.
 - **Referencia de sensación:** hunting session de MMORPG clásico (sin usar marcas, mapas ni criaturas ajenas).
 - **Plataforma:** navegador, Canvas 2D, JavaScript ES2020, sin bundler en desarrollo.
-- **Estética:** fantasía oscura, pixel art legible, UI tipo RPG (cajas, chips, fuente Pixelify).
+- **Estética:** fantasía oscura, pixel art legible, UI tipo RPG (cajas, chips, fuente Crimson Pro OFL).
 
 ## 2. Bucle principal
 

@@ -92,7 +92,7 @@ def page(pid, lang, title, desc, body, ld=None):
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="{SITE}{me}">
-{alts}<meta name="theme-color" content="#0a1430">
+{alts}<meta name="theme-color" content="#12100e">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="PokéSurvivor">
 <meta property="og:locale" content="{'es_ES' if lang == 'es' else 'en_US'}">

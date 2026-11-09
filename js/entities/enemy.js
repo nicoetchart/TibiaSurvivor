@@ -42,10 +42,15 @@
       this.xp = def.xp;
       this.behavior = def.behavior;
 
-      const types = (G.DEX_BY[def.dex] && G.DEX_BY[def.dex].types) || [];
+      const dexRow = G.DEX_BY[def.dex];
+      const types = (dexRow && dexRow.types) || [];
       this.types = types.length ? types : ['physical'];
+      this.weaknesses = (dexRow && dexRow.weaknesses) || [];
+      this.resistances = (dexRow && dexRow.resistances) || [];
+      this.immunities = (dexRow && dexRow.immunities) || [];
       this.elite = !!def.elite;
-      this.atkType = this.types[0];         // tipo de sus golpes (tabla de tipos)
+      const atkTypes = (dexRow && dexRow.atkTypes) || this.types;
+      this.atkType = atkTypes[0];         // tipo de sus golpes (tabla de tipos)
       // Vuelan por encima de rocas y agua sólo los que FLOTAN en su sprite (un
       // Rowlet camina aunque sea Volador). Los jefes, por su tamaño, también.
       this.flying = boss || G.Sprites.hovers(def.dex);
@@ -761,7 +766,7 @@
 
       if (this.elite && !this.boss && this.hp >= this.maxHp * 0.98) {
         ctx.save();
-        ctx.font = '700 9px Pixelify, monospace';
+        ctx.font = G.TibiaTheme ? G.TibiaTheme.font(700, 9) : '700 9px Pixelify, monospace';
         ctx.textAlign = 'center';
         ctx.fillStyle = '#d4b8ff';
         ctx.fillText('ÉLITE', this.x, this.y - this.bodyH - 14);

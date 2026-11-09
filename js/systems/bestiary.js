@@ -451,7 +451,7 @@
 
   function creatureIdForEnemy(e) {
     if (!e) return null;
-    if (e.sentinelElite) return (e.def && e.def.bestiaryCreatureId) || 'sentinel_elite';
+    if (e.sentinelElite) return (e.def && e.def.bestiaryCreatureId) || 'minotaur_guard';
     if (e.def && e.def.bestiaryCreatureId) return e.def.bestiaryCreatureId;
     if (e.def && e.def.creatureId) return e.def.creatureId;
     if (G.CREATURE_BY_LEGACY && e.dex != null) {
@@ -582,7 +582,7 @@
     const payload = {
       creatureId,
       instanceId: e.id,
-      isElite: !!(e.sentinelElite || e.def && e.def.bestiaryCreatureId === 'sentinel_elite'),
+      isElite: !!(e.sentinelElite || e.def && e.def.bestiaryCreatureId === 'minotaur_guard'),
       isBoss: !!e.boss,
       sourceKind: e.lastHitAid || 'unknown',
       runId: runId || null,
