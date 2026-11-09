@@ -18,8 +18,10 @@ G.CHANGELOG = [
     ['Sprites Tibia modo natural (como Pokémon): `naturalSize` por defecto, meta w/h/ax/ay/s por criatura; tiers opcionales si `naturalSize: false`.',
      'Tibia natural sprite mode (Pokémon-like): naturalSize default, per-creature w/h/ax/ay/s meta; optional tiers when naturalSize: false.']
   ], new: [
-    ['Línea base de sprites Tibia: mapa lookType/outfit, `G.TibiaSprites` y export offline (`?sprites=tibia`; sin PNG, geo como fallback).',
-     'Tibia sprite baseline: lookType/outfit map, G.TibiaSprites and offline export (?sprites=tibia; geo fallback until PNGs).'],
+    ['Sprites Tibia activos por defecto en TibiaSurvivor (`data-ui=tibia`); modo neutral por defecto. `?sprites=geo` vuelve a formas geométricas.',
+     'Tibia sprites on by default in TibiaSurvivor (data-ui=tibia); neutral mode default. ?sprites=geo restores geo shapes.'],
+    ['Línea base de sprites Tibia: mapa lookType/outfit, `G.TibiaSprites` y export offline; geo como fallback si falta PNG.',
+     'Tibia sprite baseline: lookType/outfit map, G.TibiaSprites and offline export; geo fallback when PNG missing.'],
     ['Importador `tools/import_tibia_grouped.mjs`: copia strips agrupados a `assets/tibia/creatures/` y metadatos de animación.',
      'Importer tools/import_tibia_grouped.mjs: copies grouped strips to assets/tibia/creatures/ with animation meta.'],
     ['Las 15 plantillas enemigas del MVP son criaturas de Tibia (Cat, Demon, etc.; nombres siempre en inglés) con dificultad de bestiario, descripciones y consejos alineados a TibiaWiki.',

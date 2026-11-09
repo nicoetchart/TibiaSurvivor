@@ -4,7 +4,7 @@ Normas fijas del dueño del proyecto. Se aplican SIEMPRE.
 
 ## Publicar una versión
 1. Se edita `dev.html` (nunca `index.html`, que se genera).
-2. `node tools/build.js && node tools/export_data.js && python tools/make_seo_pages.py`
+2. `node tools/build.js && node tools/export_data.js && node tools/run_make_seo.js`
    - `build.js` genera `index.html`, `js/app.min.js` y **`version.json`** (la huella de esta versión).
 3. Commit (sin "Co-Authored-By" ni ninguna firma de IA) y `git push origin main` sólo cuando el dueño lo pida.
 

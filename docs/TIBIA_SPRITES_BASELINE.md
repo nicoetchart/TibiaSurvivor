@@ -19,7 +19,7 @@ El motor de animación sigue siendo `G.Sprites.Animator` (Idle, Walk, Attack, �
 ## Activación (dev)
 
 ```
-?dev&content=neutral&sprites=tibia
+?dev   (sprites Tibia ya activos por defecto en `data-ui=tibia`; atajos Ctrl para tuning)
 ```
 
 - `G.TibiaSprites.enabled` → true  
@@ -76,7 +76,7 @@ Los `lookType` del MVP deben **validarse** contra tu versión de cliente al expo
 4. **Ajuste visual:** `js/data/tibia-sprite-tuning.js` (no tocar el meta generado).
    - **Modo Pokémon (`naturalSize: true`, default):** cada lookType escala con su `w×h` en meta + `PX=2`, como `G.SPRITE_META[dex]`; el import mide **`ax/ay`** y **`s`** (sombra 0/1/2) del PNG.
    - **Modo uniforme (`naturalSize: false`):** `visualTiers` + `lookTypeTier` fuerzan alturas de juego iguales entre tiles 32 y 64.
-   - `?dev&sprites=tibia`: Ctrl+[ ] escala, Ctrl+; ' pies, Ctrl+\\ exporta JSON a consola.
+   - `?dev`: Ctrl+[ ] escala, Ctrl+; ' pies, Ctrl+\\ exporta JSON (`?sprites=geo` = formas geométricas).
 5. Import al juego:
    ```bash
    npm install --prefix tools
@@ -86,7 +86,7 @@ Los `lookType` del MVP deben **validarse** contra tu versión de cliente al expo
    - Lee `Tibia.dat` + `Tibia.spr` (o PNG sueltos si ya los tienes).
    - Genera atlas + `*-meta.js` + entradas faltantes en el mapa.
 3. Revisa diff, rellena `assets/tibia/LICENSE.md`.
-4. Probar en juego con `?sprites=tibia`.
+4. Probar en juego (sin query extra); opcional `?sprites=geo` para comparar con el fallback.
 
 Herramientas alternativas: [Object Builder](https://github.com/ottools/ObjectBuilder), parsers OT community — el script del repo es un **contenedor**; implementa el backend que elijas.
 

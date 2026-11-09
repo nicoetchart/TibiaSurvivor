@@ -6,15 +6,25 @@ G.TibiaSprites = (() => {
   const MAP = () => G.TIBIA_SPRITE_MAP || { creatures: {}, items: {} };
   const LS_TUNING = 'ts.tibiaSpriteTuning';
 
-  function queryEnabled() {
-    return typeof location !== 'undefined' && /[?&]sprites=tibia\b/.test(location.search);
+  function isTibiaUi() {
+    return typeof document !== 'undefined' && document.documentElement.getAttribute('data-ui') === 'tibia';
+  }
+
+  /** Por defecto ON en TibiaSurvivor (data-ui=tibia). ?sprites=geo desactiva; ?sprites=tibia fuerza ON. */
+  function resolveEnabled() {
+    if (typeof location !== 'undefined') {
+      if (/[?&]sprites=geo\b/.test(location.search)) return false;
+      if (/[?&]sprites=(off|pokemon)\b/.test(location.search)) return false;
+      if (/[?&]sprites=tibia\b/.test(location.search)) return true;
+    }
+    return isTibiaUi();
   }
 
   function queryDev() {
     return typeof location !== 'undefined' && /[?&]dev\b/.test(location.search);
   }
 
-  let enabled = queryEnabled();
+  let enabled = resolveEnabled();
   let livePatch = null;
 
   function enable(on = true) { enabled = !!on; }

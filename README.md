@@ -49,7 +49,7 @@ Edita **`dev.html`**, no `index.html`. Luego:
 ```bash
 node tools/build.js
 node tools/export_data.js
-python tools/make_seo_pages.py
+node tools/run_make_seo.js
 ```
 
 `build.js` genera `index.html`, `js/app.min.js` y `version.json`.

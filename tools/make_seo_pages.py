@@ -1,5 +1,5 @@
 # Páginas para buscadores, en español y en inglés.
-#   node tools/export_data.js && python tools/make_seo_pages.py
+#   node tools/export_data.js && node tools/run_make_seo.js
 # Son páginas de texto de verdad (el juego es un canvas que Google no puede leer)
 # hechas con los datos del propio juego, y enlazan al juego. Genera:
 #   es: guia/ pokedex/ legendarios/ shinies/ tipos/ movimientos/ objetos/ logros/ novedades/
@@ -538,6 +538,7 @@ puedes hacer una <b>donación voluntaria</b>. <b>Todo el dinero se usa para los 
         h1 = 'Support PokéSurvivor'
         btns = ''.join(x for x in [f'<a class="btn" href="{kofi}" rel="noopener">Donate on Ko-fi</a>' if kofi else '',
                                    f'<a class="btn ghost" href="{spons}" rel="noopener">GitHub Sponsors</a>' if spons else ''])
+        soon_donate = "You'll be able to donate from here very soon."
         body = f"""<article class="doc"><h1>{h1}</h1>
 <p class="lead">PokéSurvivor is and will stay <b>free</b>: no ads, no purchases and no pay-to-win. If you enjoy it and want to help keep it online,
 you can make a <b>voluntary donation</b>. <b>All the money goes to the servers and the domain</b>; anything left over is saved for the following months.</p>
@@ -546,8 +547,8 @@ you can make a <b>voluntary donation</b>. <b>All the money goes to the servers a
 <table class="list"><tbody>{rows}</tbody></table>
 <p>The servers store saves and accounts, the leaderboards and group games: the more people play, the more they cost.</p>
 <h2>How to support</h2>
-<p>{btns or 'You\'ll be able to donate from here very soon.'}</p>
-<p>Sharing the game with your friends, recommending it and reporting bugs helps a lot too, and it\'s free.</p>
+<p>{btns or soon_donate}</p>
+<p>Sharing the game with your friends, recommending it and reporting bugs helps a lot too, and it's free.</p>
 {cta(pid, lang, 'Back to the game')}</article>"""
         title, desc = 'Support PokéSurvivor: donations for the servers', 'PokéSurvivor is free and ad-free. Voluntary donations only pay for the servers and the domain.'
     write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, h1)]}))

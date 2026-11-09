@@ -11,7 +11,7 @@
  *
  * Reimport: node tools/import_tibia_grouped.mjs --grouped <carpeta grouped>
  *
- * Atajos ?dev&sprites=tibia: Ctrl+[ ] scaleMul · Ctrl+; ' footDy · Ctrl+\\ JSON
+ * Atajos ?dev (sprites Tibia ya van por defecto): Ctrl+[ ] scaleMul · Ctrl+; ' footDy · Ctrl+\\
  */
 G.TIBIA_SPRITE_TUNING = {
   naturalSize: true,

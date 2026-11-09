@@ -6,7 +6,10 @@ G.Content = (() => {
   const ID_MAX = 99099;
 
   /** @ts-adapter-f3: 'legacy' | 'neutral' — flip en 3D según save (DEC-019). */
-  let mode = 'legacy';
+  function isTibiaUi() {
+    return typeof document !== 'undefined' && document.documentElement.getAttribute('data-ui') === 'tibia';
+  }
+  let mode = isTibiaUi() ? 'neutral' : 'legacy';
 
   function isNeutralLegacyId(id) {
     const n = +id;
@@ -45,6 +48,7 @@ G.Content = (() => {
 
   /** Resuelve modo efectivo (3A: siempre legacy en runtime salvo ?dev=neutral). */
   function effectiveMode(save) {
+    if (typeof location !== 'undefined' && /[?&]content=legacy\b/.test(location.search)) return 'legacy';
     if (typeof location !== 'undefined' && /[?&]content=neutral\b/.test(location.search)) return 'neutral';
     if (mode === 'neutral') return 'neutral';
     if (save && shouldUseNeutralSave(save)) return 'neutral';

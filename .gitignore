@@ -5,6 +5,7 @@ videos/
 tools/cache/
 tools/cache/tibia-client/
 tools/tibia-client.local.json
+tools/python.local.json
 **/Tibia.spr
 **/Tibia.dat
 __pycache__/

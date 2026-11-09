@@ -6,7 +6,7 @@
  * - index.html se genera a partir de dev.html, cambiando el bloque de scripts
  *   por js/app.min.js (con la huella en la URL para que no se quede en caché).
  * - node tools/build.js --sin-seo  ->  sin lo de SEO (hasta tener pokesurvivor.com).
- * - Después hay que regenerar en/index.html: python tools/make_seo_pages.py
+ * - Después: node tools/run_make_seo.js (en/index.html, sitemap, etc.)
  */
 const fs = require('fs'), path = require('path'), crypto = require('crypto');
 const { execFileSync } = require('child_process');

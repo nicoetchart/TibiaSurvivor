@@ -70,7 +70,7 @@ Color: primer tipo de daño (`G.DamageTypes.COLOR`).
 ## Sprites estilo cliente Tibia
 
 Ver **`docs/TIBIA_SPRITES_BASELINE.md`**: atlas PNG exportados offline, `G.TibiaSprites`,
-mapa en `js/data/tibia-sprite-map.js`, activación con `?sprites=tibia`. Sin export, geo sigue activo.
+mapa en `js/data/tibia-sprite-map.js`; activos por defecto en TibiaSurvivor. Sin PNG, geo sigue activo (`?sprites=geo`).
 
 ## Licencias
 
