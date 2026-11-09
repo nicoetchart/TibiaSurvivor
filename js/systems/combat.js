@@ -984,6 +984,7 @@ G.Combat = (() => {
       if (G.MsTelemetry) G.MsTelemetry.onHit(pl, m.id, dmg, e, m.lvl);
     }
     e.hurt(dmg, col, dx, dy, knock, crit ? 'crit' : typeLabel(m.type, e, m.id));
+    if (!ghost && G.BestiaryCharms) G.BestiaryCharms.onHit(pl, e);
     if (!ghost) pl.onDealt(dmg);
     pl.dmgDealt += dmg;
     const pay = payload(m);
@@ -1124,6 +1125,7 @@ G.Combat = (() => {
         if (!ghost && G.MsTelemetry && p.aid) G.MsTelemetry.onHit(owner, p.aid, dealt, e, strike && strike.lvl);
         e.hurt(dealt, p.color, p.vx || (e.x - pl.x), p.vy || (e.y - pl.y), p.knock,
                crit ? 'crit' : p.mtype ? typeLabel(p.mtype, e, p.aid) : null);
+        if (!ghost && G.BestiaryCharms) G.BestiaryCharms.onHit(owner, e);
         if (Math.random() < 0.5) G.FX.sp('impact', p.vis ? p.vis.pal : 'normal', e.x, e.y - e.bodyH * 0.5, { life: 0.12, scale: 1 });
         owner.dmgDealt += dealt;
         owner.onDealt(dealt);

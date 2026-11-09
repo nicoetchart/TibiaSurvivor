@@ -2,6 +2,29 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-05', title: ['Bestiario en menú', 'Bestiary screen'], new: [
+    ['Nueva pantalla Bestiario en el menú (MVP neutral): catálogo, filtros, detalle por etapas y saldo de puntos.',
+     'New Bestiary screen in the menu (neutral MVP): catalog, filters, stage-based detail and point balance.'],
+    ['Durante la run, avisos breves al descubrir criaturas o subir etapas; al terminar, resumen de avances del bestiario.',
+     'During a run, short toasts when you discover creatures or reach stages; end-of-run summary of bestiary progress.'],
+    ['Pestaña «Mejoras y desbloqueos» en el Bestiario: compra con puntos, topes de balance y efectos al empezar cada run.',
+     'Bestiary tab «Upgrades and unlocks»: spend points, balance caps and perks applied at each run start.'],
+    ['Amuletos del bestiario: desbloqueo, equipamiento (1 ranura) y efectos en combate (Herida, Parada, Zancada).',
+     'Bestiary charms: unlock, equip (1 slot) and combat procs (Wound, Parry, Stride).'],
+    ['Catálogo del bioma MVP completo en el bestiario: descripciones, consejos tácticos y validación del roster.',
+     'Full MVP biome bestiary catalog: descriptions, tactical tips and roster validation.'],
+    ['Telemetría local del bestiario (solo ?dev): resumen por run, sesión exportable y validador de balance.',
+     'Local bestiary telemetry (?dev only): per-run summary, session export and balance validator.']
+  ], chg: [
+    ['Los amuletos registran daño extra por tipo (normal / élite / jefe) en la telemetría de run.',
+     'Charms track bonus damage by enemy tier (normal / elite / boss) in run telemetry.']
+  ], fix: [] },
+  { d: '2026-11-05', title: ['Bestiario (backend)', 'Bestiary (backend)'], chg: [
+    ['Completar una entrada del bestiario otorga puntos una sola vez y actualiza el saldo persistente (sin tienda ni pantalla todavía).',
+     'Completing a bestiary entry awards points once and updates your persistent balance (no shop or screen yet).'],
+    ['Las muertes válidas en run registran progreso del bestiario en el guardado local.',
+     'Valid run kills update bestiary progress in the local save.']
+  ], new: [], fix: [] },
   { d: '2026-11-03', title: ['Rage of the Skies', 'Rage of the Skies'], chg: [
     ['Rage of the Skies: radio de impacto 50 px.', 'Rage of the Skies: strike radius 50 px.']
   ], new: [], fix: [] },

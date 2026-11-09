@@ -5,13 +5,14 @@ G.MenuUI = (() => {
   let dexFilter = 'all', dexGen = 1, dexSel = null;
 
   function init() {
-    const ICON = { play: 'ball', dex: 'book', upgrades: 'up', gacha: 'ball4', goals: 'medal3', settings: 'gear' };
+    const ICON = { play: 'ball', bestiary: 'medal2', dex: 'book', upgrades: 'up', gacha: 'ball4', goals: 'medal3', settings: 'gear' };
     document.querySelectorAll('#scr-menu [data-go]').forEach(b => {
       b.insertAdjacentHTML('afterbegin', `<span class="mi-ico">${G.Icons.html(ICON[b.dataset.go], 26)}</span>`);
       b.dataset.sfx = b.dataset.go === 'play' ? 'confirm' : 'click';
       b.onclick = () => {
         const go = b.dataset.go;
         if (go === 'play') G.Flow.play();
+        else if (go === 'bestiary') G.BestiaryUI.open();
         else if (go === 'dex') openDex();
         else if (go === 'upgrades') openUpgrades();
         else if (go === 'gacha') G.GachaUI.open();
@@ -34,6 +35,9 @@ G.MenuUI = (() => {
     const neutral = G.Content.mode === 'neutral';
     document.querySelectorAll('#scr-menu [data-go="dex"], #scr-menu [data-go="upgrades"], #scr-menu [data-go="gacha"]').forEach(b => {
       b.classList.toggle('hidden', neutral);
+    });
+    document.querySelectorAll('#scr-menu [data-go="bestiary"]').forEach(b => {
+      b.classList.toggle('hidden', !neutral);
     });
     const mon = G.DEX_BY[s.partner];
     if (!mon) return;
@@ -80,6 +84,22 @@ G.MenuUI = (() => {
     const pend = G.Progress.pending();
     $('menu-goals-sub').textContent = pend ? pend + (pend === 1 ? ' premio por recoger' : ' premios por recoger') : 'Misiones, logros y perfil';
     $('menu-goals-sub').classList.toggle('gold', pend > 0);
+
+    const bSub = $('menu-bestiary-sub');
+    if (bSub && G.Bestiary && neutral) {
+      const list = G.Bestiary.listEntries();
+      let disc = 0;
+      let done = 0;
+      for (const row of list) {
+        const prog = G.Bestiary.getProgressEntry(row.creatureId);
+        const kills = prog ? prog.kills : 0;
+        const had = kills > 0 || (prog && prog.firstSeenAt);
+        const st = G.Bestiary.deriveStage(kills, row.thresholds, had);
+        if (st !== 'unknown') disc++;
+        if (st === 'completed') done++;
+      }
+      bSub.textContent = `${disc}/${list.length} descubiertas · ${done} completas`;
+    }
   }
 
   // ---------------- colección ----------------

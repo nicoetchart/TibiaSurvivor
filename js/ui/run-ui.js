@@ -126,6 +126,7 @@ G.RunUI = (() => {
         ).join('')}</div></div>` : ''}
       ${r.caught && r.caught.length && !neutral ? `<div style="grid-column:1/-1" class="caught"><span>${G.Icons.html('shiny', 12)} Shinies conseguidos</span>
         <div class="caught-row" id="over-caught"></div></div>` : ''}
+      ${G.BestiaryRunUI && r.bestiarySummary ? G.BestiaryRunUI.renderOverSummary(r.bestiarySummary) : ''}
       ${r.record ? '<div style="grid-column:1/-1;text-align:center" class="gold">¡Nuevo récord!</div>' : ''}
       ${askSupport(r) ? `<div class="support-ask" id="over-ask" style="grid-column:1/-1">
         <button class="x" type="button" aria-label="Cerrar">×</button>

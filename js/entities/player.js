@@ -299,6 +299,7 @@ G.Player = class Player {
     // estar encima de los enemigos para pegar (iban muy por detrás).
     const close = this.activeGroup().some(m => m.kind === 'melee') ? 0.75 : 1;
     let d = pure ? Math.max(1, amount) : Math.max(1, amount * (1 - this.reduction) * close);
+    if (G.BestiaryCharms && d > 0) d = G.BestiaryCharms.filterIncoming(this, d);
     if (this.magicShieldMax > 0 && this.magicShield > 0 && d > 0) {
       const absorbed = Math.min(this.magicShield, d);
       this.magicShield -= absorbed;

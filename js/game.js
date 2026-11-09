@@ -122,7 +122,12 @@ G.Game = (() => {
     runReal = performance.now(); tampered = false;
 
     pl = new G.Player(mon, perks, !!save.partnerShiny && G.DB.ownsShiny(mon.dex));
+    if (G.Bestiary && G.Bestiary.applyRunBonuses) G.Bestiary.applyRunBonuses(pl);
     if (G.MsTelemetry) G.MsTelemetry.reset(pl);
+    if (G.Bestiary && G.Bestiary.beginRun) G.Bestiary.beginRun('run-' + Math.floor(Math.random() * 1e9));
+    if (G.BestiaryRunUI) G.BestiaryRunUI.onRunBegin();
+    if (G.BestiaryCharms) G.BestiaryCharms.beginRun();
+    if (G.BestiaryTelemetry) G.BestiaryTelemetry.beginRun();
     banked = { t1: 0, t10: 0 };
     caught = [];
     // Atajos: movimientos con hueco fijo (save.pbind[dex] = [id del 1, id del 2, ...]),
@@ -258,9 +263,25 @@ G.Game = (() => {
     G.Progress.event('runEnd', { time, level: pl.level, coins: pl.coins, types: pl.mon.types, group: false, victory, msSpells });
     G.Progress.checkAch();
     G.DB.commit('run');
+    const bestiarySummary = G.BestiaryRunUI ? G.BestiaryRunUI.snapshotForRunEnd() : null;
+    if (G.Bestiary && G.BestiaryTelemetry) {
+      G.BestiaryTelemetry.endRun({
+        time,
+        victory,
+        dead,
+        playerKills: pl.kills,
+        bosses: pl.bosses,
+        pointsEarned: G.Bestiary.getRunPointsEarned(),
+        advances: G.Bestiary.getRunAdvances()
+      });
+    }
+    if (G.BestiaryRunUI) G.BestiaryRunUI.clear();
+    if (G.BestiaryCharms) G.BestiaryCharms.endRun();
+    if (G.Bestiary && G.Bestiary.endRun) G.Bestiary.endRun();
 
     G.RunUI.showOver({
       dead, victory, time, level: pl.level, kills: pl.kills, bosses: pl.bosses, coins,
+      bestiarySummary,
       record: record || bestTime, t1: pl.t1, t10: pl.t10, judge,
       dmgDealt: Math.floor(pl.dmgDealt || 0),
       msSpells,
@@ -395,11 +416,13 @@ G.Game = (() => {
     if (mine || p.kind === 'bomb') G.Audio.sfx(PICK_SFX[p.kind]);
     if (p.kind === 'xp' || p.kind === 'xpBig') {
       pendingLevels += pl.gainXp(p.value);
+      if (mine && G.BestiaryCharms) G.BestiaryCharms.onPickup(pl, p);
       return;
     }
     if (p.kind === 'coin') {
       pl.coins += p.value;
       G.FX.dmgText(who.x, who.y - who.bodyH - 6, '+' + p.value, '#ffd23f');
+      if (mine && G.BestiaryCharms) G.BestiaryCharms.onPickup(pl, p);
       return;
     }
     if (p.kind === 'item') {
@@ -464,7 +487,7 @@ G.Game = (() => {
     }
     if (state === 'ui') {
       // Esc en una subpantalla del menú vuelve al menú.
-      if (G.Input.tap('escape') && !G.UI.isOpen('scr-profile') && ['scr-dex', 'scr-upgrades', 'scr-gacha', 'scr-goals'].some(G.UI.isOpen)
+      if (G.Input.tap('escape') && !G.UI.isOpen('scr-profile') && ['scr-bestiary', 'scr-dex', 'scr-upgrades', 'scr-gacha', 'scr-goals'].some(G.UI.isOpen)
           && document.getElementById('pull-fx').classList.contains('hidden')) G.MenuUI.open();
       return;
     }
@@ -853,6 +876,16 @@ G.Game = (() => {
         G.UI.hideAll();
         if (G.RunUI.closeLevelUp) G.RunUI.closeLevelUp();
       }
+    },
+    /** ?dev: exporta telemetría de bestiario de la sesión (JSON). */
+    debugBestiaryTelemetry() {
+      if (!G.BestiaryTelemetry) return null;
+      const json = G.BestiaryTelemetry.exportSession();
+      if (/[?&]dev\b/.test(location.search)) {
+        console.log(json);
+        G.BestiaryTelemetry.logSession();
+      }
+      try { return JSON.parse(json); } catch (e) { return json; }
     },
     toUI() { state = 'ui'; Backdrop.restore(); },
     get state() { return state; }, get player() { return pl; }, st

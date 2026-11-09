@@ -130,8 +130,28 @@ G.DB = (() => {
       missions: {},
       profile: { favs: [], title: '' },
       stats: { runs: 0, wins: 0, bestTime: 0, bestVictoryTime: 0, bestLevel: 0, totalKills: 0, pulls: 0, coinsEarned: 0, shinies: 0,
-               bossesTotal: 0, riftWins: 0, evolutions: 0, missionsDone: 0, groupRuns: 0, bestGroupTime: 0 }
+               bossesTotal: 0, riftWins: 0, evolutions: 0, missionsDone: 0, groupRuns: 0, bestGroupTime: 0 },
+      bestiary: null
     };
+  }
+
+  function defaultBestiaryBlock() {
+    if (G.Bestiary && G.Bestiary.createDefaultSave) return G.Bestiary.createDefaultSave();
+    return {
+      version: 1,
+      entries: {},
+      currency: { earned: 0, spent: 0 },
+      charms: { unlocked: [], equipped: [] },
+      upgrades: {},
+      unlocks: []
+    };
+  }
+
+  function attachBestiary(save) {
+    if (!save) return;
+    if (save.bestiary == null) save.bestiary = defaultBestiaryBlock();
+    if (G.Bestiary && G.Bestiary.sanitizeSave) G.Bestiary.sanitizeSave(save);
+    if (G.Bestiary && G.Bestiary.init) G.Bestiary.init(save);
   }
 
   function migrate(s, name) {
@@ -146,9 +166,11 @@ G.DB = (() => {
       s.pupgDone = true;
     }
     s.tickets = Object.assign({ t1: 0, t10: 0 }, s.tickets);
+    if (s.bestiary == null) s.bestiary = defaultBestiaryBlock();
     s.product = PRODUCT;
     s.schemaVersion = SCHEMA_VERSION;
     sanitize(s);
+    attachBestiary(s);
     s.v = VERSION;
     return s;
   }
@@ -195,6 +217,7 @@ G.DB = (() => {
         else u[id] = Math.min(G.Upgrades.BY[id].max, n(u[id]));
       }
     }
+    if (G.Bestiary && G.Bestiary.sanitizeSave) G.Bestiary.sanitizeSave(s);
   }
 
   const VALID = /^[A-Za-z0-9_ñÑáéíóúÁÉÍÓÚ]{3,16}$/;
@@ -228,6 +251,7 @@ G.DB = (() => {
   function beginLocal(k, name) {
     key = k; user = name; guest = false;
     save = loadLocal(k, name);
+    attachBestiary(save);
     write(K_SES, k);
   }
 
@@ -328,6 +352,7 @@ G.DB = (() => {
   function playAsGuest() {
     user = 'Invitado'; key = null; guest = true;
     save = newSave('Invitado');
+    attachBestiary(save);
     remove(K_SES);
     return { ok: true, isNew: true };
   }

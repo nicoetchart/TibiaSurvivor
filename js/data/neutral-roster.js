@@ -116,6 +116,7 @@ G.NeutralRoster = (() => {
     d.shotCd = 2.4;
     d.range = 200;
     d.elite = true;
+    d.bestiaryCreatureId = 'sentinel_elite';
     eliteCache = d;
     return d;
   }

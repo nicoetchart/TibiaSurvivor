@@ -844,7 +844,11 @@
       const e = byId.get(id);
       if (!e) return;
       byId.delete(id);
-      if (died) { e.die(); G.Progress.kill(e); }
+      if (died) {
+        e.die();
+        if (G.Bestiary && G.Bestiary.tryCreditDefeat) G.Bestiary.tryCreditDefeat(e);
+        G.Progress.kill(e);
+      }
       const i = list.indexOf(e);
       if (i >= 0) list.splice(i, 1);
       if (died) corpses.push(e);
@@ -952,6 +956,7 @@
         const e = list[i];
         if (e.remote) continue;
         if (e.dead) {
+          if (G.Bestiary && G.Bestiary.tryCreditDefeat) G.Bestiary.tryCreditDefeat(e);
           pl.kills++;
           if (e.boss && !e.judge) pl.bosses++;
           G.Progress.kill(e);

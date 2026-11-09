@@ -1,7 +1,25 @@
 /* ============ creatures.js — criaturas originales TibiaSurvivor (Fase 3–4) ============
  * legacyId 99001–99099 (DEC-018). Sprites geométricos (geo-sprites.js).
  * 15 plantillas enemigas + 1 jugador para el MVP.
+ * Metadatos bestiario (BST-1): difficulty + bestiary.* (sin progreso en runtime).
  */
+const TS_BESTIARY_STD = {
+  enabled: true,
+  entryType: 'normal',
+  thresholds: null,
+  rewardPoints: null,
+  reveal: {
+    stage1: ['hp', 'xp', 'behavior', 'description'],
+    stage2: ['damage', 'speed', 'abilities', 'resistances'],
+    stage3: ['drops', 'tips', 'statistics']
+  },
+  tipKeys: []
+};
+
+function bestiaryMeta(id, extra = {}) {
+  return Object.assign({}, TS_BESTIARY_STD, { tipKeys: [`bestiary.${id}.tip1`] }, extra);
+}
+
 G.CREATURES = [
   {
     id: 'wander_archmage',
@@ -14,13 +32,20 @@ G.CREATURES = [
     behavior: null,
     sprite: 'geo',
     role: 'player',
-    startAbility: 'flame_strike'
+    startAbility: 'flame_strike',
+    bestiary: { enabled: false }
   },
   // —— básicos (tier 0) ——
   {
     id: 'cave_filament',
     legacyId: 99002,
     name: 'Filamento de caverna',
+    description: 'Biomasa tenue que infesta el suelo de la caverna.',
+    nameKey: 'creature.cave_filament.name',
+    descriptionKey: 'creature.cave_filament.description',
+    family: 'beast',
+    difficulty: 'trivial',
+    tags: ['melee', 'ground'],
     hp: 20,
     speed: 56,
     attack: 1,
@@ -29,12 +54,19 @@ G.CREATURES = [
     sprite: 'geo',
     role: 'enemy',
     tier: 0,
-    spawnWeight: 1.2
+    spawnWeight: 1.2,
+    bestiary: bestiaryMeta('cave_filament')
   },
   {
     id: 'ember_wisp',
     legacyId: 99003,
     name: 'Brasa errante',
+    description: 'Fragmento ígneo que embiste en ráfagas cortas.',
+    nameKey: 'creature.ember_wisp.name',
+    descriptionKey: 'creature.ember_wisp.description',
+    family: 'elemental',
+    difficulty: 'trivial',
+    tags: ['charger', 'ground'],
     hp: 18,
     speed: 52,
     attack: 1.05,
@@ -43,12 +75,19 @@ G.CREATURES = [
     sprite: 'geo',
     role: 'enemy',
     tier: 0,
-    spawnWeight: 1
+    spawnWeight: 1,
+    bestiary: bestiaryMeta('ember_wisp')
   },
   {
     id: 'pit_scuttler',
     legacyId: 99004,
     name: 'Corredor de foso',
+    description: 'Explorador veloz que castiga la lentitud en pasillos estrechos.',
+    nameKey: 'creature.pit_scuttler.name',
+    descriptionKey: 'creature.pit_scuttler.description',
+    family: 'beast',
+    difficulty: 'trivial',
+    tags: ['melee', 'ground'],
     hp: 14,
     speed: 78,
     attack: 0.95,
@@ -57,12 +96,19 @@ G.CREATURES = [
     sprite: 'geo',
     role: 'enemy',
     tier: 0,
-    spawnWeight: 0.85
+    spawnWeight: 0.85,
+    bestiary: bestiaryMeta('pit_scuttler')
   },
   {
     id: 'gravel_mite',
     legacyId: 99005,
     name: 'Ácaro de grava',
+    description: 'Caparazón rocoso; encadena golpes si lo ignoras.',
+    nameKey: 'creature.gravel_mite.name',
+    descriptionKey: 'creature.gravel_mite.description',
+    family: 'beast',
+    difficulty: 'easy',
+    tags: ['melee', 'ground'],
     hp: 38,
     speed: 44,
     attack: 0.92,
@@ -71,12 +117,19 @@ G.CREATURES = [
     sprite: 'geo',
     role: 'enemy',
     tier: 0,
-    spawnWeight: 0.9
+    spawnWeight: 0.9,
+    bestiary: bestiaryMeta('gravel_mite')
   },
   {
     id: 'spore_puff',
     legacyId: 99006,
     name: 'Espora flotante',
+    description: 'Dispara esporas desde media distancia.',
+    nameKey: 'creature.spore_puff.name',
+    descriptionKey: 'creature.spore_puff.description',
+    family: 'beast',
+    difficulty: 'trivial',
+    tags: ['ranged', 'ground'],
     hp: 16,
     speed: 50,
     attack: 1,
@@ -85,13 +138,20 @@ G.CREATURES = [
     sprite: 'geo',
     role: 'enemy',
     tier: 0,
-    spawnWeight: 1
+    spawnWeight: 1,
+    bestiary: bestiaryMeta('spore_puff')
   },
   // —— intermedios (tier 1) ——
   {
     id: 'dust_spirit',
     legacyId: 99007,
     name: 'Espíritu de polvo',
+    description: 'Aparición inestable de energía dispersa.',
+    nameKey: 'creature.dust_spirit.name',
+    descriptionKey: 'creature.dust_spirit.description',
+    family: 'spirit',
+    difficulty: 'easy',
+    tags: ['ranged', 'ground'],
     hp: 24,
     speed: 54,
     attack: 1.02,
@@ -100,12 +160,19 @@ G.CREATURES = [
     sprite: 'geo',
     role: 'enemy',
     tier: 1,
-    spawnWeight: 1
+    spawnWeight: 1,
+    bestiary: bestiaryMeta('dust_spirit')
   },
   {
     id: 'flint_crawler',
     legacyId: 99008,
     name: 'Reptador de sílex',
+    description: 'Reptador agresivo con placas de sílex.',
+    nameKey: 'creature.flint_crawler.name',
+    descriptionKey: 'creature.flint_crawler.description',
+    family: 'beast',
+    difficulty: 'easy',
+    tags: ['melee', 'ground'],
     hp: 28,
     speed: 68,
     attack: 1.08,
@@ -114,12 +181,19 @@ G.CREATURES = [
     sprite: 'geo',
     role: 'enemy',
     tier: 1,
-    spawnWeight: 1.1
+    spawnWeight: 1.1,
+    bestiary: bestiaryMeta('flint_crawler')
   },
   {
     id: 'seam_speaker',
     legacyId: 99009,
     name: 'Vocero de veta',
+    description: 'Cristal resonante que canaliza ráfagas en abanico.',
+    nameKey: 'creature.seam_speaker.name',
+    descriptionKey: 'creature.seam_speaker.description',
+    family: 'construct',
+    difficulty: 'medium',
+    tags: ['ranged', 'ground'],
     hp: 22,
     speed: 44,
     attack: 0.92,
@@ -128,12 +202,19 @@ G.CREATURES = [
     sprite: 'geo',
     role: 'enemy',
     tier: 1,
-    spawnWeight: 0.95
+    spawnWeight: 0.95,
+    bestiary: bestiaryMeta('seam_speaker')
   },
   {
     id: 'rune_guard',
     legacyId: 99010,
     name: 'Guardián de runas',
+    description: 'Constructo que protege a otros con runas de contención.',
+    nameKey: 'creature.rune_guard.name',
+    descriptionKey: 'creature.rune_guard.description',
+    family: 'construct',
+    difficulty: 'medium',
+    tags: ['melee', 'ground'],
     hp: 30,
     speed: 46,
     attack: 1,
@@ -142,12 +223,19 @@ G.CREATURES = [
     sprite: 'geo',
     role: 'enemy',
     tier: 1,
-    spawnWeight: 0.8
+    spawnWeight: 0.8,
+    bestiary: bestiaryMeta('rune_guard')
   },
   {
     id: 'brood_hatcher',
     legacyId: 99011,
     name: 'Incubador de linaje',
+    description: 'Nido ambulante que vomita filamentos menores.',
+    nameKey: 'creature.brood_hatcher.name',
+    descriptionKey: 'creature.brood_hatcher.description',
+    family: 'beast',
+    difficulty: 'easy',
+    tags: ['summoner', 'ground'],
     hp: 26,
     speed: 50,
     attack: 0.98,
@@ -157,13 +245,20 @@ G.CREATURES = [
     role: 'enemy',
     tier: 1,
     spawnWeight: 0.75,
-    minionLegacyId: 99002
+    minionLegacyId: 99002,
+    bestiary: bestiaryMeta('brood_hatcher')
   },
   // —— avanzados (tier 2) ——
   {
     id: 'cinder_wraith',
     legacyId: 99012,
     name: 'Espectro de ceniza',
+    description: 'Sombra ardiente que marca el terreno.',
+    nameKey: 'creature.cinder_wraith.name',
+    descriptionKey: 'creature.cinder_wraith.description',
+    family: 'spirit',
+    difficulty: 'medium',
+    tags: ['ranged', 'ground'],
     hp: 32,
     speed: 52,
     attack: 1.05,
@@ -172,12 +267,19 @@ G.CREATURES = [
     sprite: 'geo',
     role: 'enemy',
     tier: 2,
-    spawnWeight: 0.9
+    spawnWeight: 0.9,
+    bestiary: bestiaryMeta('cinder_wraith')
   },
   {
     id: 'crystal_shade',
     legacyId: 99013,
     name: 'Sombra cristalina',
+    description: 'Reflejo viviente que lanza haces de energía.',
+    nameKey: 'creature.crystal_shade.name',
+    descriptionKey: 'creature.crystal_shade.description',
+    family: 'spirit',
+    difficulty: 'hard',
+    tags: ['ranged', 'ground'],
     hp: 28,
     speed: 48,
     attack: 1.1,
@@ -186,12 +288,19 @@ G.CREATURES = [
     sprite: 'geo',
     role: 'enemy',
     tier: 2,
-    spawnWeight: 0.85
+    spawnWeight: 0.85,
+    bestiary: bestiaryMeta('crystal_shade')
   },
   {
     id: 'ash_mender',
     legacyId: 99014,
     name: 'Ensalmador de brasa',
+    description: 'Elemental que recompone a los aliados cercanos.',
+    nameKey: 'creature.ash_mender.name',
+    descriptionKey: 'creature.ash_mender.description',
+    family: 'elemental',
+    difficulty: 'medium',
+    tags: ['healer', 'ground'],
     hp: 34,
     speed: 46,
     attack: 0.9,
@@ -200,12 +309,19 @@ G.CREATURES = [
     sprite: 'geo',
     role: 'enemy',
     tier: 2,
-    spawnWeight: 0.7
+    spawnWeight: 0.7,
+    bestiary: bestiaryMeta('ash_mender')
   },
   {
     id: 'iron_stalker',
     legacyId: 99015,
     name: 'Acechador de hierro',
+    description: 'Gólem ligero con saltos bruscos sobre la presa.',
+    nameKey: 'creature.iron_stalker.name',
+    descriptionKey: 'creature.iron_stalker.description',
+    family: 'construct',
+    difficulty: 'hard',
+    tags: ['melee', 'ground'],
     hp: 36,
     speed: 58,
     attack: 1.12,
@@ -214,13 +330,20 @@ G.CREATURES = [
     sprite: 'geo',
     role: 'enemy',
     tier: 2,
-    spawnWeight: 0.88
+    spawnWeight: 0.88,
+    bestiary: bestiaryMeta('iron_stalker')
   },
-  // —— élite MVP ——
+  // —— jefe MVP ——
   {
     id: 'vault_warden',
     legacyId: 99016,
     name: 'Custodio del umbral',
+    description: 'Guardián final que bloquea el corazón de la caverna.',
+    nameKey: 'creature.vault_warden.name',
+    descriptionKey: 'creature.vault_warden.description',
+    family: 'construct',
+    difficulty: 'boss',
+    tags: ['charger', 'ground'],
     hp: 520,
     speed: 62,
     attack: 1.25,
@@ -230,7 +353,8 @@ G.CREATURES = [
     role: 'enemy',
     tier: 3,
     spawnWeight: 0,
-    boss: true
+    boss: true,
+    bestiary: bestiaryMeta('vault_warden', { entryType: 'boss' })
   }
 ];
 

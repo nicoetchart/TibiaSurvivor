@@ -131,6 +131,7 @@ G.Content = (() => {
     if (!G.Vocations) miss.push('Vocations');
     if (!G.MasterSorcerer || !G.MasterSorcerer.registered) miss.push('MasterSorcerer');
     else if (!G.MasterSorcerer.validate(true)) miss.push('MasterSorcerer.validate');
+    if (G.Bestiary && !G.Bestiary.validate(true).ok) miss.push('Bestiary.validate');
     if (miss.length) console.error('[G.Content] faltan módulos:', miss.join(', '));
     return !miss.length;
   }

@@ -18,6 +18,8 @@ load('js/core/util.js');
 load('js/data/damage-types.js');
 load('js/data/mvp-config.js');
 load('js/data/creatures.js');
+load('js/data/bestiary.js');
+load('js/data/bestiary-tips.js');
 load('js/data/abilities.js');
 load('js/data/vocations.js');
 load('js/data/content-bridge.js');
@@ -52,6 +54,33 @@ const enemies = G.CREATURES.filter(c => c.role === 'enemy');
 const bosses = enemies.filter(c => c.boss);
 if (enemies.length < 10 || enemies.length > 16) err(`enemy creature count ${enemies.length} (expect 10–15 types incl. boss)`);
 if (bosses.length !== 1) err(`boss count ${bosses.length} (expect 1)`);
+
+if (G.Bestiary) {
+  const v = G.Bestiary.validate(false);
+  if (!v.ok) v.issues.forEach(msg => err(`Bestiary: ${msg}`));
+  const catalog = G.Bestiary.listEntries();
+  if (catalog.length < 14) err(`Bestiary catalog ${catalog.length} (expect >= 14 incl. elite extra)`);
+  const types = new Set(catalog.map(e => e.entryType));
+  if (!types.has('boss') || !types.has('elite') || !types.has('normal')) {
+    err('Bestiary catalog missing normal, elite or boss entryType');
+  }
+  const playable = new Set(
+    G.CREATURES.filter(c => c.role === 'enemy' && c.bestiary && c.bestiary.enabled).map(c => c.id)
+  );
+  playable.add('sentinel_elite');
+  const catalogIds = new Set(catalog.map(e => e.creatureId));
+  for (const id of playable) {
+    if (!catalogIds.has(id)) err(`Bestiary missing catalog entry for playable ${id}`);
+  }
+  for (const e of catalog) {
+    if (!playable.has(e.creatureId)) err(`Bestiary orphan catalog entry ${e.creatureId}`);
+    const full = G.Bestiary.getCatalogEntry(e.creatureId);
+    for (const k of full.tipKeys || []) {
+      if (!G.BESTIARY_TIPS || !G.BESTIARY_TIPS[k]) err(`missing BESTIARY_TIPS[${k}]`);
+    }
+    if (!full.description) err(`${e.creatureId} missing description`);
+  }
+}
 
 const ids = new Set();
 for (const c of G.CREATURES) {

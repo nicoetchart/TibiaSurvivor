@@ -186,6 +186,7 @@
     <div class="box">
       <div class="menu-list">
         <button class="menu-item play" data-go="play">Jugar<small>Inicia una expedición (12 min)</small></button>
+        <button class="menu-item hidden" data-go="bestiary">Bestiario<small id="menu-bestiary-sub">Registro de cacería</small></button>
         <button class="menu-item" data-go="dex">Colección<small id="menu-dex-count">Legacy</small></button>
         <button class="menu-item" data-go="upgrades">Mejoras<small>Legacy</small></button>
         <button class="menu-item" data-go="gacha">Gacha<small>Legacy</small></button>
@@ -319,6 +320,39 @@
   </div>
 </section>
 
+<!-- ====== Bestiario ====== -->
+<section id="scr-bestiary" class="scr dim hidden">
+  <div class="box wide">
+    <div class="row between">
+      <h2>Bestiario</h2>
+      <button class="btn small ghost" type="button" id="bestiary-back">Volver</button>
+    </div>
+    <div id="bestiary-summary" class="row wrap" style="gap:16px;font-size:14px;color:var(--muted);margin:8px 0 12px"></div>
+    <div class="row wrap" id="bestiary-tabs" style="gap:8px;margin-bottom:10px">
+      <button type="button" class="chip on" data-bestiary-tab="catalog">Catálogo</button>
+      <button type="button" class="chip" data-bestiary-tab="shop">Mejoras y desbloqueos</button>
+      <button type="button" class="chip" data-bestiary-tab="charms">Amuletos</button>
+    </div>
+    <div id="bestiary-tab-catalog">
+      <div class="split" style="margin-top:8px">
+        <div>
+          <div class="filters" id="bestiary-filters"></div>
+          <div class="grid" id="bestiary-grid"></div>
+        </div>
+        <div class="panel" id="bestiary-detail"></div>
+      </div>
+    </div>
+    <div id="bestiary-tab-shop" class="hidden">
+      <p class="sub" style="margin:0 0 10px">Gasta puntos del bestiario en mejoras suaves para todas las runs. Los efectos se aplican al iniciar cada partida.</p>
+      <div id="bestiary-shop-list"></div>
+    </div>
+    <div id="bestiary-tab-charms" class="hidden">
+      <p class="sub" style="margin:0 0 10px">Desbloquea y equipa un amuleto universal (fuera de partida). Solo uno activo en el MVP.</p>
+      <div id="bestiary-charms-list"></div>
+    </div>
+  </div>
+</section>
+
 <!-- ====== Colección ====== -->
 <section id="scr-dex" class="scr dim hidden">
   <div class="box wide">
@@ -440,6 +474,6 @@
 </section>
 
 <!-- datos generados -->
-<script defer src="js/app.min.js?v=18d94b7451"></script>
+<script defer src="js/app.min.js?v=87f4e94095"></script>
 </body>
 </html>
