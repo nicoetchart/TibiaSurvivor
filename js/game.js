@@ -113,6 +113,7 @@ G.Game = (() => {
     G.World.reset(Math.floor(Math.random() * 1e6));
     if (G.TibiaTiles && G.TibiaTiles.enabled) G.TibiaTiles.preload();
     const runBiome = G.MvpConfig && G.MvpConfig.RUN_BIOME != null ? G.MvpConfig.RUN_BIOME : 0;
+    if (G.Tiles && G.Tiles.preloadRockSprites) G.Tiles.preloadRockSprites(runBiome);
     G.World.setBiome(runBiome, true);
     biome = runBiome;
     time = 0; pendingLevels = 0;
@@ -726,6 +727,7 @@ G.Game = (() => {
     function init() {
       G.World.reset(4242);
       const bio = G.MvpConfig && G.MvpConfig.RUN_BIOME != null ? G.MvpConfig.RUN_BIOME : 0;
+      if (G.Tiles && G.Tiles.preloadRockSprites) G.Tiles.preloadRockSprites(bio);
       G.World.setBiome(bio, true);
       G.Camera.x = 0; G.Camera.y = 0;
       wanderers = CAST.map(dex => spawn(dex, true));

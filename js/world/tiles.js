@@ -34,9 +34,31 @@ G.Tiles = (() => {
       liq: '#e45a1f', liqDeep: '#b9401a', foam: '#ffd46a', shore: '#3a2a22',
       prop: 'dead', leaf: ['#4a3a30', '#5e4a3c', '#6f5a49', '#806a58'], trunk: ['#3a2e27', '#52423a'],
       rock: ['#4e4642', '#6a605b', '#877c76'], grass: ['#6b4a2a', '#94693a', '#c4914e'] },
+    /* TibiaSurvivor — run neutral (índice 3); superficie, luz natural. PokéSurvivor no lo usa. */
+    { name: 'Plains of Havoc', liquid: 'water',
+      floor: ['#3a8838', '#40963c', '#348034'], dirt: ['#8a6d4c', '#7f6344', '#735a3c'],
+      speck: '#2d6e2a', light: '#5cab50', flowers: ['#e8d070', '#f0ece0', '#c8c060'],
+      wallTop: ['#7a8378', '#858e84', '#6f776d'], wallLight: '#9aa894', wallEdge: '#3a4238',
+      wallFace: ['#525a50', '#484f46'], wallFaceDark: '#2e3530',
+      liq: '#1a5caa', liqDeep: '#0f4580', foam: '#9ec8f0', shore: '#6a5640',
+      prop: 'tree', propStyle: 'tibiaSurface',
+      leaf: ['#2a6830', '#3a8638', '#52a842', '#78c858'], trunk: ['#5a3e2a', '#7a5638'],
+      treeVariants: [
+        { leaf: ['#1e5824', '#2a7830', '#3e9038', '#60b050'], trunk: ['#4a3018', '#6a4428'] },
+        { leaf: ['#183c1c', '#245024', '#346830', '#487840'], trunk: ['#3e2814', '#5a3820'] },
+        { leaf: ['#5a3818', '#7a4c22', '#9a6428', '#b87834'], trunk: ['#4a3018', '#624028'] },
+        { leaf: ['#4a2814', '#6a3420', '#8a4428', '#a85432'], trunk: ['#4a3018', '#5c3820'] },
+        { leaf: ['#228828', '#308830', '#409838', '#50a848'], trunk: ['#4a3018', '#6a4428'] },
+        { leaf: ['#6a3818', '#8a4820', '#a85c28', '#c07034'], trunk: ['#4a2814', '#624028'] }
+      ],
+      rock: ['#6e7276', '#8a8e92', '#a8acb0'], grass: ['#348830', '#4aa038', '#68b84a'],
+      /** PNG cliente Tibia (32×32) → assets/tibia/tiles/{id}.png */
+      rockSprites: ['200423', '200428', '200438', '200431'],
+      treeSprites: ['202216', '202217', '202219', '202220', '202221', '202222', '202223', '202224', '202225'],
+      grassSprites: ['204365', '204366', '204367', '204368', '204371'] },
   ];
-  const NORMAL = 3;                   // biomas que se van turnando en una run
-  const ARENA = 3;                    // a partir de aquí, las arenas de la grieta (una por tipo)
+  const NORMAL = 3;                   // biomas que se van turnando en una run (0–2)
+  const ARENA = 4;                    // a partir de aquí, las arenas de la grieta (índice 3 = Tibia)
 
   // ---------------- arenas de la grieta ----------------
   /*
@@ -390,10 +412,34 @@ G.Tiles = (() => {
 
   const propCache = new Map();          // "bioma/tipo/variante" -> canvas
 
+  function invalidateTibiaPropCache() {
+    for (const k of [...propCache.keys()]) {
+      if (k.includes('/tree/') || k.includes('/rock/') || k.includes('/grass/')) propCache.delete(k);
+    }
+  }
+
+  function tibiaPropPngReady(B, type, variant) {
+    const ids = type === 'tree' ? B.treeSprites : type === 'rock' ? B.rockSprites
+      : type === 'grass' ? B.grassSprites : null;
+    if (!ids || !ids.length) return true;
+    const shape = type === 'rock' && variant >= 100 ? variant - 100 : variant;
+    const s = propSheets.get(String(ids[shape % ids.length]));
+    return !!(s && s.ready);
+  }
+
+  function emptyPropCanvas(w = 32, h = 32) {
+    const cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    return cv;
+  }
+
   function propSprite(bi, type, variant = 0) {
     const k = bi + '/' + type + '/' + variant;
     let cv = propCache.get(k);
-    if (!cv) { cv = PAINT[type](BIOMES[bi], variant); propCache.set(k, cv); }
+    if (cv) return cv;
+    const B = BIOMES[bi];
+    cv = PAINT[type](B, variant);
+    if (tibiaPropPngReady(B, type, variant)) propCache.set(k, cv);
     return cv;
   }
 
@@ -419,10 +465,214 @@ G.Tiles = (() => {
     for (const [x, y] of marks) P.set(x, y, col);
   }
 
+  /** Hierba PNG del cliente (Plains of Havoc). variant = índice en grassSprites. */
+  function paintTibiaGrass(B, variant) {
+    const ids = B.grassSprites;
+    if (!ids || !ids.length) return emptyPropCanvas();
+    const sheet = getPropSheet(ids[variant % ids.length]);
+    if (!sheet.ready) return emptyPropCanvas();
+    const img = sheet.img;
+    const cv = document.createElement('canvas');
+    cv.width = img.width; cv.height = img.height;
+    const c = cv.getContext('2d');
+    c.imageSmoothingEnabled = false;
+    c.drawImage(img, 0, 0);
+    return cv;
+  }
+
+  /** Árbol PNG del cliente (Plains of Havoc). Sin fallback procedural. */
+  function paintTibiaTree(B, variant) {
+    const ids = B.treeSprites;
+    if (!ids || !ids.length) return emptyPropCanvas();
+    const sheet = getPropSheet(ids[variant % ids.length], 'tree');
+    if (!sheet.ready) return emptyPropCanvas();
+    const img = sheet.img;
+    const cv = document.createElement('canvas');
+    cv.width = img.width; cv.height = img.height;
+    const c = cv.getContext('2d');
+    c.imageSmoothingEnabled = false;
+    c.drawImage(img, 0, 0);
+    return cv;
+  }
+
+  /** Árbol / arbusto procedural (fallback). variant 4 = arbusto. */
+  function paintTibiaTreeProc(B, variant) {
+    const v = variant % 6;
+    const nVar = B.treeVariants ? B.treeVariants.length : 1;
+    const tv = B.treeVariants ? B.treeVariants[v % nVar] : null;
+    const L = (tv ? tv.leaf : B.leaf).map(h => pack(h));
+    const Tr = (tv && tv.trunk ? tv.trunk : B.trunk).map(h => pack(h));
+    const edge = pack('#1a2814');
+
+    function canopyDisc(P, blobs, seedOff) {
+      for (const [bx, by, br] of blobs) {
+        disc(P, bx, by, br, (x, y, d) => {
+          const lit = ((x - bx) * -0.6 + (y - by) * -0.85) / br;
+          const idx = lit > 0.42 ? 3 : lit > 0.02 ? 2 : lit > -0.42 ? 1 : 0;
+          return (H(x, y, seedOff) < 0.11 && idx > 0) ? L[idx - 1] : L[idx];
+        });
+      }
+    }
+
+    function drawTrunk(P, l, r, top, foot) {
+      for (let y = foot - top; y <= foot; y++) {
+        for (let x = l; x <= r; x++) P.set(x, y, (x === l || x === r || y === foot) ? Tr[0] : Tr[1]);
+      }
+      P.set(l - 1, foot, Tr[0]); P.set(r + 1, foot, Tr[0]);
+    }
+
+    if (v === 4) {
+      const P = Pix(26, 26);
+      const foot = P.h - 1;
+      drawTrunk(P, 11, 14, 5, foot);
+      canopyDisc(P, [[13, 14, 10]], 440);
+      outline(P, edge);
+      return P.canvas();
+    }
+
+    const compact = v === 5;
+    const P = Pix(compact ? 28 : 32, compact ? 36 : 42);
+    const foot = P.h - 1;
+    const shapes = {
+      0: { l: 11, r: 19, top: 14, blobs: [[16, 20, 12], [8, 24, 8], [23, 24, 8], [16, 11, 7]] },
+      1: { l: 13, r: 17, top: 16, blobs: [[16, 19, 10], [16, 9, 6], [10, 22, 5], [22, 22, 5]] },
+      2: { l: 11, r: 19, top: 13, blobs: [[16, 21, 11], [7, 25, 7], [24, 25, 7], [15, 12, 6]] },
+      3: { l: 12, r: 18, top: 13, blobs: [[16, 20, 11], [9, 24, 8], [23, 24, 8]] },
+      5: { l: 13, r: 17, top: 11, blobs: [[16, 22, 9], [11, 25, 6], [21, 25, 6]] }
+    };
+    const sh = shapes[v] || shapes[0];
+    drawTrunk(P, sh.l, sh.r, sh.top, foot);
+    canopyDisc(P, sh.blobs, 400 + v);
+    outline(P, edge);
+    return P.canvas();
+  }
+
+  const propSheets = new Map();
+
+  function propSheetSrc(id) { return `assets/tibia/tiles/${id}.png`; }
+
+  function getPropSheet(id) {
+    const key = String(id);
+    let s = propSheets.get(key);
+    if (s) return s;
+    const img = new Image();
+    s = { img, ready: false, failed: false, key };
+    img.onload = () => {
+      s.ready = true;
+      invalidateTibiaPropCache();
+      if (G.World && G.World.flushChunkImages) G.World.flushChunkImages();
+    };
+    img.onerror = () => { s.failed = true; };
+    img.src = propSheetSrc(key);
+    propSheets.set(key, s);
+    return s;
+  }
+
+  function biomePropSpriteIds(B) {
+    if (!B) return [];
+    return [...(B.rockSprites || []), ...(B.treeSprites || []), ...(B.grassSprites || [])];
+  }
+
+  function preloadRockSprites(biomeIndex, timeout = 12000) {
+    const ids = biomePropSpriteIds(BIOMES[biomeIndex]);
+    if (!ids.length) return Promise.resolve(true);
+    for (const id of ids) getPropSheet(id);
+    return new Promise(resolve => {
+      const t0 = performance.now();
+      (function tick() {
+        const done = ids.every(id => {
+          const s = propSheets.get(String(id));
+          return !s || s.ready || s.failed;
+        });
+        if (done || performance.now() - t0 > timeout) {
+          if (done) invalidateTibiaPropCache();
+          resolve(done);
+        } else setTimeout(tick, 40);
+      })();
+    });
+  }
+
+  /** Fallback procedural si el PNG aún no cargó. +100 = dañado. */
+  function paintTibiaRockProc(B, variant) {
+    const damaged = variant >= 100;
+    const shape = damaged ? variant - 100 : variant;
+    const R = B.rock.map(h => pack(h));
+    const hi = pack('#c4c8cc');
+    const edge = pack('#282a2e');
+    const dark = pack('#3a3c40');
+    const specs = [
+      { w: 28, h: 21, cx: 13.5, cy: 10.5, rx: 11, ry: 8.5, hi: [[4, 3], [5, 3], [6, 3], [4, 4], [5, 4], [6, 4], [7, 4], [5, 5], [6, 5]] },
+      { w: 32, h: 18, cx: 16, cy: 10, rx: 14, ry: 7, hi: [[5, 3], [6, 3], [7, 3], [5, 4], [6, 4], [8, 4]] },
+      { w: 22, h: 26, cx: 11, cy: 13, rx: 8, ry: 11.5, hi: [[3, 4], [4, 4], [5, 4], [3, 5], [4, 5]] },
+      { w: 20, h: 15, cx: 10, cy: 9, rx: 8, ry: 6.5, hi: [[3, 2], [4, 2], [5, 2], [4, 3]] }
+    ];
+    const sp = specs[shape % specs.length];
+    const P = Pix(sp.w, sp.h);
+    for (let y = 0; y < sp.h; y++) {
+      for (let x = 0; x < sp.w; x++) {
+        const nx = (x - sp.cx) / sp.rx, ny = (y - sp.cy) / sp.ry;
+        const d = nx * nx + ny * ny + (H(x, y, 61 + shape) - 0.5) * 0.07;
+        if (d > 1) continue;
+        const lit = -nx * 0.68 - ny * 0.78 + (H(x, y, 62 + shape) - 0.5) * 0.2;
+        let c = R[lit > 0.38 ? 2 : lit > -0.18 ? 1 : 0];
+        if (y >= sp.h - 2) c = R[0];
+        P.set(x, y, c);
+      }
+    }
+    for (const [x, y] of sp.hi) { if (P.get(x, y) >>> 24) P.set(x, y, hi); }
+    if (damaged) {
+      const crack = [[sp.cx | 0, 3], [sp.cx | 0, 4], [(sp.cx + 1) | 0, 5], [sp.cx | 0, 6], [(sp.cx - 1) | 0, 7],
+        [sp.cx | 0, 8], [(sp.cx + 1) | 0, 9], [sp.cx | 0, 10]];
+      crack.forEach(([x, y]) => { if (x >= 0 && y >= 0 && x < sp.w && y < sp.h) P.set(x, y, dark); });
+    } else {
+      [[sp.cx + 2, sp.cy + 2], [sp.cx + 3, sp.cy + 3]].forEach(([x, y]) => {
+        if (x >= 0 && y >= 0 && x < sp.w && y < sp.h && (P.get(x, y) >>> 24)) P.set(x, y, R[0]);
+      });
+    }
+    outline(P, edge);
+    return P.canvas();
+  }
+
+  /** Rocas Tibia reales (PNG); misma colocación procedural que antes. +100 = dañado. */
+  function paintTibiaRock(B, variant) {
+    const damaged = variant >= 100;
+    const shape = damaged ? variant - 100 : variant;
+    const ids = B.rockSprites;
+    if (ids && ids.length) {
+      const sheet = getPropSheet(ids[shape % ids.length]);
+      if (sheet.ready) {
+        const img = sheet.img;
+        const w = img.width, h = img.height;
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        const c = cv.getContext('2d');
+        c.imageSmoothingEnabled = false;
+        c.drawImage(img, 0, 0);
+        if (damaged) {
+          c.strokeStyle = '#1a1c20';
+          c.lineWidth = 1;
+          c.beginPath();
+          c.moveTo(w * 0.48, 3);
+          c.lineTo(w * 0.52, h * 0.12);
+          c.lineTo(w * 0.46, h * 0.28);
+          c.lineTo(w * 0.54, h * 0.45);
+          c.stroke();
+        }
+        return cv;
+      }
+    }
+    if (ids && ids.length) return emptyPropCanvas();
+    return paintTibiaRockProc(B, variant);
+  }
+
   const PAINT = {
-    tree(B) {
+    tree(B, variant = 0) {
+      if (B.treeSprites && B.treeSprites.length) return paintTibiaTree(B, variant);
       const P = Pix(30, 40);
-      const L = B.leaf.map(h => pack(h)), Tr = B.trunk.map(h => pack(h));
+      const nVar = B.treeVariants ? B.treeVariants.length : 1;
+      const tv = B.treeVariants ? B.treeVariants[variant % nVar] : null;
+      const L = (tv ? tv.leaf : B.leaf).map(h => pack(h));
+      const Tr = (tv && tv.trunk ? tv.trunk : B.trunk).map(h => pack(h));
       const edge = pack('#14200f');
       if (B.prop === 'crystal') return PAINT.crystal(B);
       if (B.prop === 'dead') return PAINT.deadtree(B);
@@ -472,6 +722,7 @@ G.Tiles = (() => {
     },
 
     rock(B, variant) {
+      if (B.propStyle === 'tibiaSurface') return paintTibiaRock(B, variant);
       const P = Pix(22, 17);
       const R = B.rock.map(h => pack(h));
       const shine = pack('#ffffff');
@@ -498,6 +749,7 @@ G.Tiles = (() => {
     },
 
     grass(B, variant) {
+      if (B.grassSprites && B.grassSprites.length) return paintTibiaGrass(B, variant);
       // Matojo de hojas en abanico: cada hoja es una curva que se inclina
       // hacia fuera, con la base oscura y la punta clara. La variante 1 es el
       // fotograma "mecido por el viento".
@@ -658,6 +910,7 @@ G.Tiles = (() => {
   function clearProps() { propCache.clear(); }
 
   return { T, BIOMES, NORMAL, ARENA, ARENA_THEMES, ARENA_TYPES, paintChunk, propSprite, clearProps,
+           preloadRockSprites,
            /** Índice de bioma de la arena de un tipo. */
            arenaBiome: type => ARENA + Math.max(0, ARENA_TYPES.indexOf(type)) };
 })();

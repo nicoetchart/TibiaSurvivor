@@ -4,8 +4,8 @@
 G.MvpConfig = {
   /** Tope de tiempo: si el jefe sigue vivo, derrota por tiempo agotado (MS-8: ventana 10–15 min). */
   RUN_DURATION_SEC: 900,
-  /** Índice en G.Tiles.BIOMES — 1 = Cueva Cristal. */
-  RUN_BIOME: 1,
+  /** Índice en G.Tiles.BIOMES — 3 = Plains of Havoc (superficie Tibia). */
+  RUN_BIOME: 3,
   BIOME_ROTATION: false,
   USE_JUDGMENT: false,
   DISABLE_RIFTS: true,

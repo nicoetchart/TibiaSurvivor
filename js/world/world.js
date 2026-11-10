@@ -178,14 +178,69 @@ G.World = (() => {
   };
   const SPECIAL = new Set(['altar', 'spring', 'bigchest', 'trap']);
 
+  function propVis(type, tx, ty) {
+    const B = G.Tiles.BIOMES[biome];
+    if (type === 'tree') {
+      const n = B && B.treeSprites ? B.treeSprites.length : 6;
+      return Math.floor(H(tx, ty, 919) * n) % n;
+    }
+    if (type === 'rock') {
+      const n = B && B.rockSprites ? B.rockSprites.length : 4;
+      return Math.floor(H(tx, ty, 920) * n) % n;
+    }
+    if (type === 'grass') {
+      const n = B && B.grassSprites ? B.grassSprites.length : 2;
+      return Math.floor(H(tx, ty, 921) * n) % n;
+    }
+    return 0;
+  }
+
+  function usesTibiaRockSprites() {
+    const B = G.Tiles.BIOMES[biome];
+    return !!(B && B.rockSprites);
+  }
+
+  function usesTibiaTreeSprites() {
+    const B = G.Tiles.BIOMES[biome];
+    return !!(B && B.treeSprites);
+  }
+
+  function usesTibiaGrassSprites() {
+    const B = G.Tiles.BIOMES[biome];
+    return !!(B && B.grassSprites);
+  }
+
+  function usesTibiaPropPng(type) {
+    if (type === 'rock') return usesTibiaRockSprites();
+    if (type === 'tree') return usesTibiaTreeSprites();
+    if (type === 'grass') return usesTibiaGrassSprites();
+    return false;
+  }
+
+  /** Props PNG Tibia (árbol/roca): 75 % del dibujo clásico (32 px × PX). */
+  const TIBIA_PROP_SCALE = 0.75;
+
+  function propDrawScale(type) {
+    return usesTibiaPropPng(type) ? G.Sprites.PX * TIBIA_PROP_SCALE : G.Sprites.PX;
+  }
+
+  /** Desplazamiento vertical al dibujar: base del sprite en los pies del prop. */
+  function propFootPad(type) {
+    if (usesTibiaPropPng(type)) return 14;
+    if (type === 'grass') return 4;
+    return 2;
+  }
+
   function makeProp(type, tx, ty, kind = 0) {
     const d = PROP[type];
+    const tibiaPng = usesTibiaPropPng(type);
     return {
       id: nextPropId++, type, tx, ty, kind,
       x: tx * TS + TS / 2, y: ty * TS + TS - 4,
-      r: d.r, hp: d.hp, maxHp: d.hp, solid: d.solid, flat: !!d.flat,
+      r: tibiaPng ? Math.round(d.r * TIBIA_PROP_SCALE) : d.r, hp: d.hp, maxHp: d.hp, solid: d.solid, flat: !!d.flat,
       destructible: d.hp !== Infinity, flash: 0,
       wiggle: H(tx, ty, 9) * 6.28,
+      vis: propVis(type, tx, ty),
       used: false, charge: 1, open: 0          // altar / manantial / cofre con candado
     };
   }
@@ -490,13 +545,16 @@ G.World = (() => {
 
   function drawProp(ctx, p, t) {
     const P = G.Sprites.PX;
-    const variant = p.type === 'grass' ? (Math.sin(t * 2.4 + p.wiggle) > 0.55 ? 1 : 0)
-                  : p.type === 'rock' ? (p.hp < p.maxHp * 0.5 ? 1 : 0)
+    const variant = p.type === 'grass' ? (usesTibiaGrassSprites() ? (p.vis | 0) : 0)
+                  : p.type === 'tree' ? (p.vis | 0)
+                  : p.type === 'rock' ? ((p.vis | 0) + (p.hp < p.maxHp * 0.5 ? 100 : 0))
                   : p.type === 'altar' ? p.kind * 2 + (p.used ? 1 : 0)
                   : p.type === 'spring' ? (p.charge < 0.15 ? 1 : 0)
                   : p.type === 'trap' ? p.kind : 0;
     const img = G.Tiles.propSprite(biome, p.type, variant);
-    const w = img.width * P, h = img.height * P;
+    const scale = propDrawScale(p.type);
+    const w = img.width * scale, h = img.height * scale;
+    const foot = propFootPad(p.type);
     if (p.flat) {
       // Planos (manantial, trampa): pegados al suelo, centrados en su casilla.
       ctx.drawImage(img, Math.round(p.x - w / 2), Math.round(p.y - 8 - h / 2), w, h);
@@ -527,13 +585,16 @@ G.World = (() => {
       ctx.beginPath(); ctx.ellipse(p.x, p.y, p.r * 1.1, p.r * 0.38, 0, 0, 6.2832); ctx.fill();
     }
     ctx.save();
-    const x = Math.round(p.x - w / 2), y = Math.round(p.y - h + (p.type === 'grass' ? 4 : 2));
+    const x = Math.round(p.x - w / 2), y = Math.round(p.y - h + foot);
     const k = fadeK();
     if (k != null) {
       // El objeto viejo se desvanece mientras aparece el nuevo.
       const old = G.Tiles.propSprite(fade.from, p.type, variant);
+      const oldSc = propDrawScale(p.type);
+      const oldFoot = propFootPad(p.type);
       ctx.globalAlpha = 1 - k;
-      ctx.drawImage(old, Math.round(p.x - old.width * P / 2), Math.round(p.y - old.height * P + (p.type === 'grass' ? 4 : 2)), old.width * P, old.height * P);
+      ctx.drawImage(old, Math.round(p.x - old.width * oldSc / 2),
+        Math.round(p.y - old.height * oldSc + oldFoot), old.width * oldSc, old.height * oldSc);
       ctx.globalAlpha = k;
     }
     ctx.drawImage(img, x, y, w, h);

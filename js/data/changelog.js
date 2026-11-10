@@ -2,6 +2,27 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-10', title: ['Plains of Havoc', 'Plains of Havoc'], new: [
+    ['Bioma procedural Plains of Havoc (superficie Tibia): hierba, tierra, piedra, agua azul y props árbol/roca sin cristales.',
+     'Procedural Plains of Havoc biome (Tibia surface): grass, dirt, stone, classic blue water, tree/rock props; no crystals.'],
+    ['Props Tibia en Plains of Havoc: árboles verdes/otoño y arbustos; peñascos grises con brillo (variantes por casilla).',
+     'Tibia props on Plains of Havoc: green/autumn trees and bushes; gray boulders with highlights (per-tile variants).'],
+  ], fix: [
+    ['Plains of Havoc: 6 siluetas de árbol y 4 de roca (variante fija al generar; antes el hash en [0,1) dejaba casi todo igual).',
+     'Plains of Havoc: 6 tree silhouettes and 4 rock shapes (variant set at spawn; hash in [0,1) used to look like one type).'],
+    ['Rocas Plains of Havoc: sprites reales del cliente (200423, 200428, 200438, 200431) en lugar del dibujo procedural.',
+     'Plains of Havoc rocks: real client sprites (200423, 200428, 200438, 200431) instead of procedural drawing.'],
+    ['Rocas Tibia en mapa: 75 % del tamaño clásico, colisión acorde (r≈9) y anclaje al suelo.',
+     'Tibia map rocks: 75% of classic size, matching collision (r≈9), grounded foot anchor.'],
+    ['Árboles Plains of Havoc: sprites del cliente (202216–202225), 75 % y foot 14 como las rocas.',
+     'Plains of Havoc trees: client sprites (202216–202225), 75% scale and foot 14 like rocks.'],
+    ['Árboles Tibia: solo PNG (sin procedural); caché de props se invalida al cargar sprites.',
+     'Tibia trees: PNG only (no procedural fallback); prop cache clears when sprites load.'],
+    ['Hierba Plains of Havoc: sprites 204365–204368 y 204371, 75 %, foot 14; cortable con mismos drops.',
+     'Plains of Havoc grass: sprites 204365–204368 and 204371, 75% scale, foot 14; cuttable with same drops.'],
+    ['Hierba: sin animación de mecido; cinco siluetas retiradas del conjunto.',
+     'Grass: no wind sway animation; five silhouettes removed from the set.'],
+  ] },
   { d: '2026-11-09', title: ['Criaturas oficiales de Tibia', 'Official Tibia creatures'], chg: [
     ['Mapa procedural por defecto (`mapTiles.floors/walls` en tuning); criaturas y personajes siguen con PNG Tibia. `?tiles=tibia` prueba suelo.',
      'Procedural map by default (mapTiles.floors/walls in tuning); creatures and player keep Tibia PNGs. ?tiles=tibia tests floors.'],

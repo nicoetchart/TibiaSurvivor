@@ -158,6 +158,7 @@ G.I18n.add({
   'Cantera Antigua': 'Ancient Quarry', 'Cementerio Sombrío': 'Gloomy Graveyard', 'Santuario Dragón': 'Dragon Sanctuary',
   'Callejón Oscuro': 'Dark Alley', 'Fortaleza de Acero': 'Steel Fortress', 'Bosque Encantado': 'Enchanted Forest',
   'Bosque Umbrío': 'Shady Forest', 'Cueva Cristal': 'Crystal Cave', 'Volcán Ceniza': 'Ash Volcano',
+  'Plains of Havoc': 'Plains of Havoc',
   'Grieta · {x}': 'Rift · {x}', 'Grieta ·': 'Rift ·', 'GRIETA ·': 'RIFT ·',
 
   // ---------------- avisos durante la partida ----------------

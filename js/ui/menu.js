@@ -52,7 +52,9 @@ G.MenuUI = (() => {
     $('menu-partner-info').innerHTML = neutral
       ? (() => {
           const v = G.Content.getVocation('master_sorcerer');
-          return (v ? v.name : 'Vocación') + ' · Cueva Cristal';
+          const bi = G.MvpConfig && G.MvpConfig.RUN_BIOME != null ? G.MvpConfig.RUN_BIOME : 3;
+          const zone = (G.Tiles && G.Tiles.BIOMES[bi]) ? G.Tiles.BIOMES[bi].name : 'Plains of Havoc';
+          return (v ? v.name : 'Vocación') + ' · ' + zone;
         })()
       : G.UI.typeChips(mon.types) + ' ' + G.UI.stars(mon.rarity);
     // Normal / shiny a mano, aquí mismo (en el móvil no se encontraba en la ficha).
