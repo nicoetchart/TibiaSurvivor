@@ -111,6 +111,7 @@ G.Game = (() => {
     G.Path.clear();
     G.Hazards.clear();
     G.World.reset(Math.floor(Math.random() * 1e6));
+    if (G.TibiaTiles && G.TibiaTiles.enabled) G.TibiaTiles.preload();
     const runBiome = G.MvpConfig && G.MvpConfig.RUN_BIOME != null ? G.MvpConfig.RUN_BIOME : 0;
     G.World.setBiome(runBiome, true);
     biome = runBiome;
@@ -897,7 +898,7 @@ G.Flow = {
   boot() {
     G.UI.initChrome();
     G.LoginUI.init(); G.VocationUI.init(); G.TestUI.init(); G.MenuUI.init(); G.GachaUI.init();
-    G.GoalsUI.init(); G.SettingsUI.init(); G.NewsUI.init(); G.Updater.init();
+    G.GoalsUI.init(); G.SettingsUI.init(); G.OutfitUI && G.OutfitUI.init(); G.NewsUI.init(); G.Updater.init();
     // Tu nombre arriba a la derecha abre tu perfil.
     document.getElementById('user-pill').onclick = () => G.GoalsUI.open('profile');
     G.Audio.music('village');     // suena tras el primer clic (lo exige el navegador)

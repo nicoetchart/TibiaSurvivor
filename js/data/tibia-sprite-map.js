@@ -10,8 +10,8 @@ G.TIBIA_SPRITE_MAP = {
   clientVersionHint: '15.33',
 
   creatures: {
-    /* jugador — Master Sorcerer (outfit; ajustar al export) */
-    99001: { kind: 'outfit', outfit: { type: 138, head: 0, body: 94, legs: 94, feet: 94, addons: 3 } },
+    /* jugador — Mage outfit (132); colores/addons en save.playerOutfit */
+    99001: { kind: 'outfit', outfit: { type: 132, head: 0, body: 94, legs: 94, feet: 94, addons: 0 } },
     99002: { kind: 'lookType', lookType: 276 },   // Cat
     99003: { kind: 'lookType', lookType: 32 },    // Dog
     99004: { kind: 'lookType', lookType: 31 },    // Deer
@@ -45,11 +45,21 @@ G.TIBIA_SPRITE_MAP = {
     default_missile: { key: 'energy_missile' }
   },
 
-  /** tile lógico interno → clientId ground (fase 2). */
+  /** tile lógico → archivo en assets/tibia/tiles/ (nombre sin .png). */
+  /*
+   * Suelo Tibia (solo estos 3; ver G.Tiles.BIOMES y TibiaTiles.FLOOR_BY_BIOME):
+   *   grass      — bioma 0 Bosque Umbrío
+   *   cave_floor — biomas 1–2 (Cueva, Volcán) y todas las arenas (índice ≥ 3)
+   *   dirt       — parches donde la máscara de tierra gana (>50 % del tile 16×16)
+   * PNG: assets/tibia/tiles/{file}.png · strips: frame 0,1,…
+   * Tras cambiar PNG: node tools/refresh_tibia_tiles_meta.mjs
+   */
   tiles: {
-    grass: { clientId: 100 },
-    cave_floor: { clientId: 351 },
-    stone_wall: { clientId: 1025 }
+    grass: { file: '198319' },
+    cave_floor: { file: '198305-198306', frame: 0 },
+    dirt: { file: '198321-198322', frame: 0 },
+    /** Paredes desactivadas (mapTiles.walls) hasta autotile fiable. */
+    stone_wall: { set: { first: 198412, last: 198448 } }
   }
 };
 

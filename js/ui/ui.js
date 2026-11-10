@@ -8,7 +8,7 @@
 G.UI = (() => {
   const $ = id => document.getElementById(id);
   const SCREENS = ['scr-login', 'scr-vocation', 'scr-test', 'scr-result', 'scr-starters', 'scr-menu',
-                   'scr-bestiary', 'scr-dex', 'scr-upgrades', 'scr-gacha', 'scr-levelup', 'scr-pause', 'scr-over',
+                   'scr-outfit', 'scr-bestiary', 'scr-dex', 'scr-upgrades', 'scr-gacha', 'scr-levelup', 'scr-pause', 'scr-over',
                    'scr-item', 'scr-goals', 'scr-bond'];
 
   function show(id, keepMenu = false) {
@@ -235,28 +235,53 @@ G.UI = (() => {
       ctx.clearRect(0, 0, cv.width, cv.height);
       ctx.imageSmoothingEnabled = false;
 
-      // Escala entera para que los píxeles queden nítidos.
-      const m = G.Sprites.animMeta(s.dex, 'Idle');
-      const ay = m ? m.ay : 24;
+      const m = G.Sprites.animMeta(s.dex, s.a.cur);
+      const TS = G.TibiaSprites;
+      const tibiaEntry = TS && TS.enabled && TS.hasCreature(s.dex) ? TS.entryForDex(s.dex) : null;
+      const outfitHero = !!(s.opts.hero && tibiaEntry && tibiaEntry.kind === 'outfit' && tibiaEntry.outfit);
+
+      let fx = cv.width / 2;
+      let fy = cv.height * 0.88;
       let k = s.opts.scale || 2;
-      if (s.opts.hero) k = Math.max(1, Math.min(k, Math.floor(cv.height * 0.8 / ay)));
-      s.a.scale = k / G.Sprites.PX;
-      // Si no cabe de pie, se centra el cuerpo en el recuadro.
-      const big = ay * k > cv.height * 0.8;
-      const fx = cv.width / 2, fy = big ? cv.height / 2 + ay * k * 0.45 : cv.height * 0.88;
+      let drawOpts = null;
+
+      if (outfitHero) {
+        const pl = TS.outfitBoxPlacement(
+          cv.width, cv.height, tibiaEntry.outfit, s.a.cur, 0.9, 0.52, true, s.a.dir, s.a.frame);
+        s.a.scale = pl.scale;
+        fx = pl.x;
+        fy = pl.y;
+        drawOpts = { outfitUi: true };
+        const animM = m || { h: 64 };
+        const drawMul = TS.baseDrawMul(s.dex, animM);
+        k = Math.max(2, G.Sprites.PX * s.a.scale * drawMul);
+      } else {
+        const ay = m ? m.ay : 24;
+        k = s.opts.scale || 2;
+        if (s.opts.hero) k = Math.max(1, Math.min(k, Math.floor(cv.height * 0.8 / ay)));
+        s.a.scale = k / G.Sprites.PX;
+        const big = ay * k > cv.height * 0.8;
+        fx = cv.width / 2;
+        fy = big ? cv.height / 2 + ay * k * 0.45 : cv.height * 0.88;
+      }
 
       if (s.opts.shadow !== false && !s.opts.silhouette) {
         ctx.fillStyle = 'rgba(0,0,0,.35)';
-        ctx.beginPath(); ctx.ellipse(fx, fy, 9 * k, 3.4 * k, 0, 0, 6.2832); ctx.fill();
+        if (outfitHero) {
+          const sh = TS.shadowRadius(s.dex, s.a.scale);
+          ctx.beginPath(); ctx.ellipse(fx, fy + 5, sh * 0.85, sh * 0.3, 0, 0, 6.2832); ctx.fill();
+        } else {
+          ctx.beginPath(); ctx.ellipse(fx, fy, 9 * k, 3.4 * k, 0, 0, 6.2832); ctx.fill();
+        }
       }
       if (s.opts.silhouette) {
         ctx.save();
         ctx.filter = 'brightness(0)';
         ctx.globalAlpha = 0.55;
-        s.a.draw(ctx, fx, fy);
+        s.a.draw(ctx, fx, fy, drawOpts || undefined);
         ctx.restore();
       } else {
-        s.a.draw(ctx, fx, fy);
+        s.a.draw(ctx, fx, fy, drawOpts || undefined);
       }
 
       // Centelleos alrededor de los shiny: cada uno nace en un sitio al azar.

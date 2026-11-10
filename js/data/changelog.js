@@ -2,7 +2,22 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
-  { d: '2026-11-09', title: ['Criaturas oficiales de Tibia', 'Official Tibia creatures'], fix: [
+  { d: '2026-11-09', title: ['Criaturas oficiales de Tibia', 'Official Tibia creatures'], chg: [
+    ['Mapa procedural por defecto (`mapTiles.floors/walls` en tuning); criaturas y personajes siguen con PNG Tibia. `?tiles=tibia` prueba suelo.',
+     'Procedural map by default (mapTiles.floors/walls in tuning); creatures and player keep Tibia PNGs. ?tiles=tibia tests floors.'],
+  ], fix: [
+    ['Vista de aspecto: sprite más grande y centrado en la silueta (pivote UI, sin scaleMul de juego).',
+     'Outfit preview: larger sprite centered on silhouette (UI pivot, without in-game scaleMul).'],
+    ['Vista de aspecto: centrado midiendo la silueta opaca y la dirección de giro.',
+     'Outfit preview: centering uses opaque silhouette bounds and facing direction.'],
+    ['Vista de aspecto y miniaturas abren mirando al sur (dir 0 del motor).',
+     'Outfit preview and thumbnails open facing south (engine dir 0).'],
+    ['Miniaturas de la galería usan los colores y addons que llevas seleccionados.',
+     'Gallery thumbnails use your current colour and addon choices.'],
+    ['Al cambiar de outfit se conservan los addons activos (antes se reiniciaban a 0).',
+     'Switching outfit keeps active addons (they used to reset to 0).'],
+    ['Menú principal: el outfit Tibia rellena el escenario (misma escala/centro que en Aspecto).',
+     'Main menu: Tibia outfit fills the stage (same scale/center as Outfit screen).'],
     ['Sprites Tibia: ancla al centro del tile (no de la tira) y direcciones N/S alineadas con el cliente.',
      'Tibia sprites: anchor at tile center (not full strip) and N/S directions match the client.'],
     ['Walk en criaturas Tibia: el Animator ya no fuerza Idle sin SPRITE_META; pies afinados en tiles 64px.',
@@ -18,6 +33,26 @@ G.CHANGELOG = [
     ['Sprites Tibia modo natural (como Pokémon): `naturalSize` por defecto, meta w/h/ax/ay/s por criatura; tiers opcionales si `naturalSize: false`.',
      'Tibia natural sprite mode (Pokémon-like): naturalSize default, per-creature w/h/ax/ay/s meta; optional tiers when naturalSize: false.']
   ], new: [
+    ['Mapa Tibia (fase 2): G.TibiaTiles pinta suelo/pared con PNG del cliente si existen; si no, terreno procedural.',
+     'Tibia map (phase 2): G.TibiaTiles draws floor/wall from client PNGs when present; else procedural terrain.'],
+    ['Importador `tools/import_tibia_tiles.mjs` para copiar clientIds del mapa desde grouped.',
+     'Importer tools/import_tibia_tiles.mjs copies map clientIds from grouped export.'],
+    ['Tiles de mapa: PNG por nombre grouped (198xxx) + tiras; `refresh_tibia_tiles_meta.mjs`.',
+     'Map tiles: PNGs by grouped name (198xxx) and strips; refresh_tibia_tiles_meta.mjs.'],
+    ['Paredes del mapa: autotile con sprites 198412–198448 según vecinos N/E/S/O.',
+     'Map walls: autotile from sprites 198412–198448 by N/E/S/W neighbours.'],
+    ['Aspecto Mage (lookType 132): menú principal · Outfit con paleta 7×19, zonas Head/Primary/Secondary/Detail y addons como el cliente Tibia.',
+     'Mage look (132): main menu Outfit screen with 7×19 palette, body zones and addons like the Tibia client.'],
+    ['Paleta de outfit: fórmula HSI del cliente (pastel, saturados y grises); tinte multiply plantilla×color con sombras.',
+     'Outfit palette: client HSI formula (pastels, saturated, grays); multiply template×color tint preserving shading.'],
+    ['Addons de outfit: base + capas addon 1/2 apiladas (pattern_y del cliente), no un sprite alternativo.',
+     'Outfit addons: base plus stacked addon layers (client pattern_y), not a swapped sprite.'],
+    ['Segundo aspecto: Citizen (128) importado; selector ◀ ▶ entre Citizen y Mage en menú Aspecto.',
+     'Second outfit: Citizen (128) import; ◀ ▶ selector between Citizen and Mage in Outfit screen.'],
+    ['Pantalla Personalizar personaje: rejilla de outfits a la derecha, bloqueados visibles (misión/tienda), filtro y paleta abajo.',
+     'Customise character screen: outfit grid on the right, locked outfits visible (mission/shop), filter and palette below.'],
+    ['Outfit Master Sorcerer (138): import a `assets/tibia/outfits/`, meta `out_138` y jugador 99001 con G.TibiaSprites.',
+     'Master Sorcerer outfit (138): import to assets/tibia/outfits/, meta out_138, player 99001 via G.TibiaSprites.'],
     ['Sprites Tibia activos por defecto en TibiaSurvivor (`data-ui=tibia`); modo neutral por defecto. `?sprites=geo` vuelve a formas geométricas.',
      'Tibia sprites on by default in TibiaSurvivor (data-ui=tibia); neutral mode default. ?sprites=geo restores geo shapes.'],
     ['Línea base de sprites Tibia: mapa lookType/outfit, `G.TibiaSprites` y export offline; geo como fallback si falta PNG.',
@@ -31,6 +66,8 @@ G.CHANGELOG = [
     ['Élite Very Rare: Minotaur Guard. Jefe Nemesis: Demon.',
      'Very Rare elite: Minotaur Guard. Nemesis boss: Demon.']
   ], chg: [
+    ['Pantalla de aspecto más compacta: preview ~192px, miniaturas 64px y galería más estrecha.',
+     'Outfit screen more compact: ~192px preview, 64px thumbs and narrower gallery.'],
     ['Comportamientos del roster Tibia revisados (p. ej. Orc Shaman curador, Minotaur Guard escudero, Ghoul tanque).',
      'Tibia roster behaviors revised (e.g. Orc Shaman healer, Minotaur Guard shielder, Ghoul tank).'],
     ['Umbrales de muertes y charm points por dificultad alineados con TibiaWiki (Harmless → Challenging; élite Very Rare; jefe Nemesis).',

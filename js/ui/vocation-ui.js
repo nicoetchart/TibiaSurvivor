@@ -40,6 +40,7 @@ G.VocationUI = (() => {
     save.partnerShiny = false;
     save.personality = null;
     G.DB.grant(id, 'vocation');
+    if (G.TibiaOutfits) G.DB.save.playerOutfit = G.TibiaOutfits.defaultLook();
     G.DB.commit();
     G.Content.syncFromSave(save);
     G.UI.toast(v.name + ' está listo.');

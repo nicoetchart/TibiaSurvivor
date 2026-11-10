@@ -131,7 +131,9 @@ G.DB = (() => {
       profile: { favs: [], title: '' },
       stats: { runs: 0, wins: 0, bestTime: 0, bestVictoryTime: 0, bestLevel: 0, totalKills: 0, pulls: 0, coinsEarned: 0, shinies: 0,
                bossesTotal: 0, riftWins: 0, evolutions: 0, missionsDone: 0, groupRuns: 0, bestGroupTime: 0 },
-      bestiary: null
+      bestiary: null,
+      playerOutfit: null,
+      unlockedOutfits: null
     };
   }
 
@@ -167,6 +169,12 @@ G.DB = (() => {
     }
     s.tickets = Object.assign({ t1: 0, t10: 0 }, s.tickets);
     if (s.bestiary == null) s.bestiary = defaultBestiaryBlock();
+    if (G.TibiaOutfits && G.TibiaOutfits.initSave) G.TibiaOutfits.initSave(s);
+    if (s.playerOutfit == null) {
+      s.playerOutfit = { type: 132, head: 0, body: 94, legs: 94, feet: 94, addons: 0 };
+    } else if (G.TibiaOutfits && G.TibiaOutfits.normalize) {
+      s.playerOutfit = G.TibiaOutfits.normalize(s.playerOutfit);
+    }
     s.product = PRODUCT;
     s.schemaVersion = SCHEMA_VERSION;
     sanitize(s);

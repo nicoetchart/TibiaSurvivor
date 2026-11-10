@@ -676,6 +676,47 @@ body.touch kbd, body.touch .card .key, body.touch .kbd-hint { display: none !imp
 .set-row b { display: block; }
 .set-row small { display: block; color: var(--muted); font-size: 14px; }
 .set-row .switch { min-width: 58px; }
+.outfit-box { width: min(640px, 100%); max-height: calc(100dvh - 16px); display: flex; flex-direction: column; padding: 14px 16px; }
+.outfit-box h2 { font-size: 20px; margin-bottom: 4px; }
+.outfit-box #outfit-root { overflow-y: auto; min-height: 0; flex: 1; }
+.outfit-tibia { display: flex; flex-direction: column; gap: 8px; }
+.outfit-tibia-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(136px, 152px); gap: 8px; align-items: start; }
+@media (max-width: 560px) { .outfit-tibia-top { grid-template-columns: 1fr; } }
+.outfit-tibia-left, .outfit-tibia-right, .outfit-tibia-bottom { padding: 8px 10px; }
+.outfit-tibia-left.panel, .outfit-tibia-right.panel, .outfit-tibia-bottom.panel { border-radius: 8px; }
+.outfit-preview-wrap { text-align: center; }
+.outfit-stage { position: relative; display: inline-block; max-width: 192px; width: 100%; margin: 0 auto; }
+.outfit-preview { display: block; width: 100%; height: auto; margin: 0 auto; border-radius: 4px; border: 2px solid rgba(255,255,255,.15); box-shadow: inset 0 0 0 1px rgba(0,0,0,.4); image-rendering: pixelated; }
+.outfit-stage-turn { position: absolute; bottom: 4px; z-index: 2; width: 24px; height: 24px; padding: 0; border-radius: 4px; border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.55); color: #fff; font-size: 11px; cursor: pointer; line-height: 1; }
+.outfit-stage-turn:hover { background: rgba(0,0,0,.75); border-color: var(--gold); }
+.outfit-stage-turn.prev { left: 6px; }
+.outfit-stage-turn.next { right: 6px; }
+.outfit-preview-opts { gap: 8px 12px; margin-top: 6px; justify-content: center; font-size: 12px; }
+.outfit-config-block { margin-top: 8px; text-align: left; }
+.outfit-kv { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; margin: 4px 0 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,.08); }
+.outfit-kv b { color: var(--gold); }
+.outfit-search { width: 100%; margin-bottom: 2px; font-size: 13px; padding: 6px 8px; }
+.outfit-gallery { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; max-height: min(240px, 34vh); overflow-y: auto; overflow-x: hidden; padding-right: 2px; }
+.outfit-pick { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 3px 2px 2px; background: rgba(0,0,0,.22); border: 1px solid rgba(255,255,255,.12); border-radius: 4px; cursor: pointer; color: var(--ink); min-width: 0; }
+.outfit-pick:hover:not(.locked) { border-color: rgba(255,255,255,.28); background: rgba(255,255,255,.06); }
+.outfit-pick.on { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+.outfit-pick.locked { opacity: 0.72; cursor: not-allowed; }
+.outfit-pick-canvas { width: 64px; height: 64px; max-width: 100%; image-rendering: pixelated; border-radius: 3px; display: block; }
+.outfit-pick-name { font-size: 10px; line-height: 1.1; text-align: center; color: var(--muted); }
+.outfit-pick.on .outfit-pick-name { color: var(--gold); font-weight: 600; }
+.outfit-pick-badge { position: absolute; top: 4px; right: 4px; font-size: 10px; background: rgba(0,0,0,.55); padding: 1px 4px; border-radius: 3px; }
+.outfit-pick-badge.dim { opacity: 0.6; }
+.outfit-side-title { display: block; font-size: 13px; color: var(--gold); margin-bottom: 6px; }
+.outfit-addons { gap: 8px; margin: 4px 0; font-size: 12px; }
+.outfit-presets { margin-top: 4px; }
+.outfit-tibia-bottom { margin-top: 0; }
+.outfit-color-head { gap: 4px; margin-bottom: 6px; }
+.outfit-part-tab { font-size: 12px; padding: 4px 10px; }
+.outfit-palette-wrap { display: flex; justify-content: center; }
+.outfit-palette { display: grid; grid-template-columns: repeat(19, 20px); gap: 1px; width: max-content; max-width: 100%; padding: 4px; margin: 0 auto; background: rgba(0,0,0,.35); border-radius: 5px; border: 1px solid rgba(255,255,255,.12); }
+.outfit-color { width: 20px; height: 20px; padding: 0; border: 1px solid rgba(0,0,0,.4); border-radius: 1px; cursor: pointer; }
+.outfit-color.on { outline: 2px solid #fff; outline-offset: 0; z-index: 1; position: relative; }
+.chip-like { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; cursor: pointer; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .set-chips { margin: 6px 0 10px; }
 .keys { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; align-items: center; font-size: 16px; }

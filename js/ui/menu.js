@@ -5,7 +5,7 @@ G.MenuUI = (() => {
   let dexFilter = 'all', dexGen = 1, dexSel = null;
 
   function init() {
-    const ICON = { play: 'ball', bestiary: 'medal2', dex: 'book', upgrades: 'up', gacha: 'ball4', goals: 'medal3', settings: 'gear' };
+    const ICON = { play: 'ball', bestiary: 'medal2', outfit: 'heart', dex: 'book', upgrades: 'up', gacha: 'ball4', goals: 'medal3', settings: 'gear' };
     document.querySelectorAll('#scr-menu [data-go]').forEach(b => {
       b.insertAdjacentHTML('afterbegin', `<span class="mi-ico">${G.Icons.html(ICON[b.dataset.go], 26)}</span>`);
       b.dataset.sfx = b.dataset.go === 'play' ? 'confirm' : 'click';
@@ -13,6 +13,7 @@ G.MenuUI = (() => {
         const go = b.dataset.go;
         if (go === 'play') G.Flow.play();
         else if (go === 'bestiary') G.BestiaryUI.open();
+        else if (go === 'outfit') G.OutfitUI && G.OutfitUI.open();
         else if (go === 'dex') openDex();
         else if (go === 'upgrades') openUpgrades();
         else if (go === 'gacha') G.GachaUI.open();
@@ -36,7 +37,7 @@ G.MenuUI = (() => {
     document.querySelectorAll('#scr-menu [data-go="dex"], #scr-menu [data-go="upgrades"], #scr-menu [data-go="gacha"]').forEach(b => {
       b.classList.toggle('hidden', neutral);
     });
-    document.querySelectorAll('#scr-menu [data-go="bestiary"]').forEach(b => {
+    document.querySelectorAll('#scr-menu [data-go="bestiary"], #scr-menu [data-go="outfit"]').forEach(b => {
       b.classList.toggle('hidden', !neutral);
     });
     const mon = G.DEX_BY[s.partner];

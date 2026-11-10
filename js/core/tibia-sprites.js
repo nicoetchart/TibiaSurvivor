@@ -10,13 +10,16 @@ G.TibiaSprites = (() => {
     return typeof document !== 'undefined' && document.documentElement.getAttribute('data-ui') === 'tibia';
   }
 
-  /** Por defecto ON en TibiaSurvivor (data-ui=tibia). ?sprites=geo desactiva; ?sprites=tibia fuerza ON. */
+  /** Query o G.TIBIA_SPRITE_TUNING.useTibiaSprites; si no, data-ui=tibia. */
   function resolveEnabled() {
     if (typeof location !== 'undefined') {
       if (/[?&]sprites=geo\b/.test(location.search)) return false;
       if (/[?&]sprites=(off|pokemon)\b/.test(location.search)) return false;
       if (/[?&]sprites=tibia\b/.test(location.search)) return true;
     }
+    const tun = G.TIBIA_SPRITE_TUNING;
+    if (tun && tun.useTibiaSprites === false) return false;
+    if (tun && tun.useTibiaSprites === true) return true;
     return isTibiaUi();
   }
 
@@ -31,7 +34,13 @@ G.TibiaSprites = (() => {
 
   function entryForDex(dex) {
     const m = MAP().creatures;
-    return m && m[dex] ? m[dex] : null;
+    const base = m && m[dex] ? Object.assign({}, m[dex]) : null;
+    if (!base) return null;
+    if (dex === 99001 && base.kind === 'outfit' && G.TibiaOutfits) {
+      const live = G.TibiaOutfits.fromSave();
+      base.outfit = Object.assign({}, base.outfit, live);
+    }
+    return base;
   }
 
   function creatureKey(entry) {
@@ -46,13 +55,31 @@ G.TibiaSprites = (() => {
     return !!entryForDex(dex);
   }
 
-  function lookTypeFromDex(dex) {
-    const e = entryForDex(dex);
-    return e && e.kind === 'lookType' ? e.lookType : null;
+  function assetIdFromEntry(entry) {
+    if (!entry) return null;
+    if (entry.kind === 'lookType') return String(entry.lookType);
+    if (entry.kind === 'outfit') return String(entry.outfit.type);
+    return null;
   }
 
-  function lookTypeFromKey(key) {
-    return key && key.startsWith('lt_') ? key.slice(3) : null;
+  function assetSubdir(entry) {
+    return entry && entry.kind === 'outfit' ? 'outfits' : 'creatures';
+  }
+
+  /** lookType u outfit.type (tuning byLookType). */
+  function lookTypeFromDex(dex) {
+    const e = entryForDex(dex);
+    if (!e) return null;
+    if (e.kind === 'lookType') return e.lookType;
+    if (e.kind === 'outfit') return e.outfit.type;
+    return null;
+  }
+
+  function assetIdFromKey(key) {
+    if (!key) return null;
+    if (key.startsWith('lt_')) return key.slice(3);
+    if (key.startsWith('out_')) return key.slice(4);
+    return null;
   }
 
   /** Base del tuning file + parche dev (localStorage) + override en memoria. */
@@ -138,24 +165,24 @@ G.TibiaSprites = (() => {
   const sheets = new Map();
   const MAX_SHEETS = 200;
 
-  function sheetSrc(lookType, stripKind) {
+  function sheetSrc(assetId, stripKind, subdir) {
     const k = stripKind === 'idle' ? '-idle' : '-walk';
-    return `assets/tibia/creatures/${lookType}${k}.png`;
+    return `assets/tibia/${subdir}/${assetId}${k}.png`;
   }
 
   function kindSuffix(stripKind) {
     return stripKind === 'idle' ? ':idle' : ':walk';
   }
 
-  function getSheet(lookType, stripKind) {
-    const cacheKey = lookType + kindSuffix(stripKind);
+  function getSheet(assetId, stripKind, subdir = 'creatures') {
+    const cacheKey = subdir + ':' + assetId + kindSuffix(stripKind);
     let s = sheets.get(cacheKey);
     if (s) { s.at = Date.now(); return s; }
     if (sheets.size >= MAX_SHEETS) {
       const old = [...sheets].sort((a, b) => a[1].at - b[1].at)[0];
       if (old) sheets.delete(old[0]);
     }
-    const src = sheetSrc(lookType, stripKind);
+    const src = sheetSrc(assetId, stripKind, subdir);
     s = { ready: false, failed: false, img: new Image(), at: Date.now(), src };
     s.img.onload = () => { s.ready = true; };
     s.img.onerror = () => { s.failed = true; };
@@ -169,8 +196,7 @@ G.TibiaSprites = (() => {
     Walk:  { n: 3, d: [6, 6, 6], w: 32, h: 32, ax: 16, ay: 31, r: 4, stripKind: 'walk' }
   };
 
-  function frameMetaForDex(dex, anim) {
-    const entry = entryForDex(dex);
+  function frameMetaForEntry(entry, anim) {
     if (!entry) return null;
     const key = creatureKey(entry);
     const ext = G.TIBIA_CREATURES_META && key && G.TIBIA_CREATURES_META[key];
@@ -181,10 +207,187 @@ G.TibiaSprites = (() => {
       animM = Object.assign({ strip: true, pw: ext.pw, drawMul: ext.drawMul }, ext.a.Walk, { n: ext.a[anim]?.n || 2 });
     }
     if (animM) return animM;
-    const lt = lookTypeFromKey(key);
-    const s = lt ? getSheet(lt, 'walk') : null;
+    const aid = assetIdFromKey(key);
+    const sub = ext && ext.kind === 'outfit' ? 'outfits' : 'creatures';
+    const s = aid ? getSheet(aid, 'walk', sub) : null;
     if (s && (s.ready || !s.failed)) return DEFAULT_ANIM[anim] || DEFAULT_ANIM.Idle;
     return null;
+  }
+
+  function frameMetaForDex(dex, anim) {
+    const entry = entryForDex(dex);
+    if (!entry) return null;
+    return frameMetaForEntry(entry, anim);
+  }
+
+  function metaForEntry(entry) {
+    const key = creatureKey(entry);
+    return key && G.TIBIA_CREATURES_META ? G.TIBIA_CREATURES_META[key] : null;
+  }
+
+  function hasOutfitAssets(type) {
+    const m = metaForEntry({ kind: 'outfit', outfit: { type: type | 0 } });
+    return !!(m && m.composite);
+  }
+
+  function preloadOutfitTypes(types) {
+    if (!enabled) return Promise.resolve();
+    const ids = (types || []).map(t => String(t | 0));
+    const jobs = [];
+    for (const id of ids) {
+      if (!hasOutfitAssets(id)) continue;
+      for (const kind of ['idle', 'walk']) {
+        jobs.push(new Promise(resolve => {
+          const s = getSheet(id, kind, 'outfits');
+          if (!s) return resolve();
+          if (s.ready) return resolve();
+          if (s.failed) return resolve();
+          const done = () => resolve();
+          s.img.addEventListener('load', done, { once: true });
+          s.img.addEventListener('error', done, { once: true });
+        }));
+      }
+    }
+    return Promise.all(jobs);
+  }
+
+  /**
+   * Escala del Animator / drawOutfitLook para que el sprite llene el canvas.
+   * Incluye drawMul y resolveTuning (p. ej. scaleMul 0.8) como drawCreatureFrame.
+   */
+  function outfitUiConfig() {
+    const T = tuningRoot();
+    const u = T.outfitUi && typeof T.outfitUi === 'object' ? T.outfitUi : {};
+    return {
+      scaleMul: u.scaleMul != null ? u.scaleMul : 1,
+      pivotTx: u.pivotTx != null ? u.pivotTx : 35,
+      pivotTy: u.pivotTy != null ? u.pivotTy : 40,
+      heightFill: u.heightFill != null ? u.heightFill : 0.9
+    };
+  }
+
+  function outfitTuningForDraw(animM, forUi) {
+    const tun = resolveTuning(99001, animM);
+    if (!forUi) return tun;
+    const ui = outfitUiConfig();
+    return Object.assign({}, tun, { scaleMul: ui.scaleMul });
+  }
+
+  function outfitPixelScale(scale, animM, forUi) {
+    const tun = outfitTuningForDraw(animM, forUi);
+    return PX() * (scale || 1) * baseDrawMul(99001, animM) * tun.scaleMul;
+  }
+
+  function outfitVisualBounds(look, anim, frame, dir8) {
+    const entry = { kind: 'outfit', outfit: Object.assign({}, look) };
+    const animM = frameMetaForEntry(entry, anim || 'Idle');
+    const assetId = assetIdFromEntry(entry);
+    if (!animM || !assetId || !G.TibiaOutfitDraw || !G.TibiaOutfitDraw.measureFrame) return null;
+    const stripKind = animM.stripKind || (anim === 'Idle' ? 'idle' : 'walk');
+    const s = getSheet(assetId, stripKind, 'outfits');
+    if (!s || !s.ready) return null;
+    const ext = metaForEntry(entry);
+    if (!ext || !ext.layout) return null;
+    const colDir = tibiaDir(dir8 != null ? dir8 : 0);
+    const fr = Math.min(frame != null ? frame : 0, (animM.n || 1) - 1);
+    const colors = Object.assign({}, look, { type: look.type | 0 });
+    return G.TibiaOutfitDraw.measureFrame(s.img, ext.layout, animM.w, animM.h, fr, colDir, colors);
+  }
+
+  function outfitFitScale(canvasW, canvasH, look, anim, margin, heightFill, forUi, visW, visH) {
+    const entry = { kind: 'outfit', outfit: Object.assign({}, look) };
+    const animM = frameMetaForEntry(entry, anim || 'Idle');
+    if (!animM) return 1;
+    const ui = forUi ? outfitUiConfig() : null;
+    const tun = outfitTuningForDraw(animM, forUi);
+    const drawMul = baseDrawMul(99001, animM);
+    const fill = heightFill != null ? heightFill : (ui ? ui.heightFill : 0.82);
+    const targetH = canvasH * fill;
+    const targetW = canvasW * fill;
+    const tileW = forUi && visW ? visW : animM.w;
+    const tileH = forUi && visH ? visH : animM.h;
+    const denom = Math.max(1, tileH) * PX() * drawMul * tun.scaleMul;
+    const denomW = Math.max(1, tileW) * PX() * drawMul * tun.scaleMul;
+    const scale = Math.min(targetH / denom, targetW / denomW);
+    return Math.max(0.35, scale);
+  }
+
+  /**
+   * Punto ancla: vista juego = pies en (x,y). UI = centro de silueta opaca en el canvas.
+   */
+  function outfitBoxPlacement(canvasW, canvasH, look, anim, heightFill, centerYRatio, forUi, dir8, frame) {
+    const entry = { kind: 'outfit', outfit: Object.assign({}, look) };
+    const animM = frameMetaForEntry(entry, anim || 'Idle');
+    if (!animM) return { scale: 1, x: canvasW / 2, y: canvasH / 2 };
+    const ui = forUi ? outfitUiConfig() : null;
+    const tun = outfitTuningForDraw(animM, forUi);
+    let vis = forUi ? outfitVisualBounds(look, anim, frame, dir8) : null;
+    const scale = outfitFitScale(
+      canvasW, canvasH, look, anim, 0, heightFill, forUi,
+      vis && vis.w, vis && vis.h);
+    const k = outfitPixelScale(scale, animM, forUi);
+    const ax = animM.ax + tun.footDx;
+    const ay = animM.ay + tun.footDy;
+    const cx = canvasW / 2;
+    const cy = canvasH * (centerYRatio != null ? centerYRatio : 0.52);
+    if (forUi) {
+      const vcx = vis ? vis.cx : ui.pivotTx;
+      const vcy = vis ? vis.cy : ui.pivotTy;
+      const x = cx + (ax - vcx) * k;
+      const y = cy + (ay - vcy) * k;
+      return { scale, x, y };
+    }
+    const drawW = animM.w * k;
+    const drawH = animM.h * k;
+    const x = cx - drawW / 2 + ax * k;
+    const y = cy - drawH / 2 + ay * k;
+    return { scale, x, y };
+  }
+
+  /** @deprecated UI usa outfitBoxPlacement */
+  function outfitFootPoint(canvasW, canvasH, margin) {
+    return { x: canvasW / 2, y: canvasH * (1 - (margin != null ? margin : 0.04)) };
+  }
+
+  function drawOutfitFitted(ctx, canvasW, canvasH, look, anim, frame, dir8, margin, heightFill, opts) {
+    const pl = outfitBoxPlacement(canvasW, canvasH, look, anim, heightFill, 0.52);
+    return drawOutfitLook(ctx, look, pl.x, pl.y, pl.scale, anim, frame, dir8, opts);
+  }
+
+  function drawOutfitLook(ctx, look, x, y, scale, anim, frame, dir8, opts = {}) {
+    const entry = { kind: 'outfit', outfit: Object.assign({}, look) };
+    const animM = frameMetaForEntry(entry, anim);
+    const assetId = assetIdFromEntry(entry);
+    if (!animM || !assetId) return false;
+    const stripKind = animM.stripKind || (anim === 'Idle' ? 'idle' : 'walk');
+    const s = getSheet(assetId, stripKind, 'outfits');
+    if (!s || !s.ready) return false;
+    const extFull = metaForEntry(entry);
+    const colDir = tibiaDir(dir8);
+    const fr = Math.min(frame, animM.n - 1);
+    const tun = outfitTuningForDraw(animM, !!opts.outfitUi);
+    const drawMul = (extFull && extFull.drawMul != null) ? extFull.drawMul : baseDrawMul(99001, animM);
+    const k = PX() * (scale || 1) * drawMul * tun.scaleMul;
+    const ax = animM.ax + tun.footDx;
+    const ay = animM.ay + tun.footDy;
+    const dx = Math.round(x - ax * k);
+    const dy = Math.round(y - ay * k);
+    const alpha = opts.alpha == null ? 1 : opts.alpha;
+    if (alpha <= 0) return true;
+    if (extFull && extFull.composite && extFull.layout && entry.outfit && G.TibiaOutfitDraw) {
+      return G.TibiaOutfitDraw.drawFrame(
+        ctx, s.img, extFull.layout, animM.w, animM.h, fr, colDir, entry.outfit,
+        dx, dy, animM.w * k, animM.h * k, alpha
+      );
+    }
+    let idx = stripIndex(animM, colDir, fr);
+    const slots = Math.max(1, Math.floor(s.img.width / animM.w));
+    idx = Math.min(idx, slots - 1);
+    const prev = ctx.globalAlpha;
+    if (alpha < 1) ctx.globalAlpha = prev * alpha;
+    ctx.drawImage(s.img, idx * animM.w, 0, animM.w, animM.h, dx, dy, animM.w * k, animM.h * k);
+    ctx.globalAlpha = prev;
+    return true;
   }
 
   function tibiaDir(dir8) {
@@ -202,29 +405,38 @@ G.TibiaSprites = (() => {
     const entry = entryForDex(dex);
     const key = creatureKey(entry);
     const animM = frameMetaForDex(dex, anim);
-    const lookType = lookTypeFromKey(key);
-    if (!animM || !lookType) return false;
+    const assetId = assetIdFromEntry(entry);
+    if (!animM || !assetId) return false;
     const stripKind = animM.stripKind || (anim === 'Idle' || anim === 'Hurt' || anim === 'Faint' ? 'idle' : 'walk');
-    const s = getSheet(lookType, stripKind);
+    const s = getSheet(assetId, stripKind, assetSubdir(entry));
     if (!s || !s.ready) return false;
 
-    const tun = resolveTuning(dex, animM);
+    const extFull = creatureMeta(dex);
+    const colDir = tibiaDir(dir8);
+    const fr = Math.min(frame, animM.n - 1);
+    const tun = dex === 99001 && opts.outfitUi
+      ? outfitTuningForDraw(animM, true)
+      : resolveTuning(dex, animM);
     const k = PX() * (scale || 1) * baseDrawMul(dex, animM) * tun.scaleMul;
     const ax = animM.ax + tun.footDx;
     const ay = animM.ay + tun.footDy;
+    const dx = Math.round(x - ax * k);
+    const dy = Math.round(y - ay * k);
+    const alpha = opts.alpha == null ? 1 : opts.alpha;
+    if (alpha <= 0) return true;
 
-    const colDir = tibiaDir(dir8);
-    const fr = Math.min(frame, animM.n - 1);
+    if (extFull && extFull.composite && extFull.layout && entry.outfit && G.TibiaOutfitDraw) {
+      return G.TibiaOutfitDraw.drawFrame(
+        ctx, s.img, extFull.layout, animM.w, animM.h, fr, colDir, entry.outfit,
+        dx, dy, animM.w * k, animM.h * k, alpha
+      );
+    }
+
     let idx = stripIndex(animM, colDir, fr);
     const slots = Math.max(1, Math.floor(s.img.width / animM.w));
     idx = Math.min(idx, slots - 1);
     const sx = idx * animM.w;
     const sy = 0;
-    const dx = Math.round(x - ax * k);
-    const dy = Math.round(y - ay * k);
-
-    const alpha = opts.alpha == null ? 1 : opts.alpha;
-    if (alpha <= 0) return true;
     const prev = ctx.globalAlpha;
     if (alpha < 1) ctx.globalAlpha = prev * alpha;
     ctx.drawImage(s.img, sx, sy, animM.w, animM.h, dx, dy, animM.w * k, animM.h * k);
@@ -278,9 +490,10 @@ G.TibiaSprites = (() => {
     const loads = [];
     for (const d of dexes) {
       const entry = entryForDex(d);
-      const lt = lookTypeFromKey(creatureKey(entry));
-      if (!lt) continue;
-      loads.push(getSheet(lt, 'idle'), getSheet(lt, 'walk'));
+      const aid = assetIdFromEntry(entry);
+      if (!aid) continue;
+      const sub = assetSubdir(entry);
+      loads.push(getSheet(aid, 'idle', sub), getSheet(aid, 'walk', sub));
     }
     itemAtlas();
     return new Promise(res => {
@@ -343,6 +556,13 @@ G.TibiaSprites = (() => {
     entryForDex,
     hasCreature,
     frameMetaForDex,
+    hasOutfitAssets,
+    preloadOutfitTypes,
+    outfitFitScale,
+    outfitBoxPlacement,
+    outfitFootPoint,
+    drawOutfitFitted,
+    drawOutfitLook,
     drawCreatureFrame,
     drawItem,
     preloadDexes,

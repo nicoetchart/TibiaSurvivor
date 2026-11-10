@@ -11,7 +11,9 @@
  *
  * Reimport: node tools/import_tibia_grouped.mjs --grouped <carpeta grouped>
  *
- * Atajos ?dev (sprites Tibia ya van por defecto): Ctrl+[ ] scaleMul · Ctrl+; ' footDy · Ctrl+\\
+ * Criaturas: useTibiaSprites (omitir = ON con data-ui=tibia). Mapa: mapTiles.floors/walls.
+ * ?sprites=geo / ?tiles=tibia para forzar en la URL.
+ * Atajos ?dev: Ctrl+[ ] scaleMul · Ctrl+; ' footDy · Ctrl+\\
  */
 G.TIBIA_SPRITE_TUNING = {
   naturalSize: true,
@@ -35,5 +37,19 @@ G.TIBIA_SPRITE_TUNING = {
   },
   lookTypeTier: {},
 
-  byLookType: {}
+  byLookType: {},
+
+  /* Personalizar personaje: más grande y centrado en la silueta (no en el tile 64×64). */
+  outfitUi: {
+    scaleMul: 1,
+    pivotTx: 35,
+    pivotTy: 40,
+    heightFill: 0.9
+  },
+
+  /** Mapa: sustituir PNG de suelo; paredes siguen procedurales hasta mapTiles.walls. */
+  mapTiles: {
+    floors: false,
+    walls: false
+  }
 };

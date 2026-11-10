@@ -161,11 +161,26 @@ G.Tiles = (() => {
     const c = cv.getContext('2d');
     const img = c.createImageData(w, h);
     const buf = new Uint32Array(img.data.buffer);
+    const overlays = [];
     return {
       w, h,
       set(x, y, col) { if (x >= 0 && y >= 0 && x < w && y < h) buf[y * w + x] = col; },
       get(x, y) { return buf[y * w + x]; },
-      canvas() { c.putImageData(img, 0, 0); return cv; }
+      blit(image, dx, dy, dw, dh, sw, sh, sx, sy) {
+        overlays.push({
+          image, dx, dy, dw, dh,
+          sw: sw || image.width, sh: sh || image.height,
+          sx: sx || 0, sy: sy || 0
+        });
+      },
+      canvas() {
+        c.putImageData(img, 0, 0);
+        c.imageSmoothingEnabled = false;
+        for (const o of overlays) {
+          c.drawImage(o.image, o.sx, o.sy, o.sw, o.sh, o.dx, o.dy, o.dw, o.dh);
+        }
+        return cv;
+      }
     };
   }
 
@@ -224,16 +239,31 @@ G.Tiles = (() => {
         const kind = at(tx, ty);
 
         // 1) Suelo bajo todo (las esquinas redondeadas de las paredes lo dejan ver).
-        paintFloor(P, C, ox, oy, tx, ty, dirtAt, at);
+        paintFloor(P, C, ox, oy, tx, ty, dirtAt, at, bi);
 
-        if (kind === 'wall') paintWall(P, C, ox, oy, tx, ty, at);
+        if (kind === 'wall') paintWall(P, C, ox, oy, tx, ty, at, bi);
         else if (kind === 'liquid') paintLiquid(P, C, ox, oy, tx, ty, at);
       }
     }
     return P.canvas();
   }
 
-  function paintFloor(P, C, ox, oy, tx, ty, dirtAt, at) {
+  function paintFloor(P, C, ox, oy, tx, ty, dirtAt, at, bi) {
+    const useTibia = G.TibiaTiles && G.TibiaTiles.useForMap();
+    if (useTibia) {
+      let dirtCount = 0;
+      for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+        const lx = ox + x, ly = oy + y;
+        if (dirtAt(lx, ly)) dirtCount++;
+      }
+      const dirt = dirtCount > T * T / 2;
+      if (G.TibiaTiles.blitFloor(P, bi, ox, oy, T, dirt)) {
+        if (at(tx, ty - 1) === 'wall') {
+          for (let x = 0; x < T; x++) P.set(ox + x, oy, C.wallFaceDark);
+        }
+        return;
+      }
+    }
     let dirtCount = 0;
     for (let y = 0; y < T; y++) {
       for (let x = 0; x < T; x++) {
@@ -279,7 +309,8 @@ G.Tiles = (() => {
     }
   }
 
-  function paintWall(P, C, ox, oy, tx, ty, at) {
+  function paintWall(P, C, ox, oy, tx, ty, at, bi) {
+    if (G.TibiaTiles && G.TibiaTiles.useForMap() && G.TibiaTiles.blitWall(P, ox, oy, T, tx, ty, at)) return;
     const W = (x, y) => at(x, y) === 'wall';
     const n = W(tx, ty - 1), s = W(tx, ty + 1), w = W(tx - 1, ty), e = W(tx + 1, ty);
     const FACE = s ? 0 : 6;                 // filas de cara frontal visibles

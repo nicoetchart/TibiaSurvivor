@@ -95,14 +95,18 @@ Herramientas alternativas: [Object Builder](https://github.com/ottools/ObjectBui
 ### Fase 1 — Criaturas MVP (esta línea base)
 
 - [x] `G.TibiaSprites`, mapa, hook en `G.Sprites.Animator`
-- [ ] Export real de los 15 enemigos + outfit MS
+- [x] Export 15 enemigos + outfit jugador (138 → `out_138`, assets/tibia/outfits/)
+- [ ] Colores/addons del export = los de `tibia-sprite-map` (99001); re-exportar grouped si cambian
 - [ ] Ajustar `ax/ay` y `hv` (vuelo) por lookType
 
-### Fase 2 — Mapa
+### Fase 2 — Mapa (en curso)
 
-- Sustituir paleta procedural por blits de `tiles-32.png`.
-- Mantener autotile de `tiles.js` pero tomar **texturas** del atlas (misma rejilla 32 world = 1 tile Tibia × `PX` si `PX=2` → tile arte 16 escalado; o subir `PX` / tile 32).
-- Decisión pendiente: ¿tile Tibia 32px = 1 tile mundo (cambiar `G.Tiles.T`) o escalar?
+- [x] `G.TibiaTiles` + hook en `tiles.js` (`paintFloor` / `paintWall`) con fallback procedural.
+- [x] `assets/tibia/tiles/{clientId}.png` + `tibia-tiles-meta.js` vía `tools/import_tibia_tiles.mjs`.
+- [x] Escala: PNG 32×32 → tile de arte 16×16 (`G.Tiles.T`) en el chunk.
+- [ ] Autotile Tibia real (esquinas/bordes) en vez de un solo sprite por celda.
+- [ ] Atlas `tiles-32.png` opcional (hoy: un PNG por clientId).
+- Query: `?tiles=proc` fuerza procedural · `?tiles=tibia` fuerza modo Tibia.
 
 ### Fase 3 — Items, monedas, efectos
 
@@ -127,6 +131,20 @@ Herramientas alternativas: [Object Builder](https://github.com/ottools/ObjectBui
 | Archivo | Rol |
 |---------|-----|
 | `js/core/tibia-sprites.js` | Carga, dibujo, `hasCreature`, `frameMeta` |
+| `js/core/tibia-tiles.js` | Suelo/pared del mapa desde PNG Tibia |
+| `js/data/tibia-tiles-meta.js` | Tamaños por clientId (generado) |
+| `js/data/tibia-outfits.js` | Catálogo aspecto (MVP Mage 132), `save.playerOutfit` |
+| `js/core/tibia-outfit-draw.js` | Composición plantilla + máscara de color |
+| `js/ui/outfit-ui.js` | Pantalla **Aspecto** en el menú (UI estilo cliente Tibia) |
+
+### Ventana de outfit (paridad con el cliente)
+
+- **Partes**: cabeza, cuerpo principal, piernas secundarias, pies (detalle) — cada una con color 0–132.
+- **Paleta**: rejilla 7×19 (`j*19+i`); RGB con `Outfit::getColor` (HSI) como en otclient.
+- **Tinte**: `plantilla × color` (multiply) en píxeles de máscara, no sustituir por color plano.
+- **Addons**: bitmask 1 + 2 (+ 4): se apilan filas `pattern_height` 0 (base), 1, 2… encima, no se sustituye el cuerpo.
+- **Render**: strips con `layers=2` (plantilla + máscara amarilla/roja/verde/azul) compuestos en `TibiaOutfitDraw`.
+- **Aspecto**: rejilla estilo cliente; `save.unlockedOutfits` (por defecto 128+132); catálogo con `unlock: mission | shop | free`. API `G.TibiaOutfits.grant(type)` para misiones.
 | `js/data/tibia-sprite-map.js` | legacyId ↔ lookType / outfit / items |
 | `js/data/tibia-items-meta.js` | Rects atlas items (generado) |
 | `tools/export_tibia_sprites.mjs` | Export offline |

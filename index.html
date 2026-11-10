@@ -188,6 +188,7 @@
       <div class="menu-list">
         <button class="menu-item play" data-go="play">Jugar<small>Inicia una expedición (12 min)</small></button>
         <button class="menu-item hidden" data-go="bestiary">Bestiario<small id="menu-bestiary-sub">Registro de cacería</small></button>
+        <button class="menu-item hidden" data-go="outfit">Aspecto<small>Colores y addons (como Tibia)</small></button>
         <button class="menu-item" data-go="dex">Colección<small id="menu-dex-count">Legacy</small></button>
         <button class="menu-item" data-go="upgrades">Mejoras<small>Legacy</small></button>
         <button class="menu-item" data-go="gacha">Gacha<small>Legacy</small></button>
@@ -318,6 +319,17 @@
   <div class="box profile-box">
     <div class="row end"><button class="btn small ghost" id="prof-close">Cerrar</button></div>
     <div id="prof-body"></div>
+  </div>
+</section>
+
+<!-- ====== Aspecto (outfit Tibia) ====== -->
+<section id="scr-outfit" class="scr dim hidden">
+  <div class="box outfit-box">
+    <div class="row between">
+      <h2>Personalizar personaje</h2>
+      <button class="btn small ghost" type="button" id="outfit-back">Volver</button>
+    </div>
+    <div id="outfit-root"></div>
   </div>
 </section>
 
@@ -475,6 +487,6 @@
 </section>
 
 <!-- datos generados -->
-<script defer src="js/app.min.js?v=d72bdd64f9"></script>
+<script defer src="js/app.min.js?v=f79ae9ead3"></script>
 </body>
 </html>

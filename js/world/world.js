@@ -556,6 +556,11 @@ G.World = (() => {
     fade = null; arena = null;
   }
 
+  /** Vuelve a hornear chunks (p. ej. cuando cargan PNG de tiles Tibia). */
+  function flushChunkImages() {
+    images.clear();
+  }
+
   /**
    * @param i        bioma (G.Tiles.ARENA y siguientes son las arenas de la grieta)
    * @param instant  sin fundido (al empezar una run)
@@ -602,6 +607,7 @@ G.World = (() => {
       }
     },
     get arena() { return arena; }, drawGround, drawLiquid, visibleProps, drawProp, drawVignette,
+    flushChunkImages,
     get biome() { return biome; }
   };
 })();
