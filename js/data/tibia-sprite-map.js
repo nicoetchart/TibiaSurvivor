@@ -29,12 +29,15 @@ G.TIBIA_SPRITE_MAP = {
     99016: { kind: 'lookType', lookType: 35 }     // Demon
   },
 
-  /** Claves usadas en juego → clientId Tibia (gold coin clásico 3031). */
+  /** Claves usadas en juego → PNG en assets/tibia/items/ o clientId en items-32.png. */
   items: {
     gold_coin: { clientId: 3031 },
     platinum_coin: { clientId: 3035 },
     crystal_coin: { clientId: 3043 },
-    health_potion: { clientId: 7618 },
+    /** Carta de nivel / UI. */
+    health_potion: { spriteId: 198233 },
+    /** Loot de curación en el suelo (antes baya/manzana). */
+    heal_pickup: { spriteId: 198250 },
     mana_potion: { clientId: 7620 }
   },
 

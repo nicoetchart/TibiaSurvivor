@@ -462,6 +462,26 @@ G.TibiaSprites = (() => {
   }
 
   let itemsAtlas = null;
+  const itemPngs = new Map();
+
+  function getItemPng(spriteId) {
+    const id = String(spriteId);
+    let s = itemPngs.get(id);
+    if (!s) {
+      const img = new Image();
+      s = { img, ready: false, failed: false };
+      itemPngs.set(id, s);
+      img.onload = () => { s.ready = true; };
+      img.onerror = () => { s.failed = true; };
+      img.src = 'assets/tibia/items/' + id + '.png';
+    }
+    return s;
+  }
+
+  function itemPngReady(spriteId) {
+    const s = itemPngs.get(String(spriteId));
+    return !!(s && s.ready);
+  }
 
   function itemAtlas() {
     if (itemsAtlas) return itemsAtlas;
@@ -476,14 +496,57 @@ G.TibiaSprites = (() => {
   function drawItem(ctx, key, x, y, size, opts = {}) {
     if (!enabled) return false;
     const map = MAP().items || {};
-    const ref = typeof key === 'number' ? { clientId: key } : map[key];
+    const ref = typeof key === 'number'
+      ? (map[key] || { spriteId: key })
+      : map[key];
     if (!ref) return false;
+
+    if (ref.spriteId != null) {
+      const sheet = getItemPng(ref.spriteId);
+      if (!sheet.ready) return false;
+      const img = sheet.img;
+      let w, h;
+      if (opts.native) {
+        const px = PX();
+        w = img.width * px;
+        h = img.height * px;
+      } else {
+        const base = Math.max(img.width, img.height) || 32;
+        const k = size / base;
+        w = img.width * k;
+        h = img.height * k;
+      }
+      const prev = ctx.imageSmoothingEnabled;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(img, 0, 0, img.width, img.height, x - w / 2, y - h / 2, w, h);
+      ctx.imageSmoothingEnabled = prev;
+      return true;
+    }
+
     const rect = (G.TIBIA_ITEMS_META && G.TIBIA_ITEMS_META[ref.clientId]) || null;
     const atlas = itemAtlas();
     if (!rect || !atlas.ready) return false;
     const k = size / 32;
     ctx.drawImage(atlas.img, rect.x, rect.y, 32, 32, x - size / 2, y - size / 2, 32 * k, 32 * k);
     return true;
+  }
+
+  function preloadItems(keys, timeout = 6000) {
+    const map = MAP().items || {};
+    const loads = [];
+    for (const key of keys) {
+      const ref = map[key];
+      if (ref && ref.spriteId != null) loads.push(getItemPng(ref.spriteId));
+      else if (ref && ref.clientId != null) itemAtlas();
+    }
+    return new Promise(res => {
+      const t0 = performance.now();
+      (function tick() {
+        const ready = loads.every(s => !s || s.ready || s.failed);
+        if (ready || performance.now() - t0 > timeout) res();
+        else setTimeout(tick, 40);
+      })();
+    });
   }
 
   function preloadDexes(dexes, timeout = 6000) {
@@ -495,15 +558,15 @@ G.TibiaSprites = (() => {
       const sub = assetSubdir(entry);
       loads.push(getSheet(aid, 'idle', sub), getSheet(aid, 'walk', sub));
     }
-    itemAtlas();
-    return new Promise(res => {
+    const itemLoads = preloadItems(['health_potion', 'heal_pickup', 'gold_coin'], timeout);
+    return Promise.all([itemLoads, new Promise(res => {
       const t0 = performance.now();
       (function tick() {
         const ready = loads.every(s => !s || s.ready || s.failed);
         if (ready || performance.now() - t0 > timeout) res();
         else setTimeout(tick, 40);
       })();
-    });
+    })]);
   }
 
   function bump(field, delta) {
@@ -565,6 +628,7 @@ G.TibiaSprites = (() => {
     drawOutfitLook,
     drawCreatureFrame,
     drawItem,
+    preloadItems,
     preloadDexes,
     exportTuning,
     tibiaDir,

@@ -188,9 +188,19 @@ G.Pickups = (() => {
           ctx.fillStyle = '#b8860b';
           ctx.beginPath(); ctx.ellipse(p.x, y, r * sx * 0.5, r * 0.5, 0, 0, 6.2832); ctx.fill();
         }
+      } else if (p.kind === 'heal') {
+        const PX = G.Sprites.PX;
+        const sz = 32 * PX * 0.8;
+        const tibia = G.TibiaSprites && G.TibiaSprites.enabled
+          && G.TibiaSprites.drawItem(ctx, 'heal_pickup', p.x, y, sz);
+        if (!tibia) {
+          const ico = G.TibiaTheme && G.TibiaTheme.enabled() ? 'item:heal_pickup' : 'berry';
+          G.Icons.draw(ctx, ico, p.x - sz / 2, y - sz / 2 - 1, sz);
+        }
+        continue;
       } else {
-        // Baya, imán y bomba: su icono pixel art.
-        const ICON = { heal: 'berry', magnet: 'magnet', bomb: 'bomb', ticket: 'ticket', ticket10: 'ticket10' };
+        // Imán, bomba y tickets: icono pixel art.
+        const ICON = { magnet: 'magnet', bomb: 'bomb', ticket: 'ticket', ticket10: 'ticket10' };
         const sz = p.kind === 'ticket10' || p.kind === 'item' ? 24 : 18;
         if (p.kind === 'item') {
           // Objeto: brillo dorado latiendo, para que se vea desde lejos.

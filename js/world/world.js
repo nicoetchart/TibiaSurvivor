@@ -192,6 +192,10 @@ G.World = (() => {
       const n = B && B.grassSprites ? B.grassSprites.length : 2;
       return Math.floor(H(tx, ty, 921) * n) % n;
     }
+    if (type === 'chest') {
+      const n = B && B.chestSprites ? B.chestSprites.length : 1;
+      return Math.floor(H(tx, ty, 922) * n) % n;
+    }
     return 0;
   }
 
@@ -210,10 +214,22 @@ G.World = (() => {
     return !!(B && B.grassSprites);
   }
 
+  function usesTibiaChestSprites() {
+    const B = G.Tiles.BIOMES[biome];
+    return !!(B && B.chestSprites && B.chestSprites.length);
+  }
+
+  function usesTibiaBigchestSprite() {
+    const B = G.Tiles.BIOMES[biome];
+    return !!(B && B.bigchestSprite);
+  }
+
   function usesTibiaPropPng(type) {
     if (type === 'rock') return usesTibiaRockSprites();
     if (type === 'tree') return usesTibiaTreeSprites();
     if (type === 'grass') return usesTibiaGrassSprites();
+    if (type === 'chest') return usesTibiaChestSprites();
+    if (type === 'bigchest') return usesTibiaBigchestSprite();
     return false;
   }
 
@@ -547,6 +563,7 @@ G.World = (() => {
     const P = G.Sprites.PX;
     const variant = p.type === 'grass' ? (usesTibiaGrassSprites() ? (p.vis | 0) : 0)
                   : p.type === 'tree' ? (p.vis | 0)
+                  : p.type === 'chest' ? (p.vis | 0)
                   : p.type === 'rock' ? ((p.vis | 0) + (p.hp < p.maxHp * 0.5 ? 100 : 0))
                   : p.type === 'altar' ? p.kind * 2 + (p.used ? 1 : 0)
                   : p.type === 'spring' ? (p.charge < 0.15 ? 1 : 0)
@@ -575,8 +592,11 @@ G.World = (() => {
     if (p.type === 'bigchest' && p.open > 0) {
       ctx.save();
       ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 3;
+      let cy = p.y - h / 2 + foot;
+      if (usesTibiaBigchestSprite()) cy += h * 0.14;
+      const rArc = Math.max(w, h) * 0.58;
       ctx.beginPath();
-      ctx.arc(p.x, p.y - h / 2, 26, -Math.PI / 2, -Math.PI / 2 + 6.2832 * Math.min(1, p.open / G.Interact.CHEST_TIME));
+      ctx.arc(p.x, cy, rArc, -Math.PI / 2, -Math.PI / 2 + 6.2832 * Math.min(1, p.open / G.Interact.CHEST_TIME));
       ctx.stroke();
       ctx.restore();
     }

@@ -55,7 +55,9 @@ G.Tiles = (() => {
       /** PNG cliente Tibia (32×32) → assets/tibia/tiles/{id}.png */
       rockSprites: ['200423', '200428', '200438', '200431'],
       treeSprites: ['202216', '202217', '202219', '202220', '202221', '202222', '202223', '202224', '202225'],
-      grassSprites: ['204365', '204366', '204367', '204368', '204371'] },
+      grassSprites: ['204365', '204366', '204367', '204368', '204371'],
+      chestSprites: ['200889', '197986', '197985'],
+      bigchestSprite: '200894' },
   ];
   const NORMAL = 3;                   // biomas que se van turnando en una run (0–2)
   const ARENA = 4;                    // a partir de aquí, las arenas de la grieta (índice 3 = Tibia)
@@ -414,16 +416,24 @@ G.Tiles = (() => {
 
   function invalidateTibiaPropCache() {
     for (const k of [...propCache.keys()]) {
-      if (k.includes('/tree/') || k.includes('/rock/') || k.includes('/grass/')) propCache.delete(k);
+      if (k.includes('/tree/') || k.includes('/rock/') || k.includes('/grass/')
+        || k.includes('/chest/') || k.includes('/bigchest/')) propCache.delete(k);
     }
   }
 
   function tibiaPropPngReady(B, type, variant) {
     const ids = type === 'tree' ? B.treeSprites : type === 'rock' ? B.rockSprites
-      : type === 'grass' ? B.grassSprites : null;
+      : type === 'grass' ? B.grassSprites : type === 'chest' ? B.chestSprites : null;
+    if (type === 'bigchest' && B.bigchestSprite) {
+      const s = itemPropSheets.get(String(B.bigchestSprite));
+      return !!(s && s.ready);
+    }
     if (!ids || !ids.length) return true;
     const shape = type === 'rock' && variant >= 100 ? variant - 100 : variant;
-    const s = propSheets.get(String(ids[shape % ids.length]));
+    const id = ids[shape % ids.length];
+    const s = type === 'chest'
+      ? itemPropSheets.get(String(id))
+      : propSheets.get(String(id));
     return !!(s && s.ready);
   }
 
@@ -470,6 +480,37 @@ G.Tiles = (() => {
     const ids = B.grassSprites;
     if (!ids || !ids.length) return emptyPropCanvas();
     const sheet = getPropSheet(ids[variant % ids.length]);
+    if (!sheet.ready) return emptyPropCanvas();
+    const img = sheet.img;
+    const cv = document.createElement('canvas');
+    cv.width = img.width; cv.height = img.height;
+    const c = cv.getContext('2d');
+    c.imageSmoothingEnabled = false;
+    c.drawImage(img, 0, 0);
+    return cv;
+  }
+
+  const itemPropSheets = new Map();
+
+  function getItemPropSheet(id) {
+    const key = String(id);
+    let s = itemPropSheets.get(key);
+    if (s) return s;
+    const img = new Image();
+    s = { img, ready: false, failed: false, key };
+    img.onload = () => {
+      s.ready = true;
+      invalidateTibiaPropCache();
+      if (G.World && G.World.flushChunkImages) G.World.flushChunkImages();
+    };
+    img.onerror = () => { s.failed = true; };
+    img.src = 'assets/tibia/items/' + key + '.png';
+    itemPropSheets.set(key, s);
+    return s;
+  }
+
+  function paintTibiaItemProp(spriteId) {
+    const sheet = getItemPropSheet(spriteId);
     if (!sheet.ready) return emptyPropCanvas();
     const img = sheet.img;
     const cv = document.createElement('canvas');
@@ -570,20 +611,28 @@ G.Tiles = (() => {
 
   function biomePropSpriteIds(B) {
     if (!B) return [];
-    return [...(B.rockSprites || []), ...(B.treeSprites || []), ...(B.grassSprites || [])];
+    const items = [...(B.chestSprites || [])];
+    if (B.bigchestSprite) items.push(B.bigchestSprite);
+    return [...(B.rockSprites || []), ...(B.treeSprites || []), ...(B.grassSprites || []), ...items];
   }
 
   function preloadRockSprites(biomeIndex, timeout = 12000) {
-    const ids = biomePropSpriteIds(BIOMES[biomeIndex]);
+    const B = BIOMES[biomeIndex];
+    const tileIds = [...(B.rockSprites || []), ...(B.treeSprites || []), ...(B.grassSprites || [])];
+    const itemIds = [...(B.chestSprites || [])];
+    if (B.bigchestSprite) itemIds.push(B.bigchestSprite);
+  const ids = [...tileIds, ...itemIds];
     if (!ids.length) return Promise.resolve(true);
-    for (const id of ids) getPropSheet(id);
+    for (const id of tileIds) getPropSheet(id);
+    for (const id of itemIds) getItemPropSheet(id);
     return new Promise(resolve => {
       const t0 = performance.now();
       (function tick() {
-        const done = ids.every(id => {
-          const s = propSheets.get(String(id));
+        const sheetReady = id => {
+          const s = propSheets.get(String(id)) || itemPropSheets.get(String(id));
           return !s || s.ready || s.failed;
-        });
+        };
+        const done = ids.every(sheetReady);
         if (done || performance.now() - t0 > timeout) {
           if (done) invalidateTibiaPropCache();
           resolve(done);
@@ -823,8 +872,12 @@ G.Tiles = (() => {
       return P.canvas();
     },
 
-    /** Cofre grande con candado. */
-    bigchest() {
+    bigchest(B, variant) {
+      if (B && B.bigchestSprite) return paintTibiaItemProp(B.bigchestSprite);
+      return PAINT._bigchestProc();
+    },
+    /** Cofre grande con candado (procedural). */
+    _bigchestProc() {
       const P = Pix(24, 20);
       const wood = pack('#6b3a1e'), woodL = pack('#8e5329'), woodD = pack('#432210');
       const iron = pack('#9aa6b5'), ironD = pack('#5d6773'), gold = pack('#f2c443'), goldD = pack('#b5832a');
@@ -889,7 +942,13 @@ G.Tiles = (() => {
       return P.canvas();
     },
 
-    chest() {
+    chest(B, variant) {
+      const ids = B && B.chestSprites;
+      if (ids && ids.length) return paintTibiaItemProp(ids[variant % ids.length]);
+      return PAINT._chestProc();
+    },
+  /** Cofre destructible (procedural). */
+    _chestProc() {
       const P = Pix(16, 14);
       const gold = pack('#f2c443'), goldD = pack('#b5832a'), wood = pack('#8a4f2a'), woodD = pack('#5e3418');
       const lid = pack('#c4662e');

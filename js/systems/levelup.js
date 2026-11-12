@@ -90,7 +90,7 @@ G.LevelUp = (() => {
       apply: pl => pl.magnet *= 1.30, max: 6 },
     { id: 'xp',   icon: 'book', title: 'Aprendizaje',  desc: '+12% de experiencia ganada.',
       apply: pl => pl.xpMul *= 1.12, max: 8 },
-    { id: 'heal', icon: 'berry', title: 'Frasco vital', desc: 'Recupera el 45% de tu vida ahora mismo.',
+    { id: 'heal', icon: 'item:health_potion', title: 'Poción de vida', desc: 'Recupera el 45% de tu vida ahora mismo.',
       apply: pl => pl.heal(pl.maxHp * 0.45) }
   ];
 
@@ -219,9 +219,9 @@ G.LevelUp = (() => {
         out.push({
           w: evoFor ? 14 : pl.slots.length < pl.maxMoves ? 4 : 7,
           type: 'stat', key: 'stat:' + s.id,
-          icon: s.icon, color: evoFor ? '#ffd23f' : '#8fa3c4', tag: evoFor ? 'Evoluciona ' + evoFor.name : 'Mejora',
-          title: G.Content.mode === 'neutral' && s.id === 'heal' ? 'Alivio' : s.title,
-          desc: G.Content.mode === 'neutral' && s.id === 'heal' ? 'Recupera el 45% de tu vida ahora mismo.' : s.desc,
+          icon: s.id === 'heal' && G.Content.mode !== 'neutral' ? 'berry' : s.icon,
+          color: evoFor ? '#ffd23f' : '#8fa3c4', tag: evoFor ? 'Evoluciona ' + evoFor.name : 'Mejora',
+          title: s.title, desc: s.desc,
           apply: p => { s.apply(p); p.statsTaken[s.id] = (p.statsTaken[s.id] || 0) + 1; }
         });
       }

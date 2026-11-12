@@ -77,6 +77,10 @@ G.Icons = (() => {
     berry: { pal: { r: '#ff7a9e', s: '#c23a6b', w: '#ffd3e0', g: '#5fe08a', d: '#2f9a52' }, rows: [
       '............', '.....kkk....', '....kgggk...', '..kkkgdkkk..', '.krrrkkrrrk.', 'krwwrrrrrrsk',
       'krwrrrrrrrsk', 'krrrrrrrrrsk', 'krrrrrrrrssk', '.krrrrrrssk.', '..kkssssskk.', '....kkkkk...'] },
+    /** Poción de vida (loot / curación; estilo Tibia). */
+    healthpotion: { pal: { r: '#d62839', d: '#7a1520', w: '#e8f4ff', g: '#b8c8e0', c: '#8a5a2b' }, rows: [
+      '............', '.....kkk....', '....kcck....', '....kcck....', '....kcck....', '....kwwk....',
+      '..kkkwwkkk..', '.kgrrrrrdgk.', '.kwrrrrrrwk.', '.krrrrrrrrk.', '..krrrrrrk..', '...krrrrk...'] },
     bomb: { pal: { b: '#3a3a4a', w: '#8a8aa0', f: '#ffd23f', r: '#ff7b3d' }, rows: [
       '........r...', '.......rfr..', '......kfr...', '.....kfk....', '...kkkkkk...', '..kbbbbbbk..',
       '.kbwwbbbbbk.', '.kbwbbbbbbk.', '.kbbbbbbbbk.', '.kbbbbbbbbk.', '..kbbbbbbk..', '...kkkkkk...'] },
@@ -301,11 +305,24 @@ G.Icons = (() => {
     return name === 'coin' ? coinId() : name;
   }
 
+  function tibiaItemCanvas(itemKey, size) {
+    if (!G.TibiaSprites || !G.TibiaSprites.enabled) return null;
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = size;
+    const c = cv.getContext('2d');
+    if (!G.TibiaSprites.drawItem(c, itemKey, size / 2, size / 2, size * 0.92)) return null;
+    return cv;
+  }
+
   function canvas(name) {
     name = resolveName(name);
     let cv = cache.get(name);
     if (cv) return cv;
-    if (name.startsWith('move:')) {
+    if (name.startsWith('item:')) {
+      const itemKey = name.slice(5);
+      const fb = itemKey === 'heal_pickup' ? UI.berry : UI.healthpotion;
+      cv = tibiaItemCanvas(itemKey, 32) || fromRows(fb);
+    } else if (name.startsWith('move:')) {
       const m = G.Moves.BY_ID[name.slice(5)];
       cv = emblem(m ? m.type : 'normal', m ? m.kind : null);
     } else if (name.startsWith('type:')) {
@@ -322,7 +339,7 @@ G.Icons = (() => {
     let u = urls.get(name);
     if (!u) {
       // Los de interfaz, directamente de su dibujo; los emblemas (tipos, movimientos), del canvas.
-      const plain = !name.startsWith('move:') && !name.startsWith('type:');
+      const plain = !name.startsWith('move:') && !name.startsWith('type:') && !name.startsWith('item:');
       u = plain ? svgOfRows(UI[name] || UI.star) : svgOf(canvas(name));
       urls.set(name, u);
     }
@@ -393,6 +410,8 @@ G.Icons = (() => {
 
   function draw(ctx, name, x, y, size) {
     name = resolveName(name);
+    if (name.startsWith('item:') && G.TibiaSprites && G.TibiaSprites.enabled
+      && G.TibiaSprites.drawItem(ctx, name.slice(5), x + size / 2, y + size / 2, size * 0.92)) return;
     const cv = canvas(name);
     const s2 = snap(name, size);
     x += (size - s2) / 2; y += (size - s2) / 2; size = s2;

@@ -2,7 +2,16 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
-  { d: '2026-11-11', title: ['Menú', 'Main menu'], fix: [
+  { d: '2026-11-11', title: ['Menú', 'Main menu'], chg: [
+    ['Curación: sprite 198250 en el suelo, 198233 en la carta de nivel Poción de vida (assets/tibia/items/).',
+     'Heal pickups: sprite 198250 on ground, 198233 on Health potion level-up card (assets/tibia/items/).'],
+    ['Loot de curación en suelo: sprite 198250 al 80 % del tamaño nativo (32×32 × PX).',
+     'Ground heal pickup: sprite 198250 at 80% of native size (32×32 × PX).'],
+    ['Cofres Plains of Havoc: PNG 200889/197986/197985 (aleatorio) y candado 200894.',
+     'Plains of Havoc chests: PNG 200889/197986/197985 (random) and locked chest 200894.'],
+    ['Cofre con candado: arco de apertura centrado en el sprite Tibia (foot 14).',
+     'Locked chest: unlock progress arc centered on Tibia sprite (foot 14).'],
+  ], fix: [
     ['Fondo del menú al volver de una partida: mismo bioma y props Tibia (antes quedaba en bioma 0).',
      'Menu backdrop after a run: same biome and Tibia props (was stuck on biome 0).'],
   ] },
