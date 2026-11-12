@@ -2,6 +2,10 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-11', title: ['Menú', 'Main menu'], fix: [
+    ['Fondo del menú al volver de una partida: mismo bioma y props Tibia (antes quedaba en bioma 0).',
+     'Menu backdrop after a run: same biome and Tibia props (was stuck on biome 0).'],
+  ] },
   { d: '2026-11-10', title: ['Plains of Havoc', 'Plains of Havoc'], new: [
     ['Bioma procedural Plains of Havoc (superficie Tibia): hierba, tierra, piedra, agua azul y props árbol/roca sin cristales.',
      'Procedural Plains of Havoc biome (Tibia surface): grass, dirt, stone, classic blue water, tree/rock props; no crystals.'],

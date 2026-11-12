@@ -724,11 +724,22 @@ G.Game = (() => {
     let wanderers = [], t = 0, ready = false, biomeT = 0, bi = 0;
     const CAST = [99002, 99003, 99004, 99005, 99006, 99007, 99008, 99009, 99010, 99011];
 
-    function init() {
-      G.World.reset(4242);
-      const bio = G.MvpConfig && G.MvpConfig.RUN_BIOME != null ? G.MvpConfig.RUN_BIOME : 0;
+    function backdropBiome() {
+      if (G.MvpConfig && G.MvpConfig.RUN_BIOME != null) return G.MvpConfig.RUN_BIOME;
+      return bi;
+    }
+
+    function applyBackdropWorld() {
+      const bio = backdropBiome();
       if (G.Tiles && G.Tiles.preloadRockSprites) G.Tiles.preloadRockSprites(bio);
       G.World.setBiome(bio, true);
+      if (G.MvpConfig && G.MvpConfig.RUN_BIOME != null) bi = G.MvpConfig.RUN_BIOME;
+    }
+
+    function init() {
+      G.World.reset(4242);
+      if (!(G.MvpConfig && G.MvpConfig.RUN_BIOME != null)) bi = 0;
+      applyBackdropWorld();
       G.Camera.x = 0; G.Camera.y = 0;
       wanderers = CAST.map(dex => spawn(dex, true));
       ready = true;
@@ -802,7 +813,7 @@ G.Game = (() => {
     /** Al volver de una run, recupera el mundo del menú. */
     function restore() {
       G.World.reset(4242);
-      G.World.setBiome(bi, true);
+      applyBackdropWorld();
       G.FX.clear(); G.Projectiles.clear(); G.Combat.clearFields(); G.EnemyMgr.clear(); G.Pickups.clear();
       wanderers = CAST.map(dex => spawn(dex, true));
     }
