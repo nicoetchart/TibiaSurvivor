@@ -32,6 +32,10 @@ G.Game = (() => {
     ctx = cv.getContext('2d');
     resize();
     addEventListener('resize', resize);
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(() => resize());
+      ro.observe(cv);
+    }
     G.Touch.init(cv);
     // En móvil: al cambiar de app o girarlo en vertical, la partida se pausa.
     document.addEventListener('visibilitychange', () => { if (document.hidden) autoPause(); });
@@ -45,7 +49,15 @@ G.Game = (() => {
     // Resolución interna como mucho ×1,5: en pantallas ×2 dibujar el doble de
     // píxeles era de lo que más costaba, y con el pixel art no se nota.
     dpr = Math.min(1.5, window.devicePixelRatio || 1);
-    w = cv.clientWidth; h = cv.clientHeight;
+    let cw = cv.clientWidth;
+    let ch = cv.clientHeight;
+    if (cw < 2 || ch < 2) {
+      cw = Math.max(cw, window.innerWidth || 0);
+      ch = Math.max(ch, window.innerHeight || 0);
+    }
+    if (cw < 2 || ch < 2) return;
+    w = cw;
+    h = ch;
     cv.width = Math.round(w * dpr);
     cv.height = Math.round(h * dpr);
     G.Camera.resize(w, h, dpr);

@@ -273,7 +273,8 @@ G.FX = (() => {
           const drawStrip = s.tibiaStripDir === 'spells' ? G.Tiles.drawSpellStripFrame : G.Tiles.drawItemStripFrame;
           if (drawStrip) {
             try {
-              const fr = Math.min(s.frames - 1, Math.floor(s.t * s.fps));
+              const raw = s.t * s.fps;
+              const fr = Math.min(s.frames - 1, Math.max(0, raw | 0));
               const alpha = s.fade ? step(k) : 1;
               drawStrip(ctx, s.tibiaStrip, fr, s.x, s.y, s.scale, s.frames,
                 s.tileW, s.tileH, alpha, s.stripY || 0, s.stripAnchor || 'center', s.stripOffX || 0);

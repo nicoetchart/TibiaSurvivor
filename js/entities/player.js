@@ -525,6 +525,8 @@ G.Player = class Player {
     let tg = null;
     if (m && m.kind === 'projectile' && m.def && m.def.msTarget && G.Combat.pickStrikeTarget) {
       tg = G.Combat.pickStrikeTarget(this, m);
+    } else if (m && m.id === 'fire_wave' && G.Combat.pickFireWaveTarget) {
+      tg = G.Combat.pickFireWaveTarget(this, m);
     } else {
       const ranged = !!m && (m.kind === 'projectile' || m.kind === 'beam');
       const threat = G.Projectiles.nearest(all, this.x, this.y, this.r + 24);

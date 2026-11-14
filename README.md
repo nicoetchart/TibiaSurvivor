@@ -18,18 +18,20 @@ Funciones **legacy** (gacha, colección Pokémon, cooperativo online, ranking) p
 
 ## Cómo jugar
 
-### file://
+### Desarrollo (`dev.html`)
 
-Abre `dev.html` (desarrollo) o `index.html` (build) con doble clic. Funciona sin servidor.
+No abras `dev.html` con doble clic (`file://`): Chrome y Cursor **bloquean** fuentes, `localStorage`, el manifiesto PWA y parte de los assets Tibia (p. ej. Fire Wave). Verás errores CORS en la consola y el juego no arranca bien.
 
-### Servidor estático local
+Usa un servidor estático en la raíz del repo:
 
 ```bash
-npx --yes serve .
+# Windows (PowerShell): usa npx.cmd si npx falla por ExecutionPolicy
+npx.cmd --yes http-server -p 8080 -c-1
+# o: npx --yes http-server -p 8080 -c-1
 # o: python -m http.server 8080
 ```
 
-Abre `http://localhost:8080/dev.html` (o `index.html`).
+Abre **`http://127.0.0.1:8080/dev.html?dev`** (o `index.html` para el build).
 
 ### Controles
 

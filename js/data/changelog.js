@@ -3,8 +3,21 @@
  */
 G.CHANGELOG = [
   { d: '2026-11-14', title: ['Combate', 'Combat'], chg: [
-    ['Fire Wave: animación firewave.png al 200 % del tamaño anterior (solo visual).',
-     'Fire Wave: firewave.png animation at 200% of previous size (visual only).'],
+    ['Fire Wave (5 niveles): daño base 17, recarga 0,95 s; nv.3 −20% cd, nv.4 +25% daño y Burning, nv.5 −20% cd y patrón 1·3·3·5·5.',
+     'Fire Wave (5 levels): base dmg 17, 0.95 s cooldown; L3 −20% cd, L4 +25% dmg and Burning, L5 −20% cd and 1·3·3·5·5 pattern.'],
+    ['Fire Wave: cada llama 32×32 (arte Tibia × PX) y cono con el mismo paso entre celdas.',
+     'Fire Wave: each flame at 32×32 (Tibia art × PX); cone grid step matches flame size.'],
+    ['Fire Wave: llamas al 75 %, strip 9×64 px y 10 fps (menos parpadeo).',
+     'Fire Wave: flames at 75%, 9×64 strip at 10 fps (less flicker).'],
+    ['Fire Wave: llama más grande en pantalla, cono más compacto y hitbox = celdas del patrón; hechizo inicial para pruebas.',
+     'Fire Wave: larger on-screen flame, tighter cone, hitbox matches pattern cells; starter spell for testing.'],
+    ['Fire Wave: solo se lanza si hay enemigos dentro del cono (no alcance cuerpo a cuerpo).',
+     'Fire Wave: casts only when enemies are inside the wave pattern (not melee reach).'],
+  ], fix: [
+    ['Fire Wave en dev: strip 32×32 (18 fotogramas), recorte en la banda inferior y FX tras cargar firewave.png.',
+     'Fire Wave in dev: 32×32 strip (18 frames), bottom-band crop, VFX after firewave.png loads.'],
+    ['Render: si el canvas arranca a 0 px (vista previa), ya no deja la cámara en escala 0 ni corta el mapa.',
+     'Render: zero-size canvas on first frame (embedded preview) no longer leaves camera scale at 0 or clips the map.'],
   ] },
   { d: '2026-11-13', title: ['Mapa', 'World'], chg: [
     ['Fire Wave: área en rejilla al estilo Tibia (1·3·3·5 sqm) y animación firewave.png (assets/tibia/spells/).',

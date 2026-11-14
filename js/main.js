@@ -21,6 +21,21 @@
   // sesión, así no se escribe nada mientras se copian las cuentas y partidas.
   // Para probar en local: añade ?dev a la dirección.
   const MAINTENANCE = false;
+  /** file:// bloquea fuentes, localStorage y CORS; el MVP Tibia necesita http(s) local. */
+  function needsHttpServer() {
+    if (location.protocol !== 'file:') return false;
+    const en = !/^es/i.test(navigator.language || '');
+    const el = document.getElementById('boot');
+    if (!el) return true;
+    el.setAttribute('translate', 'no');
+    el.classList.remove('hidden');
+    el.innerHTML = '<div class="boot-in"><h1>TibiaSurvivor</h1>' + (en
+      ? '<p><b>Open the game through a local web server.</b></p><p>With <code>file://</code> the browser blocks fonts, saves, and Tibia PNG assets.</p><p style="font-family:monospace;font-size:13px;text-align:left;max-width:26rem;margin:12px auto">npx.cmd --yes http-server -p 8080 -c-1</p><p>Then open <b>http://127.0.0.1:8080/dev.html?dev</b></p>'
+      : '<p><b>Abre el juego con un servidor local.</b></p><p>Con <code>file://</code> el navegador bloquea fuentes, el guardado y los PNG Tibia.</p><p style="font-family:monospace;font-size:13px;text-align:left;max-width:26rem;margin:12px auto">npx.cmd --yes http-server -p 8080 -c-1</p><p>Luego abre <b>http://127.0.0.1:8080/dev.html?dev</b></p>') + '</div>';
+    console.warn('[Arranque] Usa http://127.0.0.1 — file:// no sirve para desarrollo TibiaSurvivor.');
+    return true;
+  }
+
   function maintenance() {
     if (!MAINTENANCE || /[?&]dev\b/.test(location.search)) return false;
     const en = typeof G === 'object' && G.I18n ? G.I18n.lang === 'en' : !/^es/i.test(navigator.language || '');
@@ -34,6 +49,7 @@
   }
 
   function boot() {
+    if (needsHttpServer()) return;
     if (maintenance()) return;
     if (broken()) return;
     G.I18n.startDom();

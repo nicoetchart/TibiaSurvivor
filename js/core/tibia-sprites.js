@@ -82,11 +82,19 @@ G.TibiaSprites = (() => {
     return null;
   }
 
+  function devStorageOk() {
+    try {
+      if (typeof localStorage === 'undefined' || !localStorage) return false;
+      localStorage.getItem(LS_TUNING);
+      return true;
+    } catch { return false; }
+  }
+
   /** Base del tuning file + parche dev (localStorage) + override en memoria. */
   function tuningRoot() {
     const base = Object.assign({}, G.TIBIA_SPRITE_TUNING || {});
     if (livePatch) Object.assign(base, livePatch);
-    if (queryDev() && typeof localStorage !== 'undefined') {
+    if (queryDev() && devStorageOk()) {
       try {
         const j = JSON.parse(localStorage.getItem(LS_TUNING) || 'null');
         if (j && typeof j === 'object') Object.assign(base, j);
@@ -96,8 +104,8 @@ G.TibiaSprites = (() => {
   }
 
   function persistLive(T) {
-    if (!queryDev() || typeof localStorage === 'undefined') return;
-    localStorage.setItem(LS_TUNING, JSON.stringify(T));
+    if (!queryDev() || !devStorageOk()) return;
+    try { localStorage.setItem(LS_TUNING, JSON.stringify(T)); } catch { /* file:// / iframe */ }
   }
 
   /**

@@ -33,7 +33,7 @@ G.CREATURES = [
     behavior: null,
     sprite: 'geo',
     role: 'player',
-    startAbility: 'flame_strike',
+    startAbility: 'fire_wave',
     bestiary: { enabled: false }
   },
   // —— Harmless (tier 0) ——

@@ -168,10 +168,20 @@ G.Sprites = (() => {
     return (m ? m.ay : 24) * PX * scale * mul;
   }
 
+  /** Radio horizontal de la sombra bajo (x, y) — mismas reglas que drawShadow. */
+  function shadowRadiusAt(dex, scale = 1) {
+    if (G.TibiaSprites && G.TibiaSprites.enabled && G.TibiaSprites.hasCreature(dex)) {
+      return G.TibiaSprites.shadowRadius(dex, scale);
+    }
+    const m = meta(dex);
+    const s = m ? m.s : 1;
+    return [5, 8, 12][G.U.clamp(s, 0, 2)] * PX * scale;
+  }
+
   /** Sombra elíptica bajo los pies, tamaño según el ShadowSize de PMD. */
   function drawShadow(ctx, dex, x, y, scale = 1) {
+    const rx = shadowRadiusAt(dex, scale);
     if (G.TibiaSprites && G.TibiaSprites.enabled && G.TibiaSprites.hasCreature(dex)) {
-      const rx = G.TibiaSprites.shadowRadius(dex, scale);
       ctx.fillStyle = 'rgba(0,0,0,.34)';
       ctx.beginPath();
       ctx.ellipse(x, y, rx, rx * 0.42, 0, 0, 6.2832);
@@ -180,7 +190,6 @@ G.Sprites = (() => {
     }
     const m = meta(dex);
     const s = m ? m.s : 1;
-    const rx = [5, 8, 12][G.U.clamp(s, 0, 2)] * PX * scale;
     ctx.fillStyle = 'rgba(0,0,0,.34)';
     ctx.beginPath();
     ctx.ellipse(x, y, rx, rx * 0.42, 0, 0, 6.2832);
@@ -306,5 +315,5 @@ G.Sprites = (() => {
   }
 
   return { PX, meta, hasShiny, hovers, white, animMeta, sheet, preload, dirFromAngle, bodyRadius, bodyHeight,
-           drawShadow, Animator, ANIMS, get sheetCount() { return sheets.size; } };
+           shadowRadiusAt, drawShadow, Animator, ANIMS, get sheetCount() { return sheets.size; } };
 })();

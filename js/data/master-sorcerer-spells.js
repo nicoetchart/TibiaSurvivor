@@ -97,9 +97,9 @@ G.MasterSorcererSpells = [
     element: 'fire',
     kind: 'melee',
     type: 'fire',
-    desc: 'Onda de fuego en forma de abanico Tibia (4 sqm).',
-    cd: 1.05,
-    dmg: 14,
+    desc: 'Onda de fuego en rejilla Tibia (1·3·3·5; nv.5 añade otra fila de 5).',
+    cd: 0.95,
+    dmg: 17,
     radius: 50,
     arc: 1.45,
     knock: 40,
@@ -109,9 +109,9 @@ G.MasterSorcererSpells = [
     levels: [
       { level: 1, summary: 'Emite una wave frontal corta.' },
       { level: 2, summary: '+25% daño', mods: { dmg: 1.25 } },
-      { level: 3, summary: '+30% área y alcance', mods: { radius: 1.3, arc: 1.15 } },
-      { level: 4, summary: '-20% recarga', mods: { cd: 0.8 } },
-      { level: 5, summary: 'Deja zona de fuego 3 s', msUnlock: ['fire_ground:3'] }
+      { level: 3, summary: '-20% recarga', mods: { cd: 0.8 } },
+      { level: 4, summary: '+25% daño; aplica Burning', mods: { dmg: 1.25, burn: 1 } },
+      { level: 5, summary: '-20% recarga; fila extra del cono (1·3·3·5·5)', mods: { cd: 0.8 }, msUnlock: ['fire_wave_row5'] }
     ]
   },
   {

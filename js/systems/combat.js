@@ -30,9 +30,11 @@ G.Combat = (() => {
     m.t -= dt;
     if (m.t > 0) return;
     // Los ataques que necesitan blanco esperan a tenerlo (no gastes animación al aire).
-    if (needsTarget(m) && !(pl.target && G.U.dist(pl.x, pl.y, pl.target.x, pl.target.y) <= reach(m))) {
-      m.t = 0.05;
-      return;
+    if (needsTarget(m)) {
+      let ok = false;
+      if (m.id === 'fire_wave') ok = anyEnemyInFireWaveCone(pl, m);
+      else if (pl.target && G.U.dist(pl.x, pl.y, pl.target.x, pl.target.y) <= reach(m)) ok = true;
+      if (!ok) { m.t = 0.05; return; }
     }
     m.t = (pl.vocationId && G.MasterSorcerer)
       ? G.MasterSorcerer.minCooldownFor(pl, m.cd)
@@ -82,7 +84,8 @@ G.Combat = (() => {
 
   const TARGETED = ['melee', 'beam', 'projectile', 'boomerang', 'chain', 'meteor', 'dash', 'cone'];
   function needsTarget(m) { return TARGETED.includes(m.kind); }
-  function reach(m) {
+  function reach(m, pl) {
+    if (m.id === 'fire_wave') return fireWaveSearchRadius(m, 1, pl);
     if (m.kind === 'melee') return m.radius + 30;
     if (m.kind === 'beam') return m.radius + 20;
     if (m.kind === 'boomerang') return m.radius + 40;
@@ -316,7 +319,10 @@ G.Combat = (() => {
     G.FX.ring(x, y, 4, r, col, 0.28, 2);
   }
 
-  /** Patrón Fire Wave Tibia (filas 1–4 delante del jugador, en coords locales fx/fy). */
+  /** Patrón Fire Wave Tibia (filas 1–4; nv.5 añade fila 5). */
+  const FIRE_WAVE_PATTERN_ROW5 = [
+    [-2, 5], [-1, 5], [0, 5], [1, 5], [2, 5]
+  ];
   const FIRE_WAVE_PATTERN = [
     [0, 1],
     [-1, 2], [0, 2], [1, 2],
@@ -324,49 +330,149 @@ G.Combat = (() => {
     [-2, 4], [-1, 4], [0, 4], [1, 4], [2, 4]
   ];
 
-  function fireWaveCellPos(pl, aim, fx, fy, step) {
+  function fireWavePattern(m) {
+    if (m && m.lvl >= 5) return FIRE_WAVE_PATTERN.concat(FIRE_WAVE_PATTERN_ROW5);
+    if (m && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'fire_wave_row5')) {
+      return FIRE_WAVE_PATTERN.concat(FIRE_WAVE_PATTERN_ROW5);
+    }
+    return FIRE_WAVE_PATTERN;
+  }
+
+  function fireWaveMaxRow(m) {
+    return fireWavePattern(m).reduce((n, c) => Math.max(n, c[1]), 4);
+  }
+
+  /** Radio horizontal de la sombra del jugador (origen del cono = centro de la sombra). */
+  function fireWaveShadowRx(pl) {
+    const scale = pl.anim && pl.anim.scale != null ? pl.anim.scale : 1;
+    if (G.Sprites && G.Sprites.shadowRadiusAt) return G.Sprites.shadowRadiusAt(pl.dex, scale);
+    return (pl.r || 12) * 1.35;
+  }
+
+  /** Aim continuo → una de las 8 diagonales/cardinales (como el cono en Tibia). */
+  function fireWaveAim8(aim) {
+    if (G.Sprites && G.Sprites.dirFromAngle) {
+      const d = G.Sprites.dirFromAngle(aim);
+      return Math.PI / 2 - d * (Math.PI / 4);
+    }
+    return aim;
+  }
+
+  /** Distancia mínima delante de los pies para no solapar cuerpo / sombra en esa dirección. */
+  function fireWaveClearFwd(pl, aim) {
+    const body = pl.r || 12;
+    const rx = fireWaveShadowRx(pl);
+    const ry = rx * 0.42;
     const ca = Math.cos(aim), sa = Math.sin(aim);
-    const fwd = fy * step, lat = fx * step;
+    const denom = (ca * ca) / (rx * rx) + (sa * sa) / (ry * ry);
+    const shadowEdge = denom > 1e-6 ? 1 / Math.sqrt(denom) : rx;
+    return Math.max(body, shadowEdge);
+  }
+
+  /** Centros del patrón 1·3·3·5: fila 1 justo fuera del radio del personaje. */
+  function fireWaveCellPos(pl, aim, fx, fy, step) {
+    const a = fireWaveAim8(aim);
+    const ca = Math.cos(a), sa = Math.sin(a);
+    const base = fireWaveClearFwd(pl, a);
+    const fwd = base + (fy - 1) * step + step * 0.5;
+    const lat = fx * step;
     return { x: pl.x + ca * fwd - sa * lat, y: pl.y + sa * fwd + ca * lat };
+  }
+
+  /** Hit alineado al aim: cuadrado step×step por celda del cono (unión = forma del patrón). */
+  function inFireWaveCellHit(cx, cy, aim, x, y, r, step) {
+    const ca = Math.cos(aim), sa = Math.sin(aim);
+    const px = x - cx, py = y - cy;
+    const along = px * ca + py * sa;
+    const lat = -px * sa + py * ca;
+    const half = step * 0.5;
+    const pad = r * 0.35;
+    return Math.abs(along) <= half + pad && Math.abs(lat) <= half + pad;
+  }
+
+  /** Separación entre llamas = tamaño de una llama (32 art × PX); escala con `radius` del hechizo. */
+  function fireWaveGridStep(m, scale) {
+    const cell = (G.Tiles && G.Tiles.fireWaveCellWorld)
+      ? G.Tiles.fireWaveCellWorld()
+      : 32 * (G.Sprites && G.Sprites.PX ? G.Sprites.PX : 2);
+    return cell * ((m.radius || 50) / 50) * scale;
+  }
+
+  function fireWaveSearchRadius(m, scale = 1, pl) {
+    const step = fireWaveGridStep(m, scale);
+    const rx = pl && fireWaveShadowRx(pl);
+    const rows = fireWaveMaxRow(m);
+    return (rx || 28) + step * rows + step * 2 + 24;
+  }
+
+  function enemyInFireWaveCone(pl, m, e, aim, step, patternScale = 1) {
+    if (!e || e.dead) return false;
+    const a8 = fireWaveAim8(aim);
+    for (const [fx, fy] of fireWavePattern(m)) {
+      const pos = fireWaveCellPos(pl, aim, fx * patternScale, fy * patternScale, step);
+      if (inFireWaveCellHit(pos.x, pos.y, a8, e.x, e.y, e.r, step)) return true;
+    }
+    return false;
+  }
+
+  /** ¿Hay algún enemigo dentro del patrón con el aim actual? */
+  function anyEnemyInFireWaveCone(pl, m) {
+    const step = fireWaveGridStep(m, 1);
+    const r = fireWaveSearchRadius(m, 1, pl);
+    for (const e of G.EnemyMgr.queryCircle(pl.x, pl.y, r)) {
+      if (enemyInFireWaveCone(pl, m, e, pl.aim, step)) return true;
+    }
+    return false;
+  }
+
+  /** Blanco: enemigo más cercano que cabría en el cono si apuntas a él. */
+  function pickFireWaveTarget(pl, m) {
+    const step = fireWaveGridStep(m, 1);
+    const r = fireWaveSearchRadius(m, 1, pl);
+    let best = null, bestD = 1e9;
+    for (const e of G.EnemyMgr.queryCircle(pl.x, pl.y, r)) {
+      if (e.dead || e.remote) continue;
+      const aim = Math.atan2(e.y - pl.y, e.x - pl.x);
+      if (!enemyInFireWaveCone(pl, m, e, aim, step)) continue;
+      const d = G.U.dist2(pl.x, pl.y, e.x, e.y);
+      if (d < bestD) { bestD = d; best = e; }
+    }
+    return best;
   }
 
   /** Fire Wave clásica: rejilla + sprite firewave.png; `scale` escala celdas (niveles / Great). */
   function fireWaveGrid(pl, m, aim, scale, hitOnce, allowGround) {
     const col = G.U.TYPE_COLOR[m.type];
-    const step = (m.radius || 50) * scale / 4;
-    const cellR = step * 0.52;
+    const step = fireWaveGridStep(m, scale);
+    const queryR = step * 0.75 + 12;
     const dmgMul = scale >= 0.95 ? 1 : 0.88 * scale;
     const knock = (m.knock || 0) * Math.min(1, scale + 0.2);
 
-    for (const [fx, fy] of FIRE_WAVE_PATTERN) {
+    const pattern = fireWavePattern(m);
+    const a8 = fireWaveAim8(aim);
+    for (const [fx, fy] of pattern) {
       const pos = fireWaveCellPos(pl, aim, fx * scale, fy * scale, step);
       if (G.Tiles && G.Tiles.playFireWaveCell) G.Tiles.playFireWaveCell(pos.x, pos.y);
     }
     if (ghost) return;
 
     const hitSet = new Set();
-    for (const [fx, fy] of FIRE_WAVE_PATTERN) {
+    for (const [fx, fy] of pattern) {
       const pos = fireWaveCellPos(pl, aim, fx * scale, fy * scale, step);
-      for (const e of G.EnemyMgr.queryCircle(pos.x, pos.y, cellR + 14)) {
+      for (const e of G.EnemyMgr.queryCircle(pos.x, pos.y, queryR)) {
         if (hitOnce && hitOnce.has(e.id)) continue;
         if (hitSet.has(e.id)) continue;
-        if (Math.hypot(e.x - pos.x, e.y - pos.y) > cellR + e.r * 0.35) continue;
+        if (!inFireWaveCellHit(pos.x, pos.y, a8, e.x, e.y, e.r, step)) continue;
         const kx = e.x - pl.x, ky = e.y - pl.y;
         hit(pl, e, m.dmg * pl.atk * dmgMul, col, kx, ky, knock, m);
         hitSet.add(e.id);
         if (hitOnce) hitOnce.add(e.id);
       }
-      for (const p of G.World.propsInCircle(pos.x, pos.y, cellR + 10)) {
-        if (Math.hypot(p.x - pos.x, p.y - pos.y) <= cellR + p.r) {
+      for (const p of G.World.propsInCircle(pos.x, pos.y, queryR)) {
+        if (inFireWaveCellHit(pos.x, pos.y, a8, p.x, p.y, p.r, step)) {
           G.World.damageProp(p, m.dmg * pl.atk * dmgMul, col);
         }
       }
-    }
-
-    if (allowGround && scale >= 0.95 && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'fire_ground')) {
-      const dur = G.MasterSorcerer.unlockValue(m, 'fire_ground') || 3;
-      const mid = fireWaveCellPos(pl, aim, 0, 2 * scale, step);
-      spawnFireGround(pl, m, mid.x, mid.y, dur);
     }
   }
 
@@ -1233,5 +1339,6 @@ G.Combat = (() => {
   }
 
   return { tick, resolve, ghostCast, ghostOrbit, updateFields, drawGroundFields, drawAirFields, clearFields, onEnemyDeath, pickStrikeTarget,
+           pickFireWaveTarget, fireWaveReach: fireWaveSearchRadius,
            get fieldCount() { return fields.length; } };
 })();

@@ -17,8 +17,12 @@ G.Camera = {
   MIN_VIEW_H: 420,
 
   resize(cssW, cssH, dpr = 1) {
+    // Vista previa / paneles embebidos: a veces el canvas mide 0×0 en el primer
+    // fotograma; scale=0 rompe el dibujo (personaje invisible, “falta” el sur).
+    if (!(cssW > 1) || !(cssH > 1)) return;
     this.dpr = dpr;
     this.scale = Math.min(cssW / this.VIEW_W, cssH / this.MIN_VIEW_H);
+    if (!(this.scale > 0)) return;
     this.w = cssW / this.scale;
     this.h = cssH / this.scale;
   },

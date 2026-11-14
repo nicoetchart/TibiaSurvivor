@@ -515,8 +515,24 @@ G.Tiles = (() => {
     let s = spellSheets.get(id);
     if (s) return s;
     const img = new Image();
-    s = { img, ready: false, failed: false, key: id };
-    img.onload = () => { s.ready = true; };
+    s = { img, ready: false, failed: false, key: id, frameW: 32, frameH: 32, stripY: 0, frames: 9 };
+    img.onload = () => {
+      s.ready = true;
+      const w = img.naturalWidth, h = img.naturalHeight;
+      if (h >= 48 && w % 64 === 0) {
+        s.frameW = 64;
+        s.frameH = 64;
+        s.stripY = 0;
+        s.frames = w / 64;
+      } else {
+        const tw = FIRE_WAVE_ART_TILE;
+        const th = Math.min(tw, h);
+        s.frameW = tw;
+        s.frameH = th;
+        s.stripY = h > th ? h - th : 0;
+        s.frames = Math.max(1, Math.floor(w / tw));
+      }
+    };
     img.onerror = () => { s.failed = true; };
     img.src = 'assets/tibia/spells/' + id + '.png';
     spellSheets.set(id, s);
@@ -627,16 +643,46 @@ G.Tiles = (() => {
     return true;
   }
 
-  /** Fire Wave — strip spells/firewave.png (64×64, 9 fotogramas). */
+  /** Fire Wave — strip spells/firewave.png (9×64×64; arte lógico 32×32 al 75 %). */
   const FIRE_WAVE_SHEET = 'firewave';
-  const FIRE_WAVE_TILE = 64;
-  const FIRE_WAVE_FRAMES = 9;
-  const FIRE_WAVE_FPS = 12;
-  const FIRE_WAVE_DRAW_MUL = 2;
+  const FIRE_WAVE_ART_TILE = 32;
+  /** Escala del sprite en pantalla (32 art × PX × DRAW_MUL). */
+  const FIRE_WAVE_DRAW_MUL = 1.75;
+  /** Paso del cono (32 art × PX × GRID_MUL); independiente de DRAW_MUL. */
+  const FIRE_WAVE_GRID_MUL = 0.65;
+  const FIRE_WAVE_FPS = 10;
 
-  function fireWaveFxScale() {
-    const px = G.Sprites && G.Sprites.PX ? G.Sprites.PX : 2;
-    return px * TRAP_ITEM_DRAW_SCALE * (TRAP_ITEM_TILE / FIRE_WAVE_TILE) * FIRE_WAVE_DRAW_MUL;
+  function fireWavePx() {
+    return G.Sprites && G.Sprites.PX ? G.Sprites.PX : 2;
+  }
+
+  /** Tamaño dibujado de una llama (32 art × PX × DRAW_MUL). */
+  function fireWaveVisualWorld() {
+    return FIRE_WAVE_ART_TILE * fireWavePx() * FIRE_WAVE_DRAW_MUL;
+  }
+
+  /** Separación entre centros del patrón (cono / hitbox); solo GRID_MUL, no DRAW_MUL. */
+  function fireWaveCellWorld() {
+    return FIRE_WAVE_ART_TILE * fireWavePx() * FIRE_WAVE_GRID_MUL;
+  }
+
+  /** Solo desplazamiento en pantalla (PNG 64×64 completo; arte descentrado en la celda). */
+  function fireWaveStripOffX(scale, tileW) {
+    const w = Math.round(tileW * scale);
+    const frac = tileW >= 48 ? 0.27 : 0.16;
+    return -Math.round(w * frac);
+  }
+
+  function fireWaveStripMeta(sheet) {
+    const tw = (sheet && sheet.frameW) || 64;
+    const th = (sheet && sheet.frameH) || 64;
+    const frames = (sheet && sheet.frames) || 9;
+    const stripY = (sheet && sheet.stripY) || 0;
+    const scale = fireWaveVisualWorld() / tw;
+    return {
+      tileW: tw, tileH: th, stripY, frames, scale, fps: FIRE_WAVE_FPS,
+      stripOffX: fireWaveStripOffX(scale, tw)
+    };
   }
 
   /** Un fotograma de strip en spells/ (FX en mundo). */
@@ -668,17 +714,26 @@ G.Tiles = (() => {
 
   function playFireWaveCell(x, y) {
     if (!G.FX || !G.FX.itemStrip) return;
-    G.FX.itemStrip(FIRE_WAVE_SHEET, x, y, {
-      tibiaStripDir: 'spells',
-      frames: FIRE_WAVE_FRAMES,
-      fps: FIRE_WAVE_FPS,
-      tileW: FIRE_WAVE_TILE,
-      tileH: FIRE_WAVE_TILE,
-      stripAnchor: 'bottom',
-      scale: fireWaveFxScale(),
-      life: FIRE_WAVE_FRAMES / FIRE_WAVE_FPS,
-      fade: false
-    });
+    const sheet = getSpellSheet(FIRE_WAVE_SHEET);
+    const emit = () => {
+      if (sheet.failed) return;
+      const m = fireWaveStripMeta(sheet);
+      G.FX.itemStrip(FIRE_WAVE_SHEET, x, y, {
+        tibiaStripDir: 'spells',
+        frames: m.frames,
+        fps: m.fps,
+        tileW: m.tileW,
+        tileH: m.tileH,
+        stripY: m.stripY,
+        stripAnchor: 'bottom',
+        stripOffX: m.stripOffX,
+        scale: m.scale,
+        life: m.frames / m.fps,
+        fade: false
+      });
+    };
+    if (sheet.ready) emit();
+    else if (!sheet.failed) sheet.img.addEventListener('load', emit, { once: true });
   }
 
   /** Radio para pisar (mitad del sprite dibujado: 32×PX×0,75). */
@@ -1185,7 +1240,7 @@ G.Tiles = (() => {
 
   return { T, BIOMES, NORMAL, ARENA, ARENA_THEMES, ARENA_TYPES, paintChunk, propSprite, clearProps,
            drawTrapPoisonTibia, drawTrapExplosiveTibia, drawItemStripFrame, drawSpellStripFrame,
-           playPoisonTrapBurst, playExplosiveTrapBurst, playFireWaveCell, trapBurstDrawOffX,
+           playPoisonTrapBurst, playExplosiveTrapBurst, playFireWaveCell, fireWaveCellWorld, trapBurstDrawOffX,
            poisonTrapStepRadius, tibiaFlatTrapStepRadius, trapStepRadius, preloadRockSprites,
            /** Índice de bioma de la arena de un tipo. */
            arenaBiome: type => ARENA + Math.max(0, ARENA_TYPES.indexOf(type)) };
