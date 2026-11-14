@@ -523,7 +523,9 @@ G.Player = class Player {
     const all = G.EnemyMgr.all();
     const m = this.activeMove();
     let tg = null;
-    if (m && m.kind === 'projectile' && m.def && m.def.msTarget && G.Combat.pickStrikeTarget) {
+    if (m && m.id === 'energy_beam' && G.Combat.pickEnergyBeamTarget) {
+      tg = G.Combat.pickEnergyBeamTarget(this, m);
+    } else if (m && m.def && m.def.msTarget && G.Combat.pickStrikeTarget) {
       tg = G.Combat.pickStrikeTarget(this, m);
     } else if (m && m.id === 'fire_wave' && G.Combat.pickFireWaveTarget) {
       tg = G.Combat.pickFireWaveTarget(this, m);

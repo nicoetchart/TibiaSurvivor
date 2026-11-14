@@ -791,6 +791,63 @@ G.Tiles = (() => {
     else if (!sheet.failed) sheet.img.addEventListener('load', emit, { once: true });
   }
 
+  /** Energy Beam — strip spells/194043-194058.png (16×32×32). */
+  const ENERGY_BEAM_SHEET = '194043-194058';
+  const ENERGY_BEAM_FPS = 14;
+  const ENERGY_BEAM_FRAMES = 16;
+  const ENERGY_BEAM_DRAW_MUL = 0.75;
+
+  function energyBeamVisualWorld() {
+    return FIRE_WAVE_ART_TILE * fireWavePx() * ENERGY_BEAM_DRAW_MUL;
+  }
+
+  function energyBeamCellWorld() {
+    return energyBeamVisualWorld();
+  }
+
+  function energyBeamStripMeta(sheet) {
+    const tw = (sheet && sheet.frameW) || FIRE_WAVE_ART_TILE;
+    const th = (sheet && sheet.frameH) || FIRE_WAVE_ART_TILE;
+    const maxFr = sheet && sheet.ready && sheet.img
+      ? Math.floor(sheet.img.naturalWidth / tw) : ENERGY_BEAM_FRAMES;
+    const frames = Math.min(ENERGY_BEAM_FRAMES, Math.max(1, maxFr));
+    const stripY = (sheet && sheet.stripY) || 0;
+    const scale = energyBeamVisualWorld() / tw;
+    const step = energyBeamCellWorld();
+    const drawH = Math.round(th * scale);
+    return {
+      tileW: tw, tileH: th, stripY, frames, scale, fps: ENERGY_BEAM_FPS,
+      stripOffX: fireWaveStripOffX(scale, tw),
+      stripOffY: Math.round((drawH - step) * 0.35),
+      life: frames / ENERGY_BEAM_FPS
+    };
+  }
+
+  function playEnergyBeamCell(x, y) {
+    if (!G.FX || !G.FX.itemStrip) return;
+    const sheet = getSpellSheet(ENERGY_BEAM_SHEET);
+    const emit = () => {
+      if (sheet.failed) return;
+      const m = energyBeamStripMeta(sheet);
+      G.FX.itemStrip(ENERGY_BEAM_SHEET, x, y, {
+        tibiaStripDir: 'spells',
+        frames: m.frames,
+        fps: m.fps,
+        tileW: m.tileW,
+        tileH: m.tileH,
+        stripY: m.stripY,
+        stripAnchor: 'bottom',
+        stripOffX: m.stripOffX,
+        stripOffY: m.stripOffY,
+        scale: m.scale,
+        life: m.life,
+        fade: false
+      });
+    };
+    if (sheet.ready) emit();
+    else if (!sheet.failed) sheet.img.addEventListener('load', emit, { once: true });
+  }
+
   /** Radio para pisar (mitad del sprite dibujado: 32×PX×0,75). */
   function tibiaFlatTrapStepRadius() {
     const px = G.Sprites && G.Sprites.PX ? G.Sprites.PX : 2;
@@ -1293,11 +1350,12 @@ G.Tiles = (() => {
   getItemPropSheet(EXPLOSIVE_TRAP_BURST_SHEET);
   getSpellSheet(FIRE_WAVE_SHEET);
   getSpellSheet(HELLS_CORE_SHEET);
+  getSpellSheet(ENERGY_BEAM_SHEET);
 
   return { T, BIOMES, NORMAL, ARENA, ARENA_THEMES, ARENA_TYPES, paintChunk, propSprite, clearProps,
            drawTrapPoisonTibia, drawTrapExplosiveTibia, drawItemStripFrame, drawSpellStripFrame,
-           playPoisonTrapBurst, playExplosiveTrapBurst, playFireWaveCell, playHellsCoreCell,
-           fireWaveCellWorld, hellsCoreCellWorld, trapBurstDrawOffX,
+           playPoisonTrapBurst, playExplosiveTrapBurst, playFireWaveCell, playHellsCoreCell, playEnergyBeamCell,
+           fireWaveCellWorld, hellsCoreCellWorld, energyBeamCellWorld, trapBurstDrawOffX,
            poisonTrapStepRadius, tibiaFlatTrapStepRadius, trapStepRadius, preloadRockSprites,
            /** Índice de bioma de la arena de un tipo. */
            arenaBiome: type => ARENA + Math.max(0, ARENA_TYPES.indexOf(type)) };

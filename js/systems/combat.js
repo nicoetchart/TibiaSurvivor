@@ -33,6 +33,7 @@ G.Combat = (() => {
     if (needsTarget(m)) {
       let ok = false;
       if (m.id === 'fire_wave') ok = anyEnemyInFireWaveCone(pl, m);
+      else if (m.id === 'energy_beam') ok = anyEnemyInEnergyBeam(pl, m);
       else if (pl.target && G.U.dist(pl.x, pl.y, pl.target.x, pl.target.y) <= reach(m)) ok = true;
       if (!ok) { m.t = 0.05; return; }
     }
@@ -86,6 +87,7 @@ G.Combat = (() => {
   function needsTarget(m) { return TARGETED.includes(m.kind); }
   function reach(m, pl) {
     if (m.id === 'fire_wave') return fireWaveSearchRadius(m, 1, pl);
+    if (m.id === 'energy_beam') return energyBeamSearchRadius(m, pl);
     if (m.kind === 'melee') return m.radius + 30;
     if (m.kind === 'beam') return m.radius + 20;
     if (m.kind === 'boomerang') return m.radius + 40;
@@ -577,15 +579,106 @@ G.Combat = (() => {
     beam(pl, m);
   }
 
-  /** Energy Beam (MS): rayo penetrante; nv.5 segundo pulso breve. */
+  const ENERGY_BEAM_BASE_SQM = 5;
+
+  function energyBeamPattern(m) {
+    const rows = Math.max(1, Math.round(ENERGY_BEAM_BASE_SQM * ((m.radius || 50) / 50)));
+    const cells = [];
+    for (let fy = 1; fy <= rows; fy++) cells.push([0, fy]);
+    return cells;
+  }
+
+  function energyBeamGridStep(m) {
+    const cell = (G.Tiles && G.Tiles.energyBeamCellWorld)
+      ? G.Tiles.energyBeamCellWorld()
+      : 32 * (G.Sprites && G.Sprites.PX ? G.Sprites.PX : 2) * 0.75;
+    return cell * ((m.radius || 50) / 50);
+  }
+
+  /** Centros del rayo 1×N en el aim real (sin cuantizar a 8 direcciones). */
+  function energyBeamCellPos(pl, aim, fy, step) {
+    const ca = Math.cos(aim), sa = Math.sin(aim);
+    const base = fireWaveClearFwd(pl, aim);
+    const fwd = base + (fy - 1) * step + step * 0.5;
+    return { x: pl.x + ca * fwd, y: pl.y + sa * fwd };
+  }
+
+  function energyBeamSearchRadius(m, pl) {
+    const step = energyBeamGridStep(m);
+    const rows = energyBeamPattern(m).length;
+    const rx = pl && fireWaveShadowRx(pl);
+    return (rx || 28) + step * rows + step + 24;
+  }
+
+  function enemyInEnergyBeam(pl, m, e, aim) {
+    if (!e || e.dead) return false;
+    const step = energyBeamGridStep(m);
+    for (const [, fy] of energyBeamPattern(m)) {
+      const pos = energyBeamCellPos(pl, aim, fy, step);
+      if (inFireWaveCellHit(pos.x, pos.y, aim, e.x, e.y, e.r, step)) return true;
+    }
+    return false;
+  }
+
+  /** Blanco: el más cercano que cae dentro del rayo 1×N al apuntar a él. */
+  function pickEnergyBeamTarget(pl, m) {
+    const r = energyBeamSearchRadius(m, pl);
+    let best = null, bestD = 1e9;
+    for (const e of G.EnemyMgr.queryCircle(pl.x, pl.y, r)) {
+      if (e.dead || e.remote) continue;
+      const aim = Math.atan2(e.y - pl.y, e.x - pl.x);
+      if (!enemyInEnergyBeam(pl, m, e, aim)) continue;
+      const d = G.U.dist2(pl.x, pl.y, e.x, e.y);
+      if (d < bestD) { bestD = d; best = e; }
+    }
+    return best;
+  }
+
+  function anyEnemyInEnergyBeam(pl, m) {
+    return !!pickEnergyBeamTarget(pl, m);
+  }
+
+  /** Energy Beam: línea 1×N sqm + strip 194043–194058; penetrante. */
+  function energyBeamGrid(pl, m, aim, dmgMul = 1) {
+    const col = G.U.TYPE_COLOR[m.type];
+    const step = energyBeamGridStep(m);
+    const queryR = step * 0.75 + 12;
+    const pattern = energyBeamPattern(m);
+    const ca = Math.cos(aim), sa = Math.sin(aim);
+
+    for (const [, fy] of pattern) {
+      const pos = energyBeamCellPos(pl, aim, fy, step);
+      if (G.Tiles && G.Tiles.playEnergyBeamCell) G.Tiles.playEnergyBeamCell(pos.x, pos.y);
+    }
+    if (ghost) return;
+
+    const hitSet = new Set();
+    for (const [, fy] of pattern) {
+      const pos = energyBeamCellPos(pl, aim, fy, step);
+      for (const e of G.EnemyMgr.queryCircle(pos.x, pos.y, queryR)) {
+        if (hitSet.has(e.id)) continue;
+        if (!inFireWaveCellHit(pos.x, pos.y, aim, e.x, e.y, e.r, step)) continue;
+        hit(pl, e, m.dmg * pl.atk * dmgMul, col, ca, sa, 0, m);
+        hitSet.add(e.id);
+      }
+      for (const p of G.World.propsInCircle(pos.x, pos.y, queryR)) {
+        if (inFireWaveCellHit(pos.x, pos.y, aim, p.x, p.y, p.r, step)) {
+          G.World.damageProp(p, m.dmg * pl.atk * dmgMul, col);
+        }
+      }
+    }
+  }
+
+  /** Energy Beam (MS): rayo 1×5 hacia el más cercano; nv.5 segundo pulso breve. */
   function energyBeam(pl, m) {
-    beamAt(pl, m, pl.aim);
+    energyBeamGrid(pl, m, pl.aim);
     if (!ghost && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'beam_persist_double')) {
       const echoes = fields.filter(o => o.kind === 'beam_echo' && o.owner === pl && !o.gone);
       for (const o of echoes.slice(0, Math.max(0, echoes.length - 2))) o.gone = true;
       fields.push({
         kind: 'beam_echo', owner: pl, ghost, m, aim: pl.aim,
-        t: 0, delay: 0.22, dmgMul: 0.72, done: false, life: 0.55
+        t: 0, delay: 0.22, dmgMul: 0.72, done: false, life: 0.55,
+        energyGrid: true
       });
     }
     if (!ghost) G.Camera.kick(0.08);
@@ -1028,7 +1121,9 @@ G.Combat = (() => {
       } else if (f.kind === 'beam_echo') {
         if (!f.done && f.t >= f.delay) {
           f.done = true;
-          beamAt(f.owner, f.m, f.aim, null, f.dmgMul || 0.72);
+          if (f.energyGrid || (f.m && f.m.id === 'energy_beam')) {
+            energyBeamGrid(f.owner, f.m, f.aim, f.dmgMul || 0.72);
+          } else beamAt(f.owner, f.m, f.aim, null, f.dmgMul || 0.72);
         }
       } else if (f.kind === 'hell_core_echo') {
         if (!f.done && f.t >= f.delay) {
@@ -1391,6 +1486,6 @@ G.Combat = (() => {
   }
 
   return { tick, resolve, ghostCast, ghostOrbit, updateFields, drawGroundFields, drawAirFields, clearFields, onEnemyDeath, pickStrikeTarget,
-           pickFireWaveTarget, fireWaveReach: fireWaveSearchRadius,
+           pickFireWaveTarget, pickEnergyBeamTarget, fireWaveReach: fireWaveSearchRadius,
            get fieldCount() { return fields.length; } };
 })();
