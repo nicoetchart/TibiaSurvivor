@@ -2,6 +2,39 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-14', title: ['Combate', 'Combat'], chg: [
+    ['Fire Wave: animación firewave.png al 200 % del tamaño anterior (solo visual).',
+     'Fire Wave: firewave.png animation at 200% of previous size (visual only).'],
+  ] },
+  { d: '2026-11-13', title: ['Mapa', 'World'], chg: [
+    ['Fire Wave: área en rejilla al estilo Tibia (1·3·3·5 sqm) y animación firewave.png (assets/tibia/spells/).',
+     'Fire Wave: Tibia-style tile pattern (1·3·3·5 sqm) and firewave.png animation (assets/tibia/spells/).'],
+    ['Trampa de veneno: animación Tibia 197955–197960 (6 fotogramas) en lugar del dibujo procedural.',
+     'Poison trap: Tibia animation 197955–197960 (6 frames) instead of procedural art.'],
+    ['Trampa de veneno: sprite al 75 % del tamaño nativo (32×32 × PX).',
+     'Poison trap: sprite at 75% of native size (32×32 × PX).'],
+    ['Trampa explosiva: animación Tibia 200644–200647 (4 fotogramas) al 75 % y radio al pisar ~24 px.',
+     'Explosive trap: Tibia animation 200644–200647 (4 frames) at 75% with ~24px step radius.'],
+    ['Trampa explosiva al activarse: fuego Tibia 195409–195410 (9 fotogramas 64×64) en lugar del efecto procedural.',
+     'Explosive trap trigger: Tibia fire 195409–195410 (9 frames 64×64) instead of procedural VFX.'],
+    ['Trampa de veneno al activarse: nube Tibia 194164–194175 (12 fotogramas) en lugar del efecto procedural.',
+     'Poison trap trigger: Tibia cloud 194164–194175 (12 frames) instead of procedural VFX.'],
+    ['Activar trampa: el efecto sigue a quien la pisa (tu personaje o la criatura), no al sprite del suelo.',
+     'Trap trigger: VFX follows whoever stepped on it (your character or the creature), not the ground trap.'],
+    ['Trampa de veneno: 35 % de vida máx en 10 s (DoT) y números de daño en verde.',
+     'Poison trap: 35% max HP over 10s (DoT) with green damage numbers.'],
+    ['Trampa de veneno en enemigos: golpe inicial y ticks de veneno muestran números en verde.',
+     'Poison trap on enemies: initial hit and poison ticks use green damage numbers.'],
+  ], fix: [
+    ['FX de strips Tibia (trampas, Fire Wave): si falla el dibujo ya no tumba el menú ni cierra la partida.',
+     'Tibia strip FX (traps, Fire Wave): draw failures no longer blank the menu or auto-end the run.'],
+    ['Activar trampa: efecto Tibia desplazado a la izquierda en pantalla (PNG intacto) para centrarlo en el activador.',
+     'Trap trigger: Tibia VFX shifted left on screen (full PNG) to center on whoever triggered it.'],
+    ['Trampa de veneno: un fallo al dibujarla ya no deja el menú sin personaje ni cierra la partida sola.',
+     'Poison trap: a draw failure no longer blanks the menu character or auto-ends the run.'],
+    ['Trampa de veneno: radio al pisarla ~24 px (mitad del sprite al 75 %), también para enemigos.',
+     'Poison trap: step radius ~24px (half of 75% sprite), same for enemies.'],
+  ] },
   { d: '2026-11-11', title: ['Menú', 'Main menu'], chg: [
     ['Curación: sprite 198250 en el suelo, 198233 en la carta de nivel Poción de vida (assets/tibia/items/).',
      'Heal pickups: sprite 198250 on ground, 198233 on Health potion level-up card (assets/tibia/items/).'],

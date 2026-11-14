@@ -491,6 +491,7 @@ G.Tiles = (() => {
   }
 
   const itemPropSheets = new Map();
+  const spellSheets = new Map();
 
   function getItemPropSheet(id) {
     const key = String(id);
@@ -509,6 +510,19 @@ G.Tiles = (() => {
     return s;
   }
 
+  function getSpellSheet(key) {
+    const id = String(key);
+    let s = spellSheets.get(id);
+    if (s) return s;
+    const img = new Image();
+    s = { img, ready: false, failed: false, key: id };
+    img.onload = () => { s.ready = true; };
+    img.onerror = () => { s.failed = true; };
+    img.src = 'assets/tibia/spells/' + id + '.png';
+    spellSheets.set(id, s);
+    return s;
+  }
+
   function paintTibiaItemProp(spriteId) {
     const sheet = getItemPropSheet(spriteId);
     if (!sheet.ready) return emptyPropCanvas();
@@ -519,6 +533,197 @@ G.Tiles = (() => {
     c.imageSmoothingEnabled = false;
     c.drawImage(img, 0, 0);
     return cv;
+  }
+
+  /** Trampas planas Tibia (items strip 32×32): veneno · explosiva. */
+  const TRAP_ITEM_TILE = 32;
+  const TRAP_ITEM_DRAW_SCALE = 0.75;
+  const POISON_TRAP_SHEET = '197955-197960';
+  const POISON_TRAP_FRAMES = 6;
+  const POISON_TRAP_FPS = 7;
+  const EXPLOSIVE_TRAP_SHEET = '200644-200647';
+  const EXPLOSIVE_TRAP_FRAMES = 4;
+  const EXPLOSIVE_TRAP_FPS = 8;
+  const POISON_TRAP_BURST_SHEET = '194164-194175';
+  const POISON_TRAP_BURST_FRAMES = 12;
+  const POISON_TRAP_BURST_FPS = 14;
+
+  /** Desplaza el dibujo en pantalla (no recorta el PNG); compensa arte Tibia descentrado en la celda. */
+  function trapBurstDrawOffX(tileW) {
+    const px = G.Sprites && G.Sprites.PX ? G.Sprites.PX : 2;
+    const k = px * TRAP_ITEM_DRAW_SCALE;
+    const w = tileW * k;
+    const frac = tileW >= 48 ? 0.2 : 0.16;
+    return -Math.round(w * frac);
+  }
+
+  /** Efecto al saltar la trampa de veneno (nube verde 194164–194175). */
+  function playPoisonTrapBurst(x, y) {
+    if (!G.FX || !G.FX.itemStrip) return;
+    const px = G.Sprites && G.Sprites.PX ? G.Sprites.PX : 2;
+    const tw = TRAP_ITEM_TILE;
+    G.FX.itemStrip(POISON_TRAP_BURST_SHEET, x, y, {
+      frames: POISON_TRAP_BURST_FRAMES,
+      fps: POISON_TRAP_BURST_FPS,
+      tileW: tw,
+      tileH: tw,
+      stripOffX: trapBurstDrawOffX(tw),
+      scale: px * TRAP_ITEM_DRAW_SCALE,
+      life: POISON_TRAP_BURST_FRAMES / POISON_TRAP_BURST_FPS,
+      fade: false
+    });
+  }
+
+  const EXPLOSIVE_TRAP_BURST_SHEET = '195409-195410';
+  const EXPLOSIVE_TRAP_BURST_FRAMES = 9;
+  const EXPLOSIVE_TRAP_BURST_TILE_W = 64;
+  const EXPLOSIVE_TRAP_BURST_TILE_H = 64;
+  const EXPLOSIVE_TRAP_BURST_FPS = 14;
+
+  /** Efecto al saltar la trampa explosiva (fuego 195409–195410). onFeet: y = pies del personaje. */
+  function playExplosiveTrapBurst(x, y, onFeet) {
+    if (!G.FX || !G.FX.itemStrip) return;
+    const px = G.Sprites && G.Sprites.PX ? G.Sprites.PX : 2;
+    const trapH = Math.round(TRAP_ITEM_TILE * px * TRAP_ITEM_DRAW_SCALE);
+    const anchorY = onFeet ? y : y + trapH / 2;
+    G.FX.itemStrip(EXPLOSIVE_TRAP_BURST_SHEET, x, anchorY, {
+      frames: EXPLOSIVE_TRAP_BURST_FRAMES,
+      fps: EXPLOSIVE_TRAP_BURST_FPS,
+      tileW: EXPLOSIVE_TRAP_BURST_TILE_W,
+      tileH: EXPLOSIVE_TRAP_BURST_TILE_H,
+      stripY: 0,
+      stripAnchor: 'bottom',
+      stripOffX: trapBurstDrawOffX(EXPLOSIVE_TRAP_BURST_TILE_W),
+      scale: px * TRAP_ITEM_DRAW_SCALE,
+      life: EXPLOSIVE_TRAP_BURST_FRAMES / EXPLOSIVE_TRAP_BURST_FPS,
+      fade: false
+    });
+  }
+
+  /** Un fotograma de strip en items/ (FX en mundo). */
+  function drawItemStripFrame(ctx, sheetKey, frame, x, y, scale, frames, tileW, tileH, alpha,
+      srcY = 0, anchor = 'center', offX = 0) {
+    const sheet = getItemPropSheet(sheetKey);
+    const img = sheet && sheet.img;
+    if (!sheet || !sheet.ready || !img) return false;
+    const maxFr = Math.floor(img.naturalWidth / tileW);
+    if (maxFr < 1 || img.naturalHeight < srcY + tileH) return false;
+    const nFrames = Math.min(frames, maxFr);
+    const fr = Math.min(nFrames - 1, Math.max(0, frame | 0));
+    const w = Math.round(tileW * scale), h = Math.round(tileH * scale);
+    if (!(w > 0) || !(h > 0)) return false;
+    const dy = anchor === 'bottom' ? Math.round(y - h) : Math.round(y - h / 2);
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    if (alpha < 1) ctx.globalAlpha = alpha;
+    try {
+      ctx.drawImage(img, fr * tileW, srcY, tileW, tileH,
+        Math.round(x - w / 2 + offX), dy, w, h);
+    } catch (e) {
+      ctx.restore();
+      return false;
+    }
+    ctx.restore();
+    return true;
+  }
+
+  /** Fire Wave — strip spells/firewave.png (64×64, 9 fotogramas). */
+  const FIRE_WAVE_SHEET = 'firewave';
+  const FIRE_WAVE_TILE = 64;
+  const FIRE_WAVE_FRAMES = 9;
+  const FIRE_WAVE_FPS = 12;
+  const FIRE_WAVE_DRAW_MUL = 2;
+
+  function fireWaveFxScale() {
+    const px = G.Sprites && G.Sprites.PX ? G.Sprites.PX : 2;
+    return px * TRAP_ITEM_DRAW_SCALE * (TRAP_ITEM_TILE / FIRE_WAVE_TILE) * FIRE_WAVE_DRAW_MUL;
+  }
+
+  /** Un fotograma de strip en spells/ (FX en mundo). */
+  function drawSpellStripFrame(ctx, sheetKey, frame, x, y, scale, frames, tileW, tileH, alpha,
+      srcY = 0, anchor = 'center', offX = 0) {
+    const sheet = getSpellSheet(sheetKey);
+    const img = sheet && sheet.img;
+    if (!sheet || !sheet.ready || !img) return false;
+    const maxFr = Math.floor(img.naturalWidth / tileW);
+    if (maxFr < 1 || img.naturalHeight < srcY + tileH) return false;
+    const nFrames = Math.min(frames, maxFr);
+    const fr = Math.min(nFrames - 1, Math.max(0, frame | 0));
+    const w = Math.round(tileW * scale), h = Math.round(tileH * scale);
+    if (!(w > 0) || !(h > 0)) return false;
+    const dy = anchor === 'bottom' ? Math.round(y - h) : Math.round(y - h / 2);
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    if (alpha < 1) ctx.globalAlpha = alpha;
+    try {
+      ctx.drawImage(img, fr * tileW, srcY, tileW, tileH,
+        Math.round(x - w / 2 + offX), dy, w, h);
+    } catch (e) {
+      ctx.restore();
+      return false;
+    }
+    ctx.restore();
+    return true;
+  }
+
+  function playFireWaveCell(x, y) {
+    if (!G.FX || !G.FX.itemStrip) return;
+    G.FX.itemStrip(FIRE_WAVE_SHEET, x, y, {
+      tibiaStripDir: 'spells',
+      frames: FIRE_WAVE_FRAMES,
+      fps: FIRE_WAVE_FPS,
+      tileW: FIRE_WAVE_TILE,
+      tileH: FIRE_WAVE_TILE,
+      stripAnchor: 'bottom',
+      scale: fireWaveFxScale(),
+      life: FIRE_WAVE_FRAMES / FIRE_WAVE_FPS,
+      fade: false
+    });
+  }
+
+  /** Radio para pisar (mitad del sprite dibujado: 32×PX×0,75). */
+  function tibiaFlatTrapStepRadius() {
+    const px = G.Sprites && G.Sprites.PX ? G.Sprites.PX : 2;
+    return Math.round((TRAP_ITEM_TILE / 2) * px * TRAP_ITEM_DRAW_SCALE);
+  }
+
+  function poisonTrapStepRadius() { return tibiaFlatTrapStepRadius(); }
+
+  /** 0 veneno · 2 explosiva usan strip Tibia; 1 pegajosa = procedural 14×14. */
+  function trapStepRadius(p) {
+    if (!p || p.type !== 'trap') return 9;
+    return (p.kind === 0 || p.kind === 2) ? tibiaFlatTrapStepRadius() : 13;
+  }
+
+  function drawTrapItemAnim(ctx, p, t, scale, sheetKey, frames, fps) {
+    const sheet = getItemPropSheet(sheetKey);
+    const img = sheet && sheet.img;
+    const tw = TRAP_ITEM_TILE, th = TRAP_ITEM_TILE;
+    if (!sheet || !sheet.ready || !img || img.naturalWidth < frames * tw
+        || img.naturalHeight < th) return false;
+    const fr = Math.floor(t * fps + (p.wiggle || 0)) % frames;
+    const k = (scale || 0) * TRAP_ITEM_DRAW_SCALE;
+    const w = Math.round(tw * k), h = Math.round(th * k);
+    if (!(w > 0) || !(h > 0) || !Number.isFinite(p.x) || !Number.isFinite(p.y)) return false;
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    try {
+      ctx.drawImage(img, fr * tw, 0, tw, th,
+        Math.round(p.x - w / 2), Math.round(p.y - 8 - h / 2), w, h);
+    } catch (e) {
+      ctx.restore();
+      return false;
+    }
+    ctx.restore();
+    return true;
+  }
+
+  function drawTrapPoisonTibia(ctx, p, t, scale) {
+    return drawTrapItemAnim(ctx, p, t, scale, POISON_TRAP_SHEET, POISON_TRAP_FRAMES, POISON_TRAP_FPS);
+  }
+
+  function drawTrapExplosiveTibia(ctx, p, t, scale) {
+    return drawTrapItemAnim(ctx, p, t, scale, EXPLOSIVE_TRAP_SHEET, EXPLOSIVE_TRAP_FRAMES, EXPLOSIVE_TRAP_FPS);
   }
 
   /** Árbol PNG del cliente (Plains of Havoc). Sin fallback procedural. */
@@ -625,6 +830,10 @@ G.Tiles = (() => {
     if (!ids.length) return Promise.resolve(true);
     for (const id of tileIds) getPropSheet(id);
     for (const id of itemIds) getItemPropSheet(id);
+    getItemPropSheet(POISON_TRAP_SHEET);
+    getItemPropSheet(EXPLOSIVE_TRAP_SHEET);
+    getItemPropSheet(POISON_TRAP_BURST_SHEET);
+    getItemPropSheet(EXPLOSIVE_TRAP_BURST_SHEET);
     return new Promise(resolve => {
       const t0 = performance.now();
       (function tick() {
@@ -968,8 +1177,16 @@ G.Tiles = (() => {
 
   function clearProps() { propCache.clear(); }
 
+  getItemPropSheet(POISON_TRAP_SHEET);
+  getItemPropSheet(EXPLOSIVE_TRAP_SHEET);
+  getItemPropSheet(POISON_TRAP_BURST_SHEET);
+  getItemPropSheet(EXPLOSIVE_TRAP_BURST_SHEET);
+  getSpellSheet(FIRE_WAVE_SHEET);
+
   return { T, BIOMES, NORMAL, ARENA, ARENA_THEMES, ARENA_TYPES, paintChunk, propSprite, clearProps,
-           preloadRockSprites,
+           drawTrapPoisonTibia, drawTrapExplosiveTibia, drawItemStripFrame, drawSpellStripFrame,
+           playPoisonTrapBurst, playExplosiveTrapBurst, playFireWaveCell, trapBurstDrawOffX,
+           poisonTrapStepRadius, tibiaFlatTrapStepRadius, trapStepRadius, preloadRockSprites,
            /** Índice de bioma de la arena de un tipo. */
            arenaBiome: type => ARENA + Math.max(0, ARENA_TYPES.indexOf(type)) };
 })();

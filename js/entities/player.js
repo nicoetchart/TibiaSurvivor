@@ -69,6 +69,11 @@ G.Player = class Player {
     this.dead = false;
     this.power = null;         // poder de altar activo: { def, t, dur }
     this.slowT = 0;            // pegado por una trampa
+    this.venomTrapT = 0;       // veneno de trampa: tiempo restante
+    this.venomTrapRem = 0;     // daño HP pendiente
+    this.venomTrapRate = 0;    // daño por segundo (constante al aplicar)
+    this.venomTrapAcc = 0;     // acumulado para mostrar en pantalla
+    this.venomTrapShow = 0;
     this.item = null;          // objeto equipado (data/items.js), uno por run
     this.sashT = -999;         // última vez que salvó la Banda Focus
     this.bellHeal = 0;         // curación pendiente del Cascabel Concha
@@ -345,6 +350,57 @@ G.Player = class Player {
     if (got >= 1) G.FX.dmgText(this.x, this.y - this.bodyH - 6, '+' + got, '#5fe08a');
   }
 
+  /** Trampa de veneno: fracción de maxHp repartida en `dur` s (números verdes, sin i-frames). */
+  static VENOM_TRAP_DMG_COLOR = '#6fdc6f';
+
+  applyVenomTrap(frac = 0.35, dur = 10) {
+    if (this.dead) return;
+    const total = this.maxHp * frac;
+    this.venomTrapT = dur;
+    this.venomTrapRem = total;
+    this.venomTrapRate = total / dur;
+    this.venomTrapAcc = 0;
+    this.venomTrapShow = 0;
+  }
+
+  tickVenomTrap(dt) {
+    if (this.dead) { this.venomTrapT = 0; this.venomTrapRem = 0; return; }
+    if (this.venomTrapT <= 0 && this.venomTrapRem <= 0) return;
+    this.venomTrapT -= dt;
+    let d = this.venomTrapT <= 0
+      ? this.venomTrapRem
+      : Math.min(this.venomTrapRem, this.venomTrapRate * dt);
+    if (G.BestiaryCharms) d = G.BestiaryCharms.filterIncoming(this, d);
+    if (d <= 0) return;
+    this.venomTrapRem -= d;
+    this.hp -= d;
+    this.venomTrapAcc += d;
+    this.venomTrapShow -= dt;
+    if (this.venomTrapShow <= 0 && this.venomTrapAcc >= 0.5) {
+      this.venomTrapShow = 0.42;
+      G.FX.dmgText(this.x, this.y - this.bodyH - 6, '-' + Math.round(this.venomTrapAcc), Player.VENOM_TRAP_DMG_COLOR);
+      this.venomTrapAcc = 0;
+    }
+    if (Math.random() < dt * 5) {
+      G.FX.px(this.x + G.U.rand(-this.r, this.r), this.y - G.U.rand(0, this.bodyH), '#6fdc6f', { vy: -25, life: 0.35, size: 1 });
+    }
+    if (this.hp <= 0) {
+      this.hp = 0; this.dead = true;
+      this.venomTrapT = 0; this.venomTrapRem = 0; this.venomTrapRate = 0;
+      this.anim.play('Faint', { hold: true });
+      G.Projectiles.clearOrbs(this);
+      this.reviveT = 0;
+      return;
+    }
+    if (this.venomTrapT <= 0 || this.venomTrapRem <= 0) {
+      if (this.venomTrapAcc >= 0.5) {
+        G.FX.dmgText(this.x, this.y - this.bodyH - 6, '-' + Math.round(this.venomTrapAcc), Player.VENOM_TRAP_DMG_COLOR);
+        this.venomTrapAcc = 0;
+      }
+      this.venomTrapT = 0; this.venomTrapRem = 0; this.venomTrapRate = 0;
+    }
+  }
+
   addMaxHp(amount) { this.maxHp += amount; this.hp += amount; }
 
   /** Bonos automáticos al subir nivel de run (XP). */
@@ -411,6 +467,7 @@ G.Player = class Player {
       if (b.n > 0) { b.t -= dt; if (b.t <= 0) b.n = 0; }
     }
     if (this.slowT > 0) this.slowT -= dt;
+    this.tickVenomTrap(dt);
     if (this.bellHeal > 0) { const h = Math.min(this.bellHeal, 4 * dt); this.hp = Math.min(this.maxHp, this.hp + h); this.bellHeal -= h; }
     if (this.power && (this.power.t -= dt) <= 0) { this.power.def.off(this); this.power = null; }
     if (this.regen > 0) this.hp = Math.min(this.maxHp, this.hp + this.regen * dt);

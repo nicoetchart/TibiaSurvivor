@@ -23,6 +23,8 @@ G.Interact = (() => {
     { id: 'cd', name: 'Prisa', desc: '-40% recarga', color: '#ffd23f', on: p => { p.cdMul *= 0.6; }, off: p => { p.cdMul /= 0.6; } }
   ];
   const TRAP_R = 74;
+  const POISON_TRAP_PLAYER_FRAC = 0.35;
+  const POISON_TRAP_PLAYER_SEC = 10;
   const authority = () => true;
   let healShown = 0, healAcc = 0;
 
@@ -44,10 +46,32 @@ G.Interact = (() => {
             if (p.open >= CHEST_TIME) { p.open = 0; G.World.breakProp(p); }
           } else if (p.open > 0) p.open = Math.max(0, p.open - dt * 1.5);
           break;
-        case 'trap':
-          if (!pl.dead && d2 < 13 * 13) G.World.breakProp(p);
-          else if (authority() && G.EnemyMgr.queryCircle(p.x, p.y - 8, 3).some(e => !e.flying && !e.remote)) G.World.breakProp(p);
+        case 'trap': {
+          const stepR = (G.Tiles && G.Tiles.trapStepRadius)
+            ? G.Tiles.trapStepRadius(p) : (p.r || 13);
+          const markVfxOn = ent => {
+            p.trapVfxActor = { x: ent.x, y: ent.y, bodyH: ent.bodyH || 0 };
+          };
+          if (!pl.dead && d2 < stepR * stepR) {
+            markVfxOn(pl);
+            G.World.breakProp(p);
+          } else if (authority()) {
+            const tcx = p.x, tcy = p.y - 8;
+            const onTrap = G.EnemyMgr.queryCircle(tcx, tcy, stepR)
+              .filter(e => !e.flying && !e.remote);
+            if (onTrap.length) {
+              let tr = onTrap[0];
+              let best = G.U.dist2(tcx, tcy, tr.x, tr.y);
+              for (let i = 1; i < onTrap.length; i++) {
+                const d = G.U.dist2(tcx, tcy, onTrap[i].x, onTrap[i].y);
+                if (d < best) { best = d; tr = onTrap[i]; }
+              }
+              markVfxOn(tr);
+              G.World.breakProp(p);
+            }
+          }
           break;
+        }
       }
     }
   }
@@ -86,31 +110,48 @@ G.Interact = (() => {
    */
   function trapEffect(p) {
     const x = p.x, y = p.y - 8, k = p.kind;
+    const act = p.trapVfxActor;
+    const vfxOffX = G.Tiles && G.Tiles.trapBurstDrawOffX ? G.Tiles.trapBurstDrawOffX(32) : 0;
+    const vfxX = (act ? act.x : x) + vfxOffX;
+    const vfxY = act ? act.y - (act.bodyH || 0) * 0.42 : y;
     const col = ['#c86bdc', '#8bd94a', '#ff7b3d'][k];
     const pal = ['poison', 'grass', 'fire'][k];
-    G.FX.ring(x, y, 6, TRAP_R, col, 0.5, k === 2 ? 7 : 4);
-    G.FX.burst(x, y - 6, col, k === 2 ? 40 : 22, k === 2 ? 260 : 140);
-    for (let i = 0; i < (k === 2 ? 10 : 7); i++) {
-      const a = Math.random() * 6.2832, r = G.U.rand(8, TRAP_R * 0.8);
-      G.FX.sp(k === 2 ? 'impact' : 'blob', pal, x + Math.cos(a) * r, y + Math.sin(a) * r * 0.7 - 6,
-              { vy: k === 2 ? -30 : -45, life: G.U.rand(0.4, 0.8) });
+    if (k === 0 && G.Tiles && G.Tiles.playPoisonTrapBurst) {
+      G.Tiles.playPoisonTrapBurst(vfxX, vfxY);
+    } else if (k === 2 && G.Tiles && G.Tiles.playExplosiveTrapBurst) {
+      G.Tiles.playExplosiveTrapBurst(vfxX, act ? act.y : y, !!act);
+    } else {
+      const blobY = act ? act.y - (act.bodyH || 0) * 0.35 : y;
+      G.FX.ring(vfxX, blobY, 6, TRAP_R, col, 0.5, 4);
+      G.FX.burst(vfxX, blobY - 6, col, 22, 140);
+      for (let i = 0; i < 7; i++) {
+        const a = Math.random() * 6.2832, r = G.U.rand(8, TRAP_R * 0.8);
+        G.FX.sp('blob', pal, vfxX + Math.cos(a) * r, blobY + Math.sin(a) * r * 0.7 - 6,
+                { vy: -45, life: G.U.rand(0.4, 0.8) });
+      }
     }
     G.Audio.sfx(k === 2 ? 'boss' : 'surge');
-    if (k === 2 && G.U.dist2(x, y, G.Camera.x, G.Camera.y) < 500 * 500) G.Camera.kick(0.7);
+    const camX = act ? act.x : x;
+    const camY = act ? act.y - (act.bodyH || 0) * 0.3 : y;
+    if (k === 2 && G.U.dist2(camX, camY, G.Camera.x, G.Camera.y) < 500 * 500) G.Camera.kick(0.7);
 
     const pl = G.Game.player;
     const lvl = pl ? pl.level : 1;
     if (authority()) {
       for (const e of G.EnemyMgr.queryCircle(x, y, TRAP_R)) {
         if (e.remote) continue;
-        if (k === 0) { e.applyPoison(5); e.hurt(14 + lvl * 3, '#d47cf0'); }
+        if (k === 0) {
+          const venomCol = G.Player.VENOM_TRAP_DMG_COLOR;
+          e.applyPoison(5, venomCol);
+          e.hurt(14 + lvl * 3, venomCol);
+        }
         else if (k === 1) { e.applySlow(0.65, 4.5); e.hurt(4, '#8bd94a'); }
         else e.hurt(90 + lvl * 18, '#ff7b3d', e.x - x, e.y - y, 220);
       }
     }
     if (pl && !pl.dead && G.U.dist2(x, y, pl.x, pl.y) < (TRAP_R * 0.7) ** 2) {
       pl.invuln = 0;
-      if (k === 0) pl.hurt(pl.maxHp * 0.1);
+      if (k === 0) pl.applyVenomTrap(POISON_TRAP_PLAYER_FRAC, POISON_TRAP_PLAYER_SEC);
       else if (k === 1) { pl.slowT = 3.5; G.FX.dmgText(pl.x, pl.y - pl.bodyH - 6, '¡Pegajoso!', '#8bd94a'); }
       else pl.hurt(pl.maxHp * 0.2);
     }

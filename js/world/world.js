@@ -247,13 +247,23 @@ G.World = (() => {
     return 2;
   }
 
+  function trapHitRadius(type, kind) {
+    if (type !== 'trap') return null;
+    if ((kind === 0 || kind === 2) && G.Tiles && G.Tiles.tibiaFlatTrapStepRadius) {
+      return G.Tiles.tibiaFlatTrapStepRadius();
+    }
+    return 13;
+  }
+
   function makeProp(type, tx, ty, kind = 0) {
     const d = PROP[type];
     const tibiaPng = usesTibiaPropPng(type);
+    const trapR = trapHitRadius(type, kind);
     return {
       id: nextPropId++, type, tx, ty, kind,
       x: tx * TS + TS / 2, y: ty * TS + TS - 4,
-      r: tibiaPng ? Math.round(d.r * TIBIA_PROP_SCALE) : d.r, hp: d.hp, maxHp: d.hp, solid: d.solid, flat: !!d.flat,
+      r: trapR != null ? trapR : (tibiaPng ? Math.round(d.r * TIBIA_PROP_SCALE) : d.r),
+      hp: d.hp, maxHp: d.hp, solid: d.solid, flat: !!d.flat,
       destructible: d.hp !== Infinity, flash: 0,
       wiggle: H(tx, ty, 9) * 6.28,
       vis: propVis(type, tx, ty),
@@ -560,6 +570,10 @@ G.World = (() => {
   }
 
   function drawProp(ctx, p, t) {
+    try { drawPropInner(ctx, p, t); } catch (e) { /* un prop no debe tumbar el fotograma */ }
+  }
+
+  function drawPropInner(ctx, p, t) {
     const P = G.Sprites.PX;
     const variant = p.type === 'grass' ? (usesTibiaGrassSprites() ? (p.vis | 0) : 0)
                   : p.type === 'tree' ? (p.vis | 0)
@@ -568,18 +582,34 @@ G.World = (() => {
                   : p.type === 'altar' ? p.kind * 2 + (p.used ? 1 : 0)
                   : p.type === 'spring' ? (p.charge < 0.15 ? 1 : 0)
                   : p.type === 'trap' ? p.kind : 0;
-    const img = G.Tiles.propSprite(biome, p.type, variant);
     const scale = propDrawScale(p.type);
-    const w = img.width * scale, h = img.height * scale;
     const foot = propFootPad(p.type);
     if (p.flat) {
       // Planos (manantial, trampa): pegados al suelo, centrados en su casilla.
-      ctx.drawImage(img, Math.round(p.x - w / 2), Math.round(p.y - 8 - h / 2), w, h);
+      let tibiaTrap = false;
+      try {
+        if (p.type === 'trap' && p.kind === 0 && G.Tiles.drawTrapPoisonTibia) {
+          tibiaTrap = G.Tiles.drawTrapPoisonTibia(ctx, p, t, scale);
+        } else if (p.type === 'trap' && p.kind === 2 && G.Tiles.drawTrapExplosiveTibia) {
+          tibiaTrap = G.Tiles.drawTrapExplosiveTibia(ctx, p, t, scale);
+        }
+      } catch (e) { tibiaTrap = false; }
+      if (!tibiaTrap) {
+        const variantFlat = p.type === 'trap' ? p.kind : variant;
+        const img = G.Tiles.propSprite(biome, p.type, variantFlat);
+        const w = img.width * scale, h = img.height * scale;
+        if (img && w > 0 && h > 0) {
+          ctx.drawImage(img, Math.round(p.x - w / 2), Math.round(p.y - 8 - h / 2), w, h);
+        }
+      }
       if (p.type === 'spring' && p.charge >= 0.15 && Math.sin(t * 3 + p.wiggle) > 0.92) {
         G.FX.twinkle(p.x + G.U.rand(-20, 20), p.y - 8 + G.U.rand(-6, 6));
       }
       return;
     }
+    const img = G.Tiles.propSprite(biome, p.type, variant);
+    if (!img || !img.width || !img.height) return;
+    const w = img.width * scale, h = img.height * scale;
     if (p.type === 'altar' && !p.used) {
       // Halo del orbe, latiendo.
       const col = ['#ff5f6d', '#5fd4ff', '#ff8ad8', '#ffd23f'][p.kind];
@@ -612,9 +642,11 @@ G.World = (() => {
       const old = G.Tiles.propSprite(fade.from, p.type, variant);
       const oldSc = propDrawScale(p.type);
       const oldFoot = propFootPad(p.type);
-      ctx.globalAlpha = 1 - k;
-      ctx.drawImage(old, Math.round(p.x - old.width * oldSc / 2),
-        Math.round(p.y - old.height * oldSc + oldFoot), old.width * oldSc, old.height * oldSc);
+      if (old && old.width && old.height) {
+        ctx.globalAlpha = 1 - k;
+        ctx.drawImage(old, Math.round(p.x - old.width * oldSc / 2),
+          Math.round(p.y - old.height * oldSc + oldFoot), old.width * oldSc, old.height * oldSc);
+      }
       ctx.globalAlpha = k;
     }
     ctx.drawImage(img, x, y, w, h);

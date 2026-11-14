@@ -51,6 +51,31 @@ G.FX = (() => {
                    fr: o.frameRate || 10, fade: o.fade !== false });
   }
 
+  /** Animación strip Tibia (assets/tibia/items/{id}.png). o: frames, fps, scale, tileW, life, fade */
+  function itemStrip(sheetKey, x, y, o = {}) {
+    if (sprites.length >= CAP_SPRITES[q()]) return;
+    const frames = o.frames || 1;
+    const fps = o.fps || 12;
+    sprites.push({
+      tibiaStrip: sheetKey,
+      tibiaStripDir: o.tibiaStripDir || 'items',
+      frames,
+      tileW: o.tileW || 32,
+      tileH: o.tileH || 32,
+      stripY: o.stripY || 0,
+      stripAnchor: o.stripAnchor || 'center',
+      stripOffX: o.stripOffX || 0,
+      fps,
+      x, y,
+      vx: o.vx || 0, vy: o.vy || 0,
+      t: 0,
+      life: o.life != null ? o.life : frames / fps,
+      scale: o.scale != null ? o.scale : PX,
+      grav: o.grav || 0,
+      fade: o.fade !== false
+    });
+  }
+
   /** Centelleo de shiny (cruz de píxeles que nace y se apaga). */
   function twinkle(x, y) {
     if (sprites.length >= CAP_SPRITES[q()]) return;
@@ -243,6 +268,20 @@ G.FX = (() => {
     for (const s of sprites) {
       const k = 1 - s.t / s.life;
       if (s.twinkle) { G.Icons.twinkle(ctx, s.x, s.y, s.t / s.life, PX); continue; }
+      if (s.tibiaStrip) {
+        if (G.Tiles) {
+          const drawStrip = s.tibiaStripDir === 'spells' ? G.Tiles.drawSpellStripFrame : G.Tiles.drawItemStripFrame;
+          if (drawStrip) {
+            try {
+              const fr = Math.min(s.frames - 1, Math.floor(s.t * s.fps));
+              const alpha = s.fade ? step(k) : 1;
+              drawStrip(ctx, s.tibiaStrip, fr, s.x, s.y, s.scale, s.frames,
+                s.tileW, s.tileH, alpha, s.stripY || 0, s.stripAnchor || 'center', s.stripOffX || 0);
+            } catch (e) { /* strip Tibia inválido: no romper el fotograma */ }
+          }
+        }
+        continue;
+      }
       G.VFX.draw(ctx, s.shape, s.pal, s.x, s.y, {
         angle: s.angle, scale: s.scale, alpha: s.fade ? step(k) : 1,
         frame: Math.floor(s.t * s.fr)
@@ -267,6 +306,6 @@ G.FX = (() => {
     }
   }
 
-  return { clear, px, burst, spark, sp, twinkle, trail, dmgText, ring, slash, beam, update, draw,
+  return { clear, px, burst, spark, sp, itemStrip, twinkle, trail, dmgText, ring, slash, beam, update, draw,
            get count() { return parts.length + sprites.length + texts.length; } };
 })();

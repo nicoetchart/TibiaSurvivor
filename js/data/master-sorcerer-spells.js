@@ -97,7 +97,7 @@ G.MasterSorcererSpells = [
     element: 'fire',
     kind: 'melee',
     type: 'fire',
-    desc: 'Wave frontal corta de fuego.',
+    desc: 'Onda de fuego en forma de abanico Tibia (4 sqm).',
     cd: 1.05,
     dmg: 14,
     radius: 50,

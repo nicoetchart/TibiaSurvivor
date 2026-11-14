@@ -954,6 +954,43 @@ G.TIBIA_TILES_META = {
     "firstId": 197927,
     "lastId": 197938
   },
+  "197955-197960": {
+    "sheetW": 192,
+    "sheetH": 32,
+    "tileW": 32,
+    "tileH": 32,
+    "frames": 6,
+    "firstId": 197955,
+    "lastId": 197960
+  },
+  "200644-200647": {
+    "sheetW": 128,
+    "sheetH": 32,
+    "tileW": 32,
+    "tileH": 32,
+    "frames": 4,
+    "firstId": 200644,
+    "lastId": 200647
+  },
+  "194164-194175": {
+    "sheetW": 384,
+    "sheetH": 32,
+    "tileW": 32,
+    "tileH": 32,
+    "frames": 12,
+    "firstId": 194164,
+    "lastId": 194175
+  },
+  "195409-195410": {
+    "sheetW": 576,
+    "sheetH": 64,
+    "tileW": 64,
+    "tileH": 64,
+    "frames": 9,
+    "stripY": 0,
+    "firstId": 195409,
+    "lastId": 195410
+  },
   "197961-197968": {
     "sheetW": 512,
     "sheetH": 32,

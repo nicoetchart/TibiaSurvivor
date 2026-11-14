@@ -59,6 +59,7 @@
       this.slow = 0; this.slowT = 0;
       this.burn = 0; this.burnT = 0; this.burnTick = 0;
       this.poison = 0; this.poisonT = 0; this.poisonTick = 0;
+      this.poisonDmgColor = '#d47cf0';
       this.curse = 0; this.curseT = 0;
       this.electrifiedT = 0;
       this.lavaTick = 0;
@@ -152,8 +153,9 @@
     applyBurn(stacks = 1) {
       this.burn = Math.min(8, this.burn + stacks); this.burnT = 3;
     }
-    applyPoison(stacks = 1) {
+    applyPoison(stacks = 1, dmgColor) {
       this.poison = Math.min(8, this.poison + stacks); this.poisonT = 4;
+      if (dmgColor) this.poisonDmgColor = dmgColor;
     }
 
     /** Curse (MS): más daño death recibido; duración limitada. */
@@ -290,8 +292,11 @@
       }
       if (this.poison > 0) {
         this.poisonT -= dt; this.poisonTick -= dt;
-        if (this.poisonTick <= 0) { this.poisonTick = 0.6; this.hurt(this.maxHp * 0.012 * this.poison + 1, '#d47cf0'); }
-        if (this.poisonT <= 0) this.poison = 0;
+        if (this.poisonTick <= 0) {
+          this.poisonTick = 0.6;
+          this.hurt(this.maxHp * 0.012 * this.poison + 1, this.poisonDmgColor);
+        }
+        if (this.poisonT <= 0) { this.poison = 0; this.poisonDmgColor = '#d47cf0'; }
       }
       if (this.curseT > 0) { this.curseT -= dt; if (this.curseT <= 0) this.curse = 0; }
       if (this.electrifiedT > 0) this.electrifiedT -= dt;

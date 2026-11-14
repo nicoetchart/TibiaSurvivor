@@ -316,6 +316,60 @@ G.Combat = (() => {
     G.FX.ring(x, y, 4, r, col, 0.28, 2);
   }
 
+  /** Patrón Fire Wave Tibia (filas 1–4 delante del jugador, en coords locales fx/fy). */
+  const FIRE_WAVE_PATTERN = [
+    [0, 1],
+    [-1, 2], [0, 2], [1, 2],
+    [-1, 3], [0, 3], [1, 3],
+    [-2, 4], [-1, 4], [0, 4], [1, 4], [2, 4]
+  ];
+
+  function fireWaveCellPos(pl, aim, fx, fy, step) {
+    const ca = Math.cos(aim), sa = Math.sin(aim);
+    const fwd = fy * step, lat = fx * step;
+    return { x: pl.x + ca * fwd - sa * lat, y: pl.y + sa * fwd + ca * lat };
+  }
+
+  /** Fire Wave clásica: rejilla + sprite firewave.png; `scale` escala celdas (niveles / Great). */
+  function fireWaveGrid(pl, m, aim, scale, hitOnce, allowGround) {
+    const col = G.U.TYPE_COLOR[m.type];
+    const step = (m.radius || 50) * scale / 4;
+    const cellR = step * 0.52;
+    const dmgMul = scale >= 0.95 ? 1 : 0.88 * scale;
+    const knock = (m.knock || 0) * Math.min(1, scale + 0.2);
+
+    for (const [fx, fy] of FIRE_WAVE_PATTERN) {
+      const pos = fireWaveCellPos(pl, aim, fx * scale, fy * scale, step);
+      if (G.Tiles && G.Tiles.playFireWaveCell) G.Tiles.playFireWaveCell(pos.x, pos.y);
+    }
+    if (ghost) return;
+
+    const hitSet = new Set();
+    for (const [fx, fy] of FIRE_WAVE_PATTERN) {
+      const pos = fireWaveCellPos(pl, aim, fx * scale, fy * scale, step);
+      for (const e of G.EnemyMgr.queryCircle(pos.x, pos.y, cellR + 14)) {
+        if (hitOnce && hitOnce.has(e.id)) continue;
+        if (hitSet.has(e.id)) continue;
+        if (Math.hypot(e.x - pos.x, e.y - pos.y) > cellR + e.r * 0.35) continue;
+        const kx = e.x - pl.x, ky = e.y - pl.y;
+        hit(pl, e, m.dmg * pl.atk * dmgMul, col, kx, ky, knock, m);
+        hitSet.add(e.id);
+        if (hitOnce) hitOnce.add(e.id);
+      }
+      for (const p of G.World.propsInCircle(pos.x, pos.y, cellR + 10)) {
+        if (Math.hypot(p.x - pos.x, p.y - pos.y) <= cellR + p.r) {
+          G.World.damageProp(p, m.dmg * pl.atk * dmgMul, col);
+        }
+      }
+    }
+
+    if (allowGround && scale >= 0.95 && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'fire_ground')) {
+      const dur = G.MasterSorcerer.unlockValue(m, 'fire_ground') || 3;
+      const mid = fireWaveCellPos(pl, aim, 0, 2 * scale, step);
+      spawnFireGround(pl, m, mid.x, mid.y, dur);
+    }
+  }
+
   /** Cono de fuego alineado a `aim`; `scale` < 1 = wave secundaria (Great Fire Wave). */
   function fireWaveAt(pl, m, aim, scale, hitOnce, allowGround) {
     const col = G.U.TYPE_COLOR[m.type];
@@ -353,7 +407,7 @@ G.Combat = (() => {
   }
 
   function fireWave(pl, m) {
-    fireWaveAt(pl, m, pl.aim, 1, null, true);
+    fireWaveGrid(pl, m, pl.aim, 1, null, true);
     if (!ghost) G.Camera.kick(0.06);
   }
 
