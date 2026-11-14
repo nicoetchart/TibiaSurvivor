@@ -3,6 +3,14 @@
  */
 G.CHANGELOG = [
   { d: '2026-11-14', title: ['Combate', 'Combat'], chg: [
+    ['Hell\'s Core: área 11×11 sqm con esquinas vacías (patrón Tibia), no diamante lleno; animación 195395–195408 (13 fotogramas) por celda.',
+     'Hell\'s Core: 11×11 sqm Tibia pattern with empty corners (not a solid diamond); 195395–195408 animation (13 frames) per cell.'],
+    ['Hell\'s Core: mismo paso de rejilla, escala y stripOffX que Fire Wave (efecto centrado en cada sqm y en el personaje).',
+     'Hell\'s Core: same grid step, draw scale, and stripOffX as Fire Wave (FX centered on each sqm and on the caster).'],
+    ['Hell\'s Core: de nuevo tamaño de dibujo como Fire Wave; stripOffY baja el arte para centrarlo en el sqm sin encoger la explosión.',
+     'Hell\'s Core: Fire Wave draw size again; stripOffY shifts art down to center on sqm without shrinking the blast.'],
+    ['Hell\'s Core: hechizo inicial para pruebas en dev.',
+     'Hell\'s Core: starter spell for dev testing.'],
     ['Fire Wave (5 niveles): daño base 17, recarga 0,95 s; nv.3 −20% cd, nv.4 +25% daño y Burning, nv.5 −20% cd y patrón 1·3·3·5·5.',
      'Fire Wave (5 levels): base dmg 17, 0.95 s cooldown; L3 −20% cd, L4 +25% dmg and Burning, L5 −20% cd and 1·3·3·5·5 pattern.'],
     ['Fire Wave: cada llama 32×32 (arte Tibia × PX) y cono con el mismo paso entre celdas.',
@@ -14,6 +22,8 @@ G.CHANGELOG = [
     ['Fire Wave: solo se lanza si hay enemigos dentro del cono (no alcance cuerpo a cuerpo).',
      'Fire Wave: casts only when enemies are inside the wave pattern (not melee reach).'],
   ], fix: [
+    ['Hell\'s Core: el último fotograma del strip (195408) ya no se recortaba al dibujar con stripFrame0.',
+     'Hell\'s Core: last strip frame (195408) was no longer clipped when drawing with stripFrame0.'],
     ['Fire Wave en dev: strip 32×32 (18 fotogramas), recorte en la banda inferior y FX tras cargar firewave.png.',
      'Fire Wave in dev: 32×32 strip (18 frames), bottom-band crop, VFX after firewave.png loads.'],
     ['Render: si el canvas arranca a 0 px (vista previa), ya no deja la cámara en escala 0 ni corta el mapa.',

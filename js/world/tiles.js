@@ -618,17 +618,16 @@ G.Tiles = (() => {
 
   /** Un fotograma de strip en items/ (FX en mundo). */
   function drawItemStripFrame(ctx, sheetKey, frame, x, y, scale, frames, tileW, tileH, alpha,
-      srcY = 0, anchor = 'center', offX = 0) {
+      srcY = 0, anchor = 'center', offX = 0, offY = 0) {
     const sheet = getItemPropSheet(sheetKey);
     const img = sheet && sheet.img;
     if (!sheet || !sheet.ready || !img) return false;
     const maxFr = Math.floor(img.naturalWidth / tileW);
     if (maxFr < 1 || img.naturalHeight < srcY + tileH) return false;
-    const nFrames = Math.min(frames, maxFr);
-    const fr = Math.min(nFrames - 1, Math.max(0, frame | 0));
+    const fr = Math.min(maxFr - 1, Math.max(0, frame | 0));
     const w = Math.round(tileW * scale), h = Math.round(tileH * scale);
     if (!(w > 0) || !(h > 0)) return false;
-    const dy = anchor === 'bottom' ? Math.round(y - h) : Math.round(y - h / 2);
+    const dy = (anchor === 'bottom' ? Math.round(y - h) : Math.round(y - h / 2)) + offY;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
     if (alpha < 1) ctx.globalAlpha = alpha;
@@ -687,17 +686,16 @@ G.Tiles = (() => {
 
   /** Un fotograma de strip en spells/ (FX en mundo). */
   function drawSpellStripFrame(ctx, sheetKey, frame, x, y, scale, frames, tileW, tileH, alpha,
-      srcY = 0, anchor = 'center', offX = 0) {
+      srcY = 0, anchor = 'center', offX = 0, offY = 0) {
     const sheet = getSpellSheet(sheetKey);
     const img = sheet && sheet.img;
     if (!sheet || !sheet.ready || !img) return false;
     const maxFr = Math.floor(img.naturalWidth / tileW);
     if (maxFr < 1 || img.naturalHeight < srcY + tileH) return false;
-    const nFrames = Math.min(frames, maxFr);
-    const fr = Math.min(nFrames - 1, Math.max(0, frame | 0));
+    const fr = Math.min(maxFr - 1, Math.max(0, frame | 0));
     const w = Math.round(tileW * scale), h = Math.round(tileH * scale);
     if (!(w > 0) || !(h > 0)) return false;
-    const dy = anchor === 'bottom' ? Math.round(y - h) : Math.round(y - h / 2);
+    const dy = (anchor === 'bottom' ? Math.round(y - h) : Math.round(y - h / 2)) + offY;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
     if (alpha < 1) ctx.globalAlpha = alpha;
@@ -710,6 +708,63 @@ G.Tiles = (() => {
     }
     ctx.restore();
     return true;
+  }
+
+  const HELLS_CORE_SHEET = '195395-195408';
+  const HELLS_CORE_TILE = 64;
+  const HELLS_CORE_SHEET_FRAMES = 14;
+  const HELLS_CORE_ANIM_SKIP = 1;
+  const HELLS_CORE_ANIM_FRAMES = HELLS_CORE_SHEET_FRAMES - HELLS_CORE_ANIM_SKIP;
+  const HELLS_CORE_FPS = 12;
+
+  /** Mismo paso y escala por sqm que Fire Wave (centra rejilla + sprite en el patrón). */
+  function hellsCoreCellWorld() {
+    return fireWaveCellWorld();
+  }
+
+  function hellsCoreStripMeta(sheet) {
+    const tw = (sheet && sheet.frameW) || HELLS_CORE_TILE;
+    const th = (sheet && sheet.frameH) || HELLS_CORE_TILE;
+    const maxFr = sheet && sheet.ready && sheet.img
+      ? Math.floor(sheet.img.naturalWidth / tw) : HELLS_CORE_SHEET_FRAMES;
+    const frames = Math.min(HELLS_CORE_ANIM_FRAMES, Math.max(1, maxFr - HELLS_CORE_ANIM_SKIP));
+    const stripY = (sheet && sheet.stripY) || 0;
+    const scale = fireWaveVisualWorld() / tw;
+    const step = hellsCoreCellWorld();
+    const drawH = Math.round(th * scale);
+    return {
+      tileW: tw, tileH: th, stripY, frames, scale, fps: HELLS_CORE_FPS,
+      stripFrame0: HELLS_CORE_ANIM_SKIP,
+      stripOffX: fireWaveStripOffX(scale, tw),
+      stripOffY: Math.round((drawH - step) * 0.48),
+      life: frames / HELLS_CORE_FPS
+    };
+  }
+
+  function playHellsCoreCell(x, y) {
+    if (!G.FX || !G.FX.itemStrip) return;
+    const sheet = getSpellSheet(HELLS_CORE_SHEET);
+    const emit = () => {
+      if (sheet.failed) return;
+      const m = hellsCoreStripMeta(sheet);
+      G.FX.itemStrip(HELLS_CORE_SHEET, x, y, {
+        tibiaStripDir: 'spells',
+        frames: m.frames,
+        fps: m.fps,
+        tileW: m.tileW,
+        tileH: m.tileH,
+        stripY: m.stripY,
+        stripAnchor: 'bottom',
+        stripOffX: m.stripOffX,
+        stripOffY: m.stripOffY,
+        stripFrame0: m.stripFrame0,
+        scale: m.scale,
+        life: m.life,
+        fade: false
+      });
+    };
+    if (sheet.ready) emit();
+    else if (!sheet.failed) sheet.img.addEventListener('load', emit, { once: true });
   }
 
   function playFireWaveCell(x, y) {
@@ -1237,10 +1292,12 @@ G.Tiles = (() => {
   getItemPropSheet(POISON_TRAP_BURST_SHEET);
   getItemPropSheet(EXPLOSIVE_TRAP_BURST_SHEET);
   getSpellSheet(FIRE_WAVE_SHEET);
+  getSpellSheet(HELLS_CORE_SHEET);
 
   return { T, BIOMES, NORMAL, ARENA, ARENA_THEMES, ARENA_TYPES, paintChunk, propSprite, clearProps,
            drawTrapPoisonTibia, drawTrapExplosiveTibia, drawItemStripFrame, drawSpellStripFrame,
-           playPoisonTrapBurst, playExplosiveTrapBurst, playFireWaveCell, fireWaveCellWorld, trapBurstDrawOffX,
+           playPoisonTrapBurst, playExplosiveTrapBurst, playFireWaveCell, playHellsCoreCell,
+           fireWaveCellWorld, hellsCoreCellWorld, trapBurstDrawOffX,
            poisonTrapStepRadius, tibiaFlatTrapStepRadius, trapStepRadius, preloadRockSprites,
            /** Índice de bioma de la arena de un tipo. */
            arenaBiome: type => ARENA + Math.max(0, ARENA_TYPES.indexOf(type)) };

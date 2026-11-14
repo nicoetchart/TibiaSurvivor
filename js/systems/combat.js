@@ -611,43 +611,95 @@ G.Combat = (() => {
     return dmg;
   }
 
-  function hellsCoreRadius(m) {
-    if (m.radius != null && m.radius > 0) return m.radius;
-    const n = Math.max(8, m.count | 0);
-    return 48 + n * 2.6;
-  }
-
-  /** Explosión radial instantánea (Hell's Core). */
-  function radialBlast(pl, m, x, y, r, dmgMul) {
-    const col = G.U.TYPE_COLOR[m.type];
-    const vis = G.VFX.forMove(m);
-    G.FX.ring(x, y, 10, r, col, 0.38, 4.2);
-    G.FX.burst(x, y - G.LIFT * 0.35, col, 18, 200);
-    if (ghost) return;
-    for (const e of G.EnemyMgr.queryCircle(x, y, r)) {
-      let dmg = capUltimateHit(e, m.dmg * pl.atk * dmgMul);
-      hit(pl, e, dmg, col, e.x - x, e.y - y, m.knock || 0, m);
-      if (e.burn === 0) e.applyBurn(1);
+  /** Patrón Hell's Core (11×11 area Tibia: esquinas vacías, no diamante cerrado). */
+  const HELLS_CORE_PATTERN = (() => {
+    const cells = [];
+    for (let dy = -5; dy <= 5; dy++) {
+      const ady = Math.abs(dy);
+      let maxDx;
+      if (ady === 5) maxDx = 0;
+      else if (ady === 4) maxDx = 2;
+      else if (ady === 3) maxDx = 3;
+      else if (ady === 0) maxDx = 5;
+      else maxDx = 4;
+      for (let dx = -maxDx; dx <= maxDx; dx++) cells.push([dx, dy]);
     }
-    for (const p of G.World.propsInCircle(x, y, r)) G.World.damageProp(p, m.dmg * pl.atk * dmgMul, col);
-    if (G.Camera.sees(x, y, r + 40)) G.Audio.sfx('break');
+    return cells;
+  })();
+
+  function hellsCoreGridStep(m) {
+    const cell = (G.Tiles && G.Tiles.fireWaveCellWorld)
+      ? G.Tiles.fireWaveCellWorld()
+      : (G.Tiles && G.Tiles.hellsCoreCellWorld ? G.Tiles.hellsCoreCellWorld() : 42);
+    return cell * ((m.radius || 200) / 200);
   }
 
-  /** Hell's Core (MS): radial + segunda detonación nv.5. */
-  function hellsCore(pl, m) {
+  function hellsCoreReach(m, pl) {
+    const pad = pl ? fireWaveShadowRx(pl) : 28;
+    return hellsCoreGridStep(m) * 5 + pad;
+  }
+
+  /** Origen del patrón: pies del lanzador; la cuadrícula cuelga del centro de cada sqm. */
+  function hellsCoreOrigin(pl) {
+    return { x: pl.x, y: pl.y };
+  }
+
+  /** Centro de cada sqm en el plano del suelo (misma rejilla que Fire Wave). */
+  function hellsCoreCellPos(ox, oy, dx, dy, step) {
+    return { x: ox + dx * step, y: oy + dy * step };
+  }
+
+  function inHellsCoreCellHit(cx, cy, x, y, r, step) {
+    const half = step * 0.5;
+    const pad = r * 0.35;
+    return Math.abs(x - cx) <= half + pad && Math.abs(y - cy) <= half + pad;
+  }
+
+  /** Explosión en rejilla (Hell's Core): sprite Tibia 195395–195408 por celda. */
+  function hellsCoreDiamond(pl, m, cx, cy, dmgMul) {
     const col = G.U.TYPE_COLOR[m.type];
-    const r = hellsCoreRadius(m);
-    G.FX.ring(pl.x, pl.y, pl.r * 0.6, r * 0.45, col, 0.18, 1.4);
+    const step = hellsCoreGridStep(m);
+    const queryR = step * 0.75 + 12;
+
+    for (const [dx, dy] of HELLS_CORE_PATTERN) {
+      const pos = hellsCoreCellPos(cx, cy, dx, dy, step);
+      if (G.Tiles && G.Tiles.playHellsCoreCell) G.Tiles.playHellsCoreCell(pos.x, pos.y);
+    }
     if (ghost) return;
-    radialBlast(pl, m, pl.x, pl.y, r, 1);
-    G.Camera.kick(0.22);
+
+    const hitSet = new Set();
+    for (const [dx, dy] of HELLS_CORE_PATTERN) {
+      const pos = hellsCoreCellPos(cx, cy, dx, dy, step);
+      for (const e of G.EnemyMgr.queryCircle(pos.x, pos.y, queryR)) {
+        if (hitSet.has(e.id)) continue;
+        if (!inHellsCoreCellHit(pos.x, pos.y, e.x, e.y, e.r, step)) continue;
+        let dmg = capUltimateHit(e, m.dmg * pl.atk * dmgMul);
+        hit(pl, e, dmg, col, e.x - cx, e.y - cy, m.knock || 0, m);
+        if (e.burn === 0) e.applyBurn(1);
+        hitSet.add(e.id);
+      }
+      for (const p of G.World.propsInCircle(pos.x, pos.y, queryR)) {
+        if (inHellsCoreCellHit(pos.x, pos.y, p.x, p.y, p.r, step)) {
+          G.World.damageProp(p, m.dmg * pl.atk * dmgMul, col);
+        }
+      }
+    }
+    if (G.Camera.sees(cx, cy, hellsCoreReach(m, pl) + 40)) G.Audio.sfx('break');
+  }
+
+  /** Hell's Core (MS): diamante Tibia + segunda detonación nv.5. */
+  function hellsCore(pl, m) {
+    const org = hellsCoreOrigin(pl);
+    const r = hellsCoreReach(m, pl);
+    hellsCoreDiamond(pl, m, org.x, org.y, 1);
+    if (!ghost) G.Camera.kick(0.22);
     if (G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'delayed_detonation')) {
       const delay = G.MasterSorcerer.unlockValue(m, 'delayed_detonation') || 1;
       const echoes = fields.filter(o => o.kind === 'hell_core_echo' && o.owner === pl && !o.gone);
       for (const o of echoes.slice(0, Math.max(0, echoes.length - 1))) o.gone = true;
       fields.push({
-        kind: 'hell_core_echo', owner: pl, ghost, m, col,
-        x: pl.x, y: pl.y, t: 0, delay, r: r * 0.92, dmgMul: 0.88, done: false, life: delay + 0.55
+        kind: 'hell_core_echo', owner: pl, ghost, m, col: G.U.TYPE_COLOR[m.type],
+        x: org.x, y: org.y, t: 0, delay, r, dmgMul: 0.88, done: false, life: delay + 0.55
       });
     }
   }
@@ -981,7 +1033,7 @@ G.Combat = (() => {
       } else if (f.kind === 'hell_core_echo') {
         if (!f.done && f.t >= f.delay) {
           f.done = true;
-          radialBlast(f.owner, f.m, f.x, f.y, f.r, f.dmgMul || 0.88);
+          hellsCoreDiamond(f.owner, f.m, f.x, f.y, f.dmgMul || 0.88);
           if (!f.ghost) G.Camera.kick(0.18);
         }
         if (f.done && f.t >= f.delay + 0.35) { fields.splice(i, 1); continue; }

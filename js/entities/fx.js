@@ -65,6 +65,8 @@ G.FX = (() => {
       stripY: o.stripY || 0,
       stripAnchor: o.stripAnchor || 'center',
       stripOffX: o.stripOffX || 0,
+      stripOffY: o.stripOffY || 0,
+      stripFrame0: o.stripFrame0 | 0,
       fps,
       x, y,
       vx: o.vx || 0, vy: o.vy || 0,
@@ -274,10 +276,12 @@ G.FX = (() => {
           if (drawStrip) {
             try {
               const raw = s.t * s.fps;
-              const fr = Math.min(s.frames - 1, Math.max(0, raw | 0));
+              const local = Math.min(s.frames - 1, Math.max(0, raw | 0));
+              const fr = (s.stripFrame0 | 0) + local;
               const alpha = s.fade ? step(k) : 1;
               drawStrip(ctx, s.tibiaStrip, fr, s.x, s.y, s.scale, s.frames,
-                s.tileW, s.tileH, alpha, s.stripY || 0, s.stripAnchor || 'center', s.stripOffX || 0);
+                s.tileW, s.tileH, alpha, s.stripY || 0, s.stripAnchor || 'center',
+                s.stripOffX || 0, s.stripOffY || 0);
             } catch (e) { /* strip Tibia inválido: no romper el fotograma */ }
           }
         }

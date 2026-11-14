@@ -14,10 +14,10 @@ G.Vocations = (() => {
       armor: 0,
       playerCreatureId: 'wander_archmage',
       legacyPartnerId: 99001,
-      startingAbility: 'fire_wave',
-      startingSpellId: 'fire_wave',
-      /** Dev / pruebas: Fire Wave desde el arranque (DEC-020). */
-      startingSpellIds: ['fire_wave'],
+      startingAbility: 'hells_core',
+      startingSpellId: 'hells_core',
+      /** Dev / pruebas: Hell's Core desde el arranque. */
+      startingSpellIds: ['hells_core'],
       baseStats: {
         maxHp: 82,
         movementSpeedMul: 1.04,
