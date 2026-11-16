@@ -14,11 +14,11 @@ G.Vocations = (() => {
       armor: 0,
       playerCreatureId: 'wander_archmage',
       legacyPartnerId: 99001,
-      startingAbility: 'death_echo',
-      startingSpellId: 'death_echo',
-      /** Dev / pruebas: Death Echo desde el arranque al nv. 5 del hechizo. */
-      startingSpellIds: ['death_echo'],
-      startingSpellLevels: { death_echo: 5 },
+      startingAbility: 'flame_strike',
+      startingSpellId: 'flame_strike',
+      /** Dev / pruebas: Flame Strike desde el arranque al nv. 5. */
+      startingSpellIds: ['flame_strike'],
+      startingSpellLevels: { flame_strike: 5 },
       baseStats: {
         maxHp: 82,
         movementSpeedMul: 1.04,

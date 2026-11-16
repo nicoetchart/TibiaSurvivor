@@ -789,6 +789,55 @@ G.Tiles = (() => {
     else if (!sheet.failed) sheet.img.addEventListener('load', emit, { once: true });
   }
 
+  /** Rage of the Skies — rayo por objetivo: spells/195458–195474 (17×64×64). */
+  const RAGE_OF_THE_SKIES_SHEET = '195458-195474';
+  const RAGE_OF_THE_SKIES_FRAMES = 17;
+  const RAGE_OF_THE_SKIES_FPS = 12;
+  const RAGE_OF_THE_SKIES_TILE = 64;
+
+  function rageOfTheSkiesStripMeta(sheet) {
+    const tw = (sheet && sheet.frameW) || RAGE_OF_THE_SKIES_TILE;
+    const th = (sheet && sheet.frameH) || RAGE_OF_THE_SKIES_TILE;
+    const maxFr = sheet && sheet.ready && sheet.img
+      ? Math.floor(sheet.img.naturalWidth / tw) : RAGE_OF_THE_SKIES_FRAMES;
+    const frames = Math.min(RAGE_OF_THE_SKIES_FRAMES, Math.max(1, maxFr));
+    const stripY = (sheet && sheet.stripY) || 0;
+    const scale = fireWaveVisualWorld() / tw;
+    const step = hellsCoreCellWorld();
+    const drawH = Math.round(th * scale);
+    return {
+      tileW: tw, tileH: th, stripY, frames, scale, fps: RAGE_OF_THE_SKIES_FPS,
+      stripOffX: fireWaveStripOffX(scale, tw),
+      stripOffY: Math.round((drawH - step) * 0.42),
+      life: frames / RAGE_OF_THE_SKIES_FPS
+    };
+  }
+
+  function playRageOfTheSkiesStrike(x, y) {
+    if (!G.FX || !G.FX.itemStrip) return;
+    const sheet = getSpellSheet(RAGE_OF_THE_SKIES_SHEET);
+    const emit = () => {
+      if (sheet.failed) return;
+      const m = rageOfTheSkiesStripMeta(sheet);
+      G.FX.itemStrip(RAGE_OF_THE_SKIES_SHEET, x, y, {
+        tibiaStripDir: 'spells',
+        frames: m.frames,
+        fps: m.fps,
+        tileW: m.tileW,
+        tileH: m.tileH,
+        stripY: m.stripY,
+        stripAnchor: 'bottom',
+        stripOffX: m.stripOffX,
+        stripOffY: m.stripOffY,
+        scale: m.scale,
+        life: m.life,
+        fade: false
+      });
+    };
+    if (sheet.ready) emit();
+    else if (!sheet.failed) sheet.img.addEventListener('load', emit, { once: true });
+  }
+
   function playHellsCoreCell(x, y) {
     if (!G.FX || !G.FX.itemStrip) return;
     const sheet = getSpellSheet(HELLS_CORE_SHEET);
@@ -896,34 +945,208 @@ G.Tiles = (() => {
     else if (!sheet.failed) sheet.img.addEventListener('load', emit, { once: true });
   }
 
-  /** Death Strike projectile — spells/197384-197391.png (9×32; celda 5 vacía). */
-  const DEATH_STRIKE_PROJ_SHEET = '197384-197391';
-  const DEATH_STRIKE_PROJ_FRAMES = 9;
-  /** Strip s1…s9: NW,N,NE,W,∅,E,SW,S,SE → dirFromAngle 0=S … 7=SW. */
-  const DEATH_STRIKE_PROJ_DIR_MAP = [7, 8, 5, 2, 1, 0, 3, 6];
+  /** Missile strips 9×32 (s1…s9: NW,N,NE,W,∅,E,SW,S,SE → dirFromAngle 0=S … 7=SW). */
+  const TIBIA_MISSILE_DIR_MAP = [7, 8, 5, 2, 1, 0, 3, 6];
 
-  let _deathStrikeProjCache = null;
-
-  function deathStrikeProjectileOpts() {
-    if (_deathStrikeProjCache) return Object.assign({}, _deathStrikeProjCache);
-    const sheet = getSpellSheet(DEATH_STRIKE_PROJ_SHEET);
+  function directionalSpellProjectileOpts(sheetKey, frameCount, cacheHolder) {
+    if (cacheHolder.v) return Object.assign({}, cacheHolder.v);
+    const sheet = getSpellSheet(sheetKey);
     const tw = (sheet && sheet.frameW) || FIRE_WAVE_ART_TILE;
     const th = (sheet && sheet.frameH) || FIRE_WAVE_ART_TILE;
     const maxFr = sheet && sheet.ready && sheet.img
-      ? Math.floor(sheet.img.naturalWidth / tw) : DEATH_STRIKE_PROJ_FRAMES;
-    const frames = Math.min(DEATH_STRIKE_PROJ_FRAMES, Math.max(1, maxFr));
+      ? Math.floor(sheet.img.naturalWidth / tw) : frameCount;
+    const frames = Math.min(frameCount, Math.max(1, maxFr));
     const scale = energyBeamVisualWorld() / tw;
     const step = energyBeamCellWorld();
     const drawH = Math.round(th * scale);
-    _deathStrikeProjCache = {
-      sheet: DEATH_STRIKE_PROJ_SHEET,
-      frames, dirStrip: true, dirMap: DEATH_STRIKE_PROJ_DIR_MAP,
+    cacheHolder.v = {
+      sheet: sheetKey,
+      frames, dirStrip: true, dirMap: TIBIA_MISSILE_DIR_MAP,
       tileW: tw, tileH: th, stripY: (sheet && sheet.stripY) || 0,
       scale,
       stripOffX: fireWaveStripOffX(scale, tw),
       stripOffY: Math.round((drawH - step) * 0.35)
     };
-    return Object.assign({}, _deathStrikeProjCache);
+    return Object.assign({}, cacheHolder.v);
+  }
+
+  /** Energy Strike projectile — spells/197250-197257.png (9×32). */
+  const ENERGY_STRIKE_PROJ_SHEET = '197250-197257';
+  const ENERGY_STRIKE_PROJ_FRAMES = 9;
+  const _energyStrikeProjCache = {};
+
+  function energyStrikeProjectileOpts() {
+    return directionalSpellProjectileOpts(ENERGY_STRIKE_PROJ_SHEET, ENERGY_STRIKE_PROJ_FRAMES, _energyStrikeProjCache);
+  }
+
+  /** Flame Strike projectile — spells/197242-197249.png (9×32). */
+  const FLAME_STRIKE_PROJ_SHEET = '197242-197249';
+  const FLAME_STRIKE_PROJ_FRAMES = 9;
+  const _flameStrikeProjCache = {};
+
+  function flameStrikeProjectileOpts() {
+    return directionalSpellProjectileOpts(FLAME_STRIKE_PROJ_SHEET, FLAME_STRIKE_PROJ_FRAMES, _flameStrikeProjCache);
+  }
+
+  /** Flame Strike — impacto en criatura: spells/195450–195457 (8×64×64). */
+  const FLAME_STRIKE_IMPACT_SHEET = '195450-195457';
+  const FLAME_STRIKE_IMPACT_FRAMES = 8;
+  const FLAME_STRIKE_IMPACT_FPS = 14;
+  const FLAME_STRIKE_IMPACT_TILE = 64;
+
+  function flameStrikeImpactStripMeta(sheet) {
+    const tw = (sheet && sheet.frameW) || FLAME_STRIKE_IMPACT_TILE;
+    const th = (sheet && sheet.frameH) || FLAME_STRIKE_IMPACT_TILE;
+    const maxFr = sheet && sheet.ready && sheet.img
+      ? Math.floor(sheet.img.naturalWidth / tw) : FLAME_STRIKE_IMPACT_FRAMES;
+    const frames = Math.min(FLAME_STRIKE_IMPACT_FRAMES, Math.max(1, maxFr));
+    const stripY = (sheet && sheet.stripY) || 0;
+    const scale = fireWaveVisualWorld() / tw;
+    const step = hellsCoreCellWorld();
+    const drawH = Math.round(th * scale);
+    return {
+      tileW: tw, tileH: th, stripY, frames, scale, fps: FLAME_STRIKE_IMPACT_FPS,
+      stripOffX: fireWaveStripOffX(scale, tw),
+      stripOffY: Math.round((drawH - step) * 0.48),
+      life: frames / FLAME_STRIKE_IMPACT_FPS
+    };
+  }
+
+  function playFlameStrikeImpact(x, y) {
+    if (!G.FX || !G.FX.itemStrip) return;
+    const sheet = getSpellSheet(FLAME_STRIKE_IMPACT_SHEET);
+    const emit = () => {
+      if (sheet.failed) return;
+      const m = flameStrikeImpactStripMeta(sheet);
+      G.FX.itemStrip(FLAME_STRIKE_IMPACT_SHEET, x, y, {
+        tibiaStripDir: 'spells',
+        frames: m.frames,
+        fps: m.fps,
+        tileW: m.tileW,
+        tileH: m.tileH,
+        stripY: m.stripY,
+        stripAnchor: 'bottom',
+        stripOffX: m.stripOffX,
+        stripOffY: m.stripOffY,
+        scale: m.scale,
+        life: m.life,
+        fade: false
+      });
+    };
+    if (sheet.ready) emit();
+    else if (!sheet.failed) sheet.img.addEventListener('load', emit, { once: true });
+  }
+
+  /** Energy Strike — salto de cadena: spells/195004–195009 (6×32×32). */
+  const ENERGY_CHAIN_SHEET = '195004-195009';
+  const ENERGY_CHAIN_FRAMES = 6;
+  const ENERGY_CHAIN_FPS = 14;
+
+  function energyChainStripMeta(sheet) {
+    const tw = (sheet && sheet.frameW) || FIRE_WAVE_ART_TILE;
+    const th = (sheet && sheet.frameH) || FIRE_WAVE_ART_TILE;
+    const maxFr = sheet && sheet.ready && sheet.img
+      ? Math.floor(sheet.img.naturalWidth / tw) : ENERGY_CHAIN_FRAMES;
+    const frames = Math.min(ENERGY_CHAIN_FRAMES, Math.max(1, maxFr));
+    const stripY = (sheet && sheet.stripY) || 0;
+    const scale = energyBeamVisualWorld() / tw;
+    const step = energyBeamCellWorld();
+    const drawH = Math.round(th * scale);
+    return {
+      tileW: tw, tileH: th, stripY, frames, scale, fps: ENERGY_CHAIN_FPS,
+      stripOffX: fireWaveStripOffX(scale, tw),
+      stripOffY: Math.round((drawH - step) * 0.35),
+      life: frames / ENERGY_CHAIN_FPS
+    };
+  }
+
+  function playEnergyChainStrike(x, y) {
+    if (!G.FX || !G.FX.itemStrip) return;
+    const sheet = getSpellSheet(ENERGY_CHAIN_SHEET);
+    const emit = () => {
+      if (sheet.failed) return;
+      const m = energyChainStripMeta(sheet);
+      G.FX.itemStrip(ENERGY_CHAIN_SHEET, x, y, {
+        tibiaStripDir: 'spells',
+        frames: m.frames,
+        fps: m.fps,
+        tileW: m.tileW,
+        tileH: m.tileH,
+        stripY: m.stripY,
+        stripAnchor: 'center',
+        stripOffX: m.stripOffX,
+        stripOffY: m.stripOffY,
+        scale: m.scale,
+        life: m.life,
+        fade: false
+      });
+    };
+    if (sheet.ready) emit();
+    else if (!sheet.failed) sheet.img.addEventListener('load', emit, { once: true });
+  }
+
+  /** Destello en el centro del tramo y en la criatura de destino. */
+  function playEnergyChainSegment(x0, y0, x1, y1) {
+    playEnergyChainStrike((x0 + x1) * 0.5, (y0 + y1) * 0.5);
+    playEnergyChainStrike(x1, y1);
+  }
+
+  /** Golpe crítico — spells/195765–195778 (14×64×64). */
+  const CRITICAL_HIT_SHEET = '195765-195778';
+  const CRITICAL_HIT_FRAMES = 14;
+  const CRITICAL_HIT_FPS = 14;
+  const CRITICAL_HIT_TILE = 64;
+
+  function criticalHitStripMeta(sheet) {
+    const tw = (sheet && sheet.frameW) || CRITICAL_HIT_TILE;
+    const th = (sheet && sheet.frameH) || CRITICAL_HIT_TILE;
+    const maxFr = sheet && sheet.ready && sheet.img
+      ? Math.floor(sheet.img.naturalWidth / tw) : CRITICAL_HIT_FRAMES;
+    const frames = Math.min(CRITICAL_HIT_FRAMES, Math.max(1, maxFr));
+    const stripY = (sheet && sheet.stripY) || 0;
+    const scale = fireWaveVisualWorld() / tw;
+    const step = hellsCoreCellWorld();
+    const drawH = Math.round(th * scale);
+    return {
+      tileW: tw, tileH: th, stripY, frames, scale, fps: CRITICAL_HIT_FPS,
+      stripOffX: fireWaveStripOffX(scale, tw),
+      stripOffY: Math.round((drawH - step) * 0.35),
+      life: frames / CRITICAL_HIT_FPS
+    };
+  }
+
+  function playCriticalHitStrike(x, y) {
+    if (!G.FX || !G.FX.itemStrip) return;
+    const sheet = getSpellSheet(CRITICAL_HIT_SHEET);
+    const emit = () => {
+      if (sheet.failed) return;
+      const m = criticalHitStripMeta(sheet);
+      G.FX.itemStrip(CRITICAL_HIT_SHEET, x, y, {
+        tibiaStripDir: 'spells',
+        frames: m.frames,
+        fps: m.fps,
+        tileW: m.tileW,
+        tileH: m.tileH,
+        stripY: m.stripY,
+        stripAnchor: 'center',
+        stripOffX: m.stripOffX,
+        stripOffY: m.stripOffY,
+        scale: m.scale,
+        life: m.life,
+        fade: false
+      });
+    };
+    if (sheet.ready) emit();
+    else if (!sheet.failed) sheet.img.addEventListener('load', emit, { once: true });
+  }
+
+  /** Death Strike projectile — spells/197384-197391.png (9×32; celda 5 vacía). */
+  const DEATH_STRIKE_PROJ_SHEET = '197384-197391';
+  const DEATH_STRIKE_PROJ_FRAMES = 9;
+  const _deathStrikeProjCache = {};
+
+  function deathStrikeProjectileOpts() {
+    return directionalSpellProjectileOpts(DEATH_STRIKE_PROJ_SHEET, DEATH_STRIKE_PROJ_FRAMES, _deathStrikeProjCache);
   }
 
   /** Great Death Beam — strip spells/194131-194141.png (11×32×32). */
@@ -1482,14 +1705,23 @@ G.Tiles = (() => {
   getSpellSheet(FIRE_WAVE_SHEET);
   getSpellSheet(HELLS_CORE_SHEET);
   getSpellSheet(ENERGY_BEAM_SHEET);
+  getSpellSheet(ENERGY_STRIKE_PROJ_SHEET);
+  getSpellSheet(FLAME_STRIKE_PROJ_SHEET);
+  getSpellSheet(FLAME_STRIKE_IMPACT_SHEET);
+  getSpellSheet(ENERGY_CHAIN_SHEET);
   getSpellSheet(DEATH_STRIKE_PROJ_SHEET);
   getSpellSheet(GREAT_DEATH_BEAM_SHEET);
   getSpellSheet(DEATH_ECHO_SHEET);
+  getSpellSheet(RAGE_OF_THE_SKIES_SHEET);
+  getSpellSheet(CRITICAL_HIT_SHEET);
 
   return { T, BIOMES, NORMAL, ARENA, ARENA_THEMES, ARENA_TYPES, paintChunk, propSprite, clearProps,
            drawTrapPoisonTibia, drawTrapExplosiveTibia, drawItemStripFrame, drawSpellStripFrame,
            playPoisonTrapBurst, playExplosiveTrapBurst, playFireWaveCell, playDeathEchoCell, playHellsCoreCell,
+           playRageOfTheSkiesStrike,
            playEnergyBeamCell, playGreatDeathBeamCell, playDeathStrikeImpact,
+           energyStrikeProjectileOpts, flameStrikeProjectileOpts, playFlameStrikeImpact,
+           playEnergyChainStrike, playEnergyChainSegment, playCriticalHitStrike,
            deathStrikeProjectileOpts,
            fireWaveCellWorld, hellsCoreCellWorld, energyBeamCellWorld, trapBurstDrawOffX,
            poisonTrapStepRadius, tibiaFlatTrapStepRadius, trapStepRadius, preloadRockSprites,

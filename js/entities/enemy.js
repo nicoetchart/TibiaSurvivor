@@ -141,6 +141,9 @@
       // Muy eficaz: número amarillo y grande. Poco eficaz: gris. Crítico: naranja y grande.
       G.FX.dmgText(this.x, this.y - this.bodyH - 4, d, eff === 'crit' ? '#ff9a3c' : eff === 'super' ? '#ffe14d' : eff === 'weak' ? '#a3abb8' : color,
                    this.boss || eff === 'super' || eff === 'crit');
+      if (eff === 'crit' && G.Tiles && G.Tiles.playCriticalHitStrike) {
+        G.Tiles.playCriticalHitStrike(this.x, this.y - this.bodyH * 0.5);
+      }
       G.FX.spark(this.x, this.y - this.bodyH * 0.5, color, dirX, dirY, 3);
       if (!this.anim.busy() && this.phase !== 'dash') this.anim.play('Hurt');
       G.Audio.sfx('hit');

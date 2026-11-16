@@ -174,7 +174,6 @@ G.Combat = (() => {
   function msEnergyChainFrom(pl, origin, m, hops) {
     if (ghost || hops <= 0 || !origin) return;
     const col = G.U.TYPE_COLOR[m.type];
-    const vis = G.VFX.forMove(m);
     const radius = 220;
     const done = new Set([origin.id]);
     let cur = origin;
@@ -190,7 +189,8 @@ G.Combat = (() => {
       if (!best) break;
       done.add(best.id);
       const tx = best.x, ty = best.y - best.bodyH * 0.5;
-      G.FX.beam(fx, fy, Math.atan2(ty - fy, tx - fx), Math.hypot(tx - fx, ty - fy), 8, col, vis);
+      if (G.Tiles && G.Tiles.playEnergyChainSegment) G.Tiles.playEnergyChainSegment(fx, fy, tx, ty);
+      else G.FX.beam(fx, fy, Math.atan2(ty - fy, tx - fx), Math.hypot(tx - fx, ty - fy), 8, col, G.VFX.forMove(m));
       applySpellEffects(pl, best, m);
       let dmg = computeStrikeDamage(pl, best, m, m.dmg * pl.atk * k);
       hit(pl, best, dmg, col, tx - fx, ty - fy, 0, m);
@@ -267,7 +267,11 @@ G.Combat = (() => {
         pierce: m.pierce | 0, color: col, homing: m.homing || 0,
         hits: new Set(), vis, ghost, owner: pl
       };
-      if (m.id === 'death_strike' && G.Tiles && G.Tiles.deathStrikeProjectileOpts) {
+      if (m.id === 'flame_strike' && G.Tiles && G.Tiles.flameStrikeProjectileOpts) {
+        shot.tibiaProj = G.Tiles.flameStrikeProjectileOpts();
+      } else if (m.id === 'energy_strike' && G.Tiles && G.Tiles.energyStrikeProjectileOpts) {
+        shot.tibiaProj = G.Tiles.energyStrikeProjectileOpts();
+      } else if (m.id === 'death_strike' && G.Tiles && G.Tiles.deathStrikeProjectileOpts) {
         shot.tibiaProj = G.Tiles.deathStrikeProjectileOpts();
       }
       G.Projectiles.spawn(Object.assign(shot, payload(m)));
@@ -955,9 +959,12 @@ G.Combat = (() => {
   }
 
   function strikeLightningAt(pl, m, x, y, dmgMul, col, vis) {
-    const top = y - 190;
-    G.FX.beam(x, top, Math.PI / 2, 190, 12, col, vis);
-    G.FX.ring(x, y, 4, m.radius, col, 0.38, 3.2);
+    if (G.Tiles && G.Tiles.playRageOfTheSkiesStrike) G.Tiles.playRageOfTheSkiesStrike(x, y);
+    else {
+      const top = y - 190;
+      G.FX.beam(x, top, Math.PI / 2, 190, 12, col, vis);
+      G.FX.ring(x, y, 4, m.radius, col, 0.38, 3.2);
+    }
     if (ghost) return;
     for (const e of G.EnemyMgr.queryCircle(x, y, m.radius)) {
       let dmg = capUltimateHit(e, m.dmg * pl.atk * dmgMul);
@@ -979,7 +986,7 @@ G.Combat = (() => {
       const y = e ? e.y + G.U.rand(-8, 8) : pl.y + G.U.rand(-130, 130);
       fields.push({
         kind: 'meteor', owner: pl, ghost, m, col, vis, x, y,
-        t: -i * 0.08, fall: 0.52, r: m.radius, dmg: m.dmg * pl.atk, msUltimate: true
+        t: -i * 0.08, fall: 0.52, r: m.radius, dmg: m.dmg * pl.atk, msUltimate: true, rotsVfx: false
       });
     }
     if (!ghost && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'lightning_storm')) {
@@ -1209,10 +1216,21 @@ G.Combat = (() => {
           fields.splice(i, 1);
         }
       } else if (f.kind === 'meteor') {
+        if (f.msUltimate && f.t >= 0 && !f.rotsVfx) {
+          f.rotsVfx = true;
+          if (G.Tiles && G.Tiles.playRageOfTheSkiesStrike) G.Tiles.playRageOfTheSkiesStrike(f.x, f.y);
+        }
         if (f.t >= f.fall) {
-          G.FX.ring(f.x, f.y, 4, f.r, f.col, 0.35, 4);
-          G.FX.burst(f.x, f.y - 6, f.col, 12, 170);
-          if (G.Camera.sees(f.x, f.y, 40)) { G.Audio.sfx('break'); G.Camera.kick(0.12); }
+          if (!f.msUltimate) {
+            G.FX.ring(f.x, f.y, 4, f.r, f.col, 0.35, 4);
+            G.FX.burst(f.x, f.y - 6, f.col, 12, 170);
+          } else {
+            G.FX.ring(f.x, f.y, 4, f.r, f.col, 0.22, 2.2);
+          }
+          if (G.Camera.sees(f.x, f.y, 40)) {
+            G.Audio.sfx('break');
+            G.Camera.kick(f.msUltimate ? 0.08 : 0.12);
+          }
           blast(f, f.r);
           fields.splice(i, 1);
         }
@@ -1297,7 +1315,7 @@ G.Combat = (() => {
         ctx.beginPath(); ctx.ellipse(f.x, f.y, f.r * 0.45, f.r * 0.28, 0, 0, 6.2832); ctx.fill();
         ctx.globalAlpha = 1;
         G.VFX.draw(ctx, f.vis.proj, f.vis.pal, f.x, f.y - 4, { scale: 1, alpha: blink ? 1 : 0.75, frame: 0 });
-      } else if (f.kind === 'meteor') {
+      } else if (f.kind === 'meteor' && !f.msUltimate) {
         const k = G.U.clamp(f.t / f.fall, 0, 1);
         ctx.globalAlpha = 0.2 + k * 0.3;
         ctx.fillStyle = '#000';
@@ -1305,6 +1323,11 @@ G.Combat = (() => {
         ctx.globalAlpha = 0.6;
         ctx.strokeStyle = f.col; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
         ctx.beginPath(); ctx.ellipse(f.x, f.y, f.r, f.r * 0.6, 0, 0, 6.2832); ctx.stroke();
+      } else if (f.kind === 'meteor' && f.msUltimate && f.t < f.fall) {
+        const k = G.U.clamp(f.t / f.fall, 0, 1);
+        ctx.globalAlpha = 0.12 + k * 0.18;
+        ctx.fillStyle = '#000';
+        ctx.beginPath(); ctx.ellipse(f.x, f.y, f.r * (0.25 + k * 0.45), f.r * 0.35 * (0.25 + k * 0.45), 0, 0, 6.2832); ctx.fill();
       } else if (f.kind === 'turret') {
         ctx.globalAlpha = 0.3;
         ctx.fillStyle = '#000';
@@ -1336,7 +1359,7 @@ G.Combat = (() => {
     const now = performance.now() / 1000;
     for (const f of fields) {
       if (!G.Camera.sees(f.x, f.y, 200)) continue;
-      if (f.kind === 'meteor' && f.t > 0) {
+      if (f.kind === 'meteor' && f.t > 0 && !f.msUltimate) {
         const k = G.U.clamp(f.t / f.fall, 0, 1);
         G.VFX.draw(ctx, f.vis.proj, f.vis.pal, f.x + (1 - k) * 40, f.y - (1 - k) * 170 - 6,
                    { scale: 1.5, angle: Math.atan2(170, -40), frame: Math.floor(now * 12) });
@@ -1409,14 +1432,26 @@ G.Combat = (() => {
 
   // Golpe crítico (Mejoras → Golpe Crítico): x1,5 de daño, número naranja y grande.
   const CRIT_MUL = 1.5;
-  const isCrit = pl => !ghost && pl.critChance > 0 && Math.random() < pl.critChance;
+  function critChanceFor(pl, strike) {
+    let c = pl && pl.critChance ? pl.critChance : 0;
+    if (strike && G.MasterSorcerer) {
+      const bonus = G.MasterSorcerer.unlockValue(strike, 'spell_crit');
+      if (bonus != null) c += bonus;
+    }
+    return c;
+  }
+  const isCrit = (pl, strike) => {
+    if (ghost) return false;
+    const c = critChanceFor(pl, strike);
+    return c > 0 && Math.random() < c;
+  };
 
   function hit(pl, e, dmg, col, dx, dy, knock, m) {
     applySpellEffects(pl, e, m);
     dmg = computeStrikeDamage(pl, e, m, dmg);
     if (G.MasterSorcerer) dmg *= G.MasterSorcerer.damageMulForType(pl, m.type);
     const k = typeK(m.type, e, m.id, pl);
-    const crit = isCrit(pl);
+    const crit = isCrit(pl, m);
     dmg *= k * (crit ? CRIT_MUL : 1);
     if (!ghost) {
       e.lastHitAid = m.id;
@@ -1556,7 +1591,7 @@ G.Combat = (() => {
           e.lastHitOwner = owner;
         }
         if (strike) applySpellEffects(owner, e, strike);
-        const crit = isCrit(owner);
+        const crit = isCrit(owner, strike);
         let raw = p.dmg;
         if (strike) raw = computeStrikeDamage(owner, e, strike, raw);
         if (G.MasterSorcerer && p.mtype) raw *= G.MasterSorcerer.damageMulForType(owner, p.mtype);
@@ -1568,6 +1603,10 @@ G.Combat = (() => {
         if (!ghost && G.BestiaryCharms) G.BestiaryCharms.onHit(owner, e);
         if (p.aid === 'death_strike' && G.Tiles && G.Tiles.playDeathStrikeImpact) {
           G.Tiles.playDeathStrikeImpact(e.x, e.y);
+        } else if (p.aid === 'flame_strike' && G.Tiles && G.Tiles.playFlameStrikeImpact) {
+          G.Tiles.playFlameStrikeImpact(e.x, e.y);
+        } else if (p.aid === 'energy_strike' && G.Tiles && G.Tiles.playEnergyChainStrike) {
+          G.Tiles.playEnergyChainStrike(e.x, e.y - e.bodyH * 0.5);
         } else if (Math.random() < 0.5) {
           G.FX.sp('impact', p.vis ? p.vis.pal : 'normal', e.x, e.y - e.bodyH * 0.5, { life: 0.12, scale: 1 });
         }

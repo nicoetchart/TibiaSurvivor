@@ -43,8 +43,8 @@ G.TIBIA_SPRITE_MAP = {
 
   /** ability.id → clave en effects-meta (fase 3). */
   effects: {
-    flame_strike: { key: 'explosion_fire' },
-    energy_strike: { key: 'energy_damage' },
+    flame_strike: { sheet: '197242-197249', impact: '195450-195457' },
+    energy_strike: { sheet: '197250-197257' },
     death_strike: { sheet: '197384-197391' },
     death_echo: { sheet: '195010-195017' },
     default_missile: { key: 'energy_missile' }

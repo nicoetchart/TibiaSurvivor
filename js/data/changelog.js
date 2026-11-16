@@ -2,6 +2,22 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-16', title: ['Master Sorcerer', 'Master Sorcerer'], chg: [
+    ['Flame Strike nv.3: +5% críticos del hechizo (ya no +1 proyectil); radio +15% se mantiene.',
+     'Flame Strike L3: +5% crit chance for this spell (no extra projectile); +15% splash radius kept.'],
+    ['Flame Strike: proyectil 197242–197249 e impacto 195450–195457 (mismas direcciones que Energy/Death Strike).',
+     'Flame Strike: projectile 197242–197249 and impact 195450–195457 (same directional map as Energy/Death Strike).'],
+    ['Dev: Flame Strike como hechizo inicial (nv. 5).',
+     'Dev: Flame Strike as starter spell (level 5).'],
+    ['Golpe crítico: animación Tibia 195765–195778 sobre la criatura impactada.',
+     'Critical hits: Tibia animation 195765–195778 on the struck creature.'],
+    ['Energy Strike: encadenamiento 195004–195009 en la primera víctima, entre saltos y en cada objetivo.',
+     'Energy Strike: chain FX 195004–195009 on first hit, between targets, and on each hop target.'],
+    ['Energy Strike: proyectil 197250–197257 (9 direcciones, mismo mapa que Death Strike).',
+     'Energy Strike: projectile 197250–197257 (9 directions, same map as Death Strike).'],
+    ['Rage of the Skies: cada rayo usa el strip Tibia 195458–195474 (17 fotogramas).',
+     'Rage of the Skies: each strike uses Tibia strip 195458–195474 (17 frames).'],
+  ] },
   { d: '2026-11-15', title: ['Master Sorcerer', 'Master Sorcerer'], chg: [
     ['Death Echo: rejilla 5×5 con paso sqm Tibia (antes radius 50 amontonaba los 25 FX).',
      'Death Echo: 5×5 grid uses full Tibia sqm step (radius 50 had collapsed all 25 FX).'],

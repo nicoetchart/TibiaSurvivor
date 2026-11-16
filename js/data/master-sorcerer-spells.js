@@ -28,7 +28,7 @@ G.MasterSorcererSpells = [
     levels: [
       { level: 1, summary: 'Impacto al más cercano: Burning y onda de fuego.' },
       { level: 2, summary: '+25% daño; +15% radio de la onda', mods: { dmg: 1.25, radius: 1.15 } },
-      { level: 3, summary: '+1 proyectil; +15% radio', mods: { count: 1, spread: 1.2, radius: 1.15 } },
+      { level: 3, summary: '+5% críticos con este hechizo; +15% radio', mods: { radius: 1.15 }, msUnlock: ['spell_crit:0.05'] },
       { level: 4, summary: '-20% recarga; +10% radio', mods: { cd: 0.8, radius: 1.1 } },
       { level: 5, summary: 'Explosión al derrotar enemigos ardiendo; +10% radio.', mods: { radius: 1.1 }, msUnlock: ['burn_kill_explosion'] }
     ]
