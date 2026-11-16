@@ -45,6 +45,8 @@ G.TIBIA_SPRITE_MAP = {
   effects: {
     flame_strike: { key: 'explosion_fire' },
     energy_strike: { key: 'energy_damage' },
+    death_strike: { sheet: '197384-197391' },
+    death_echo: { sheet: '195010-195017' },
     default_missile: { key: 'energy_missile' }
   },
 

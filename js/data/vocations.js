@@ -14,10 +14,11 @@ G.Vocations = (() => {
       armor: 0,
       playerCreatureId: 'wander_archmage',
       legacyPartnerId: 99001,
-      startingAbility: 'energy_beam',
-      startingSpellId: 'energy_beam',
-      /** Dev / pruebas: Energy Beam desde el arranque. */
-      startingSpellIds: ['energy_beam'],
+      startingAbility: 'death_echo',
+      startingSpellId: 'death_echo',
+      /** Dev / pruebas: Death Echo desde el arranque al nv. 5 del hechizo. */
+      startingSpellIds: ['death_echo'],
+      startingSpellLevels: { death_echo: 5 },
       baseStats: {
         maxHp: 82,
         movementSpeedMul: 1.04,

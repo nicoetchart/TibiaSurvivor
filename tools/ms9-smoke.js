@@ -94,24 +94,24 @@ for (const id of passiveIds) {
 /** Recetas MS-9 (ids deben existir; no imponen hechizo único obligatorio en todas). */
 const BUILDS = {
   fire: {
-    spells: ['flame_strike', 'fire_wave', 'great_fire_wave', 'hells_core'],
-    passives: ['master_of_flames']
+    spells: ['flame_strike', 'fire_wave', 'hells_core'],
+    passives: ['master_of_elements']
   },
   energy: {
-    spells: ['energy_strike', 'energy_wave', 'energy_beam', 'rage_of_the_skies'],
-    passives: ['master_of_thunder']
+    spells: ['energy_strike', 'energy_beam', 'rage_of_the_skies'],
+    passives: ['master_of_elements']
   },
   death: {
-    spells: ['flame_strike', 'death_strike'],
-    passives: ['master_of_decay', 'aura_of_exposed_weakness']
+    spells: ['death_strike', 'great_death_beam', 'death_echo'],
+    passives: ['master_of_elements', 'aura_of_exposed_weakness']
   },
   hybrid: {
     spells: ['flame_strike', 'energy_strike', 'fire_wave', 'energy_beam'],
-    passives: ['master_of_flames', 'master_of_thunder']
+    passives: ['master_of_elements']
   },
   defensive: {
     spells: ['flame_strike', 'fire_wave'],
-    passives: ['ultimate_healing', 'intense_healing', 'magic_shield', 'strong_haste']
+    passives: ['ultimate_healing', 'strong_haste']
   }
 };
 

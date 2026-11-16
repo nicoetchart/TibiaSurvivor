@@ -190,6 +190,7 @@ G.Player = class Player {
     if (!inst) return false;
     this.passiveInst[id] = inst;
     if (G.MasterSorcerer) G.MasterSorcerer.refreshPassives(this);
+    if (id === 'ultimate_healing' && !this.dead) this.hp = this.maxHp;
     return true;
   }
 
@@ -197,6 +198,7 @@ G.Player = class Player {
     const s = this.passiveInst[id];
     if (!s || !G.Abilities.levelUp(s)) return false;
     if (G.MasterSorcerer) G.MasterSorcerer.refreshPassives(this);
+    if (id === 'ultimate_healing' && !this.dead) this.hp = this.maxHp;
     return true;
   }
 
@@ -523,8 +525,8 @@ G.Player = class Player {
     const all = G.EnemyMgr.all();
     const m = this.activeMove();
     let tg = null;
-    if (m && m.id === 'energy_beam' && G.Combat.pickEnergyBeamTarget) {
-      tg = G.Combat.pickEnergyBeamTarget(this, m);
+    if (m && (m.id === 'energy_beam' || m.id === 'great_death_beam') && G.Combat.pickTibiaBeamTarget) {
+      tg = G.Combat.pickTibiaBeamTarget(this, m);
     } else if (m && m.def && m.def.msTarget && G.Combat.pickStrikeTarget) {
       tg = G.Combat.pickStrikeTarget(this, m);
     } else if (m && m.id === 'fire_wave' && G.Combat.pickFireWaveTarget) {

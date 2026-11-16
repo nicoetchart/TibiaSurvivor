@@ -86,7 +86,7 @@ G.MasterSorcererSpells = [
       { level: 2, summary: '+30% daño', mods: { dmg: 1.3 } },
       { level: 3, summary: 'Aplica Curse 3 s', msUnlock: ['curse:3'] },
       { level: 4, summary: '-20% recarga', mods: { cd: 0.8 } },
-      { level: 5, summary: 'Ejecuta normales <15% vida; bonus limitado vs jefes.', msUnlock: ['execute:0.15', 'boss_execute_bonus'] }
+      { level: 5, summary: 'Ejecuta normales ≤30% vida; bonus limitado vs jefes.', msUnlock: ['execute:0.30', 'boss_execute_bonus'] }
     ]
   },
   {
@@ -115,55 +115,6 @@ G.MasterSorcererSpells = [
     ]
   },
   {
-    id: 'energy_wave',
-    name: 'Energy Wave',
-    incantation: 'exevo vis hur',
-    vocationId: 'master_sorcerer',
-    element: 'energy',
-    kind: 'beam',
-    type: 'energy',
-    desc: 'Onda frontal que atraviesa enemigos.',
-    cd: 1.08,
-    dmg: 16,
-    radius: 200,
-    width: 20,
-    tags: ['wave', 'energy', 'offensive'],
-    weight: 8,
-    requirements: { minPlayerLevel: 1 },
-    levels: [
-      { level: 1, summary: 'Onda frontal penetrante.' },
-      { level: 2, summary: '+25% daño', mods: { dmg: 1.25 } },
-      { level: 3, summary: '+35% ancho', mods: { width: 1.35 } },
-      { level: 4, summary: '-20% recarga', mods: { cd: 0.8 } },
-      { level: 5, summary: 'Se divide en tres direcciones.', msUnlock: ['wave_split:3'] }
-    ]
-  },
-  {
-    id: 'great_fire_wave',
-    name: 'Great Fire Wave',
-    incantation: 'exevo gran flam hur',
-    vocationId: 'master_sorcerer',
-    element: 'fire',
-    kind: 'melee',
-    type: 'fire',
-    desc: 'Gran cono frontal de fuego.',
-    cd: 1.28,
-    dmg: 20,
-    radius: 72,
-    arc: 2.0,
-    knock: 55,
-    tags: ['wave', 'fire', 'offensive'],
-    weight: 7,
-    requirements: { minPlayerLevel: 6 },
-    levels: [
-      { level: 1, summary: 'Gran cono frontal de fire damage.' },
-      { level: 2, summary: '+30% daño', mods: { dmg: 1.3 } },
-      { level: 3, summary: '+30% alcance', mods: { radius: 1.3 } },
-      { level: 4, summary: '-20% recarga', mods: { cd: 0.8 } },
-      { level: 5, summary: 'Segunda wave más pequeña en dirección opuesta.', msUnlock: ['reverse_wave'] }
-    ]
-  },
-  {
     id: 'energy_beam',
     name: 'Energy Beam',
     incantation: 'exevo vis lux',
@@ -171,8 +122,8 @@ G.MasterSorcererSpells = [
     element: 'energy',
     kind: 'beam',
     type: 'energy',
-    desc: 'Rayo de 1×5 sqm hacia el más cercano; atraviesa enemigos.',
-    cd: 1.15,
+    desc: 'Rayo hacia el más cercano; atraviesa enemigos. Nv.4 Electrified; nv.5 forma en T.',
+    cd: 1.3,
     dmg: 20,
     radius: 50,
     width: 12,
@@ -183,33 +134,34 @@ G.MasterSorcererSpells = [
     levels: [
       { level: 1, summary: 'Rayo 1×5 sqm (sprite Tibia) hacia el más cercano.' },
       { level: 2, summary: '+25% daño', mods: { dmg: 1.25 } },
-      { level: 3, summary: '+40% longitud', mods: { radius: 1.4 } },
-      { level: 4, summary: '-20% recarga', mods: { cd: 0.8 } },
-      { level: 5, summary: 'El rayo persiste y puede golpear dos veces.', msUnlock: ['beam_persist_double'] }
+      { level: 3, summary: 'Alcance 1×7 sqm (dos sqm extra; mismo ancho).', msUnlock: ['energy_beam_len7'] },
+      { level: 4, summary: 'Electrified 2 s al golpear; −20% recarga', mods: { cd: 0.8 }, msUnlock: ['electrified:2'] },
+      { level: 5, summary: '+25% daño; punta 1×3 y cuerpo 3×3 (6 sqm).', mods: { dmg: 1.25 }, msUnlock: ['energy_beam_wide'] }
     ]
   },
   {
-    id: 'great_energy_beam',
-    name: 'Great Energy Beam',
-    incantation: 'exevo gran vis lux',
+    id: 'great_death_beam',
+    name: 'Great Death Beam',
+    incantation: 'exevo gran mort lux',
     vocationId: 'master_sorcerer',
-    element: 'energy',
+    element: 'death',
     kind: 'beam',
-    type: 'energy',
-    desc: 'Rayo ancho de largo alcance.',
-    cd: 1.38,
-    dmg: 24,
-    radius: 400,
-    width: 28,
-    tags: ['beam', 'energy', 'offensive'],
-    weight: 7,
+    type: 'death',
+    desc: 'Rayo death al más cercano (1×7 en nv.3); nv.4 Curse; nv.5 +40% daño.',
+    cd: 1.3,
+    dmg: 28,
+    radius: 50,
+    width: 12,
+    tags: ['beam', 'death', 'offensive'],
+    weight: 6,
     requirements: { minPlayerLevel: 6 },
+    msTarget: 'nearest',
     levels: [
-      { level: 1, summary: 'Rayo ancho y largo alcance.' },
-      { level: 2, summary: '+30% daño', mods: { dmg: 1.3 } },
-      { level: 3, summary: '+35% ancho', mods: { width: 1.35 } },
-      { level: 4, summary: '-20% recarga', mods: { cd: 0.8 } },
-      { level: 5, summary: 'Cuatro direcciones cardinales a la vez.', msUnlock: ['beam_cardinal:4'] }
+      { level: 1, summary: 'Rayo 1×5 sqm (sprite Tibia) hacia el más cercano.' },
+      { level: 2, summary: '+25% daño', mods: { dmg: 1.25 } },
+      { level: 3, summary: 'Alcance 1×7 sqm (dos sqm extra; mismo ancho).', msUnlock: ['great_death_beam_len7'] },
+      { level: 4, summary: 'Curse 3 s al golpear; −20% recarga', mods: { cd: 0.8 }, msUnlock: ['curse:3'] },
+      { level: 5, summary: '+40% daño; mantiene rayo 1×7.', mods: { dmg: 1.4 } }
     ]
   },
   {
@@ -262,6 +214,30 @@ G.MasterSorcererSpells = [
       { level: 3, summary: '+3 rayos', mods: { count: 3 } },
       { level: 4, summary: '-20% recarga', mods: { cd: 0.8 } },
       { level: 5, summary: 'Tormenta 3 s (prioriza elites y jefes).', msUnlock: ['lightning_storm:3'] }
+    ]
+  },
+  {
+    id: 'death_echo',
+    name: 'Death Echo',
+    incantation: 'exevo mort ora',
+    vocationId: 'master_sorcerer',
+    element: 'death',
+    kind: 'death_echo',
+    type: 'death',
+    desc: 'Área 5×5 sqm de muerte sobre la criatura más cercana (sprite Tibia).',
+    cd: 2.35,
+    dmg: 120,
+    radius: 50,
+    tags: ['ultimate', 'death', 'offensive'],
+    weight: 4,
+    requirements: { minPlayerLevel: 10, minSpellsOfElement: { death: 2 } },
+    msTarget: 'nearest',
+    levels: [
+      { level: 1, summary: '5×5 sqm centrado en el objetivo más cercano.' },
+      { level: 2, summary: '+30% daño', mods: { dmg: 1.3 } },
+      { level: 3, summary: 'Aplica Curse 3 s', msUnlock: ['curse:3'] },
+      { level: 4, summary: '-20% recarga', mods: { cd: 0.8 } },
+      { level: 5, summary: 'Segundo eco 1 s después (50% daño).', msUnlock: ['death_echo_repeat:1'] }
     ]
   }
 ];

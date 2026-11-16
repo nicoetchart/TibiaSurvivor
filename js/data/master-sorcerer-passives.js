@@ -3,66 +3,24 @@
  */
 G.MasterSorcererPassives = [
   {
-    id: 'master_of_flames',
-    name: 'Master of Flames',
-    incantation: '',
-    vocationId: 'master_sorcerer',
-    element: 'fire',
-    kind: 'passive',
-    type: 'fire',
-    desc: '+8% daño de fuego por nivel (máx. +40%).',
-    tags: ['passive', 'fire'],
-    weight: 7,
-    passiveKey: 'master_of_flames',
-    effectPerLevel: { fireDamageMul: 0.08 },
-    levels: [
-      { level: 1, summary: '+8% fire damage.' },
-      { level: 2, summary: '+8% fire damage (total +16%).' },
-      { level: 3, summary: '+8% fire damage (total +24%).' },
-      { level: 4, summary: '+8% fire damage (total +32%).' },
-      { level: 5, summary: '+8% fire damage (total +40%).' }
-    ]
-  },
-  {
-    id: 'master_of_thunder',
-    name: 'Master of Thunder',
+    id: 'master_of_elements',
+    name: 'Master of Elements',
     incantation: '',
     vocationId: 'master_sorcerer',
     element: 'energy',
     kind: 'passive',
     type: 'energy',
-    desc: '+8% daño de energía por nivel (máx. +40%).',
-    tags: ['passive', 'energy'],
-    weight: 7,
-    passiveKey: 'master_of_thunder',
-    effectPerLevel: { energyDamageMul: 0.08 },
+    desc: '+8% daño fire, energy y death por nivel (máx. +40% cada uno).',
+    tags: ['passive', 'offensive'],
+    weight: 8,
+    passiveKey: 'master_of_elements',
+    effectPerLevel: { fireDamageMul: 0.08, energyDamageMul: 0.08, deathDamageMul: 0.08 },
     levels: [
-      { level: 1, summary: '+8% energy damage.' },
-      { level: 2, summary: '+8% energy damage (total +16%).' },
-      { level: 3, summary: '+8% energy damage (total +24%).' },
-      { level: 4, summary: '+8% energy damage (total +32%).' },
-      { level: 5, summary: '+8% energy damage (total +40%).' }
-    ]
-  },
-  {
-    id: 'master_of_decay',
-    name: 'Master of Decay',
-    incantation: '',
-    vocationId: 'master_sorcerer',
-    element: 'death',
-    kind: 'passive',
-    type: 'death',
-    desc: '+8% daño de muerte por nivel (máx. +40%).',
-    tags: ['passive', 'death'],
-    weight: 7,
-    passiveKey: 'master_of_decay',
-    effectPerLevel: { deathDamageMul: 0.08 },
-    levels: [
-      { level: 1, summary: '+8% death damage.' },
-      { level: 2, summary: '+8% death damage (total +16%).' },
-      { level: 3, summary: '+8% death damage (total +24%).' },
-      { level: 4, summary: '+8% death damage (total +32%).' },
-      { level: 5, summary: '+8% death damage (total +40%).' }
+      { level: 1, summary: '+8% daño en los tres elementos.' },
+      { level: 2, summary: '+8% por elemento (total +16%).' },
+      { level: 3, summary: '+8% por elemento (total +24%).' },
+      { level: 4, summary: '+8% por elemento (total +32%).' },
+      { level: 5, summary: '+8% por elemento (total +40%).' }
     ]
   },
   {
@@ -115,59 +73,17 @@ G.MasterSorcererPassives = [
     element: 'holy',
     kind: 'passive',
     type: 'holy',
-    desc: '+8% Maximum Health por nivel (máx. +40%).',
+    desc: '+8% vida máx. y +0,2 HP/s por nivel; al subir, cura al máximo.',
     tags: ['passive', 'defensive'],
-    weight: 5,
+    weight: 6,
     passiveKey: 'ultimate_healing',
-    effectPerLevel: { maxHealthMul: 0.08 },
+    effectPerLevel: { maxHealthMul: 0.08, regenFlat: 0.2 },
     levels: [
-      { level: 1, summary: '+8% Maximum Health.' },
-      { level: 2, summary: '+8% Maximum Health (total +16%).' },
-      { level: 3, summary: '+8% Maximum Health (total +24%).' },
-      { level: 4, summary: '+8% Maximum Health (total +32%).' },
-      { level: 5, summary: '+8% Maximum Health (total +40%).' }
-    ]
-  },
-  {
-    id: 'intense_healing',
-    name: 'Intense Healing',
-    incantation: 'exura gran',
-    vocationId: 'master_sorcerer',
-    element: 'holy',
-    kind: 'passive',
-    type: 'holy',
-    desc: '+0.2 HP/s por nivel (máx. +1 HP/s).',
-    tags: ['passive', 'defensive'],
-    weight: 5,
-    passiveKey: 'intense_healing',
-    effectPerLevel: { regenFlat: 0.2 },
-    levels: [
-      { level: 1, summary: '+0.2 HP per second.' },
-      { level: 2, summary: '+0.2 HP/s (total +0.4 HP/s).' },
-      { level: 3, summary: '+0.2 HP/s (total +0.6 HP/s).' },
-      { level: 4, summary: '+0.2 HP/s (total +0.8 HP/s).' },
-      { level: 5, summary: '+0.2 HP/s (total +1 HP/s).' }
-    ]
-  },
-  {
-    id: 'magic_shield',
-    name: 'Magic Shield',
-    incantation: 'utamo vita',
-    vocationId: 'master_sorcerer',
-    element: 'energy',
-    kind: 'passive',
-    type: 'energy',
-    desc: 'Escudo = 5% de Maximum Health por nivel (máx. 25%).',
-    tags: ['passive', 'defensive'],
-    weight: 5,
-    passiveKey: 'magic_shield',
-    effectPerLevel: { magicShieldMaxHpFrac: 0.05 },
-    levels: [
-      { level: 1, summary: 'Shield 5% of Maximum Health.' },
-      { level: 2, summary: 'Shield 10% of Maximum Health.' },
-      { level: 3, summary: 'Shield 15% of Maximum Health.' },
-      { level: 4, summary: 'Shield 20% of Maximum Health.' },
-      { level: 5, summary: 'Shield 25% of Maximum Health.' }
+      { level: 1, summary: '+8% vida máx.; +0,2 HP/s; curación completa.' },
+      { level: 2, summary: '+8% HP y +0,2 HP/s por nivel; curación completa al subir.' },
+      { level: 3, summary: 'Total +24% vida y +0,6 HP/s; curación completa al subir.' },
+      { level: 4, summary: 'Total +32% vida y +0,8 HP/s; curación completa al subir.' },
+      { level: 5, summary: 'Total +40% vida y +1 HP/s; curación completa al subir.' }
     ]
   },
   {

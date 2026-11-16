@@ -148,6 +148,16 @@ G.Game = (() => {
     // antes de aprender nada: addMove ya los coloca.
     (save.pbind && save.pbind[mon.dex] || []).forEach((id, i) => { if (id) pl.bind[id] = i; });
     for (const id of startIds) pl.addMove(id);
+    const voc = G.Vocations && G.Vocations.defaultVocation && G.Vocations.defaultVocation();
+    const spellLvls = voc && voc.startingSpellLevels;
+    if (spellLvls && G.Moves && G.Moves.levelUp) {
+      for (const id of startIds) {
+        const want = spellLvls[id];
+        if (!want || want < 2) continue;
+        const m = pl.moves.find(x => x.id === id);
+        while (m && m.lvl < want && G.Moves.levelUp(m)) {}
+      }
+    }
     // Mejora "Veto": movimientos que no quieres que te salgan.
     pl.banned = new Set((save.pban && save.pban[mon.dex] || []).slice(0, perks.bans));
     // Mejora "Repertorio": un segundo movimiento de ataque al azar.
@@ -858,24 +868,24 @@ G.Game = (() => {
       tampered = true;
       const PRESETS = {
         fire: {
-          spells: ['flame_strike', 'fire_wave', 'great_fire_wave', 'hells_core'],
-          passives: ['master_of_flames']
+          spells: ['flame_strike', 'fire_wave', 'hells_core'],
+          passives: ['master_of_elements']
         },
         energy: {
-          spells: ['energy_strike', 'energy_wave', 'energy_beam', 'rage_of_the_skies'],
-          passives: ['master_of_thunder']
+          spells: ['energy_strike', 'energy_beam', 'rage_of_the_skies'],
+          passives: ['master_of_elements']
         },
         death: {
-          spells: ['flame_strike', 'death_strike'],
-          passives: ['master_of_decay', 'aura_of_exposed_weakness']
+          spells: ['death_strike', 'great_death_beam', 'death_echo'],
+          passives: ['master_of_elements', 'aura_of_exposed_weakness']
         },
         hybrid: {
           spells: ['flame_strike', 'energy_strike', 'fire_wave', 'energy_beam'],
-          passives: ['master_of_flames', 'master_of_thunder']
+          passives: ['master_of_elements']
         },
         defensive: {
           spells: ['flame_strike', 'fire_wave'],
-          passives: ['ultimate_healing', 'intense_healing', 'magic_shield', 'strong_haste']
+          passives: ['ultimate_healing', 'strong_haste']
         }
       };
       const b = PRESETS[preset];

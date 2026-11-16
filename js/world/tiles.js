@@ -741,6 +741,54 @@ G.Tiles = (() => {
     };
   }
 
+  const DEATH_ECHO_SHEET = '195010-195017';
+  const DEATH_ECHO_FPS = 12;
+  const DEATH_ECHO_FRAMES = 8;
+  const DEATH_ECHO_DRAW_MUL = 0.5;
+
+  function deathEchoStripMeta(sheet) {
+    const tw = (sheet && sheet.frameW) || FIRE_WAVE_ART_TILE;
+    const th = (sheet && sheet.frameH) || FIRE_WAVE_ART_TILE;
+    const maxFr = sheet && sheet.ready && sheet.img
+      ? Math.floor(sheet.img.naturalWidth / tw) : DEATH_ECHO_FRAMES;
+    const frames = Math.min(DEATH_ECHO_FRAMES, Math.max(1, maxFr));
+    const stripY = (sheet && sheet.stripY) || 0;
+    const scale = fireWaveVisualWorld() / tw * DEATH_ECHO_DRAW_MUL;
+    const step = fireWaveCellWorld();
+    const drawH = Math.round(th * scale);
+    return {
+      tileW: tw, tileH: th, stripY, frames, scale, fps: DEATH_ECHO_FPS,
+      stripOffX: fireWaveStripOffX(scale, tw),
+      stripOffY: Math.round((drawH - step) * 0.35),
+      life: frames / DEATH_ECHO_FPS
+    };
+  }
+
+  function playDeathEchoCell(x, y) {
+    if (!G.FX || !G.FX.itemStrip) return;
+    const sheet = getSpellSheet(DEATH_ECHO_SHEET);
+    const emit = () => {
+      if (sheet.failed) return;
+      const m = deathEchoStripMeta(sheet);
+      G.FX.itemStrip(DEATH_ECHO_SHEET, x, y, {
+        tibiaStripDir: 'spells',
+        frames: m.frames,
+        fps: m.fps,
+        tileW: m.tileW,
+        tileH: m.tileH,
+        stripY: m.stripY,
+        stripAnchor: 'bottom',
+        stripOffX: m.stripOffX,
+        stripOffY: m.stripOffY,
+        scale: m.scale,
+        life: m.life,
+        fade: false
+      });
+    };
+    if (sheet.ready) emit();
+    else if (!sheet.failed) sheet.img.addEventListener('load', emit, { once: true });
+  }
+
   function playHellsCoreCell(x, y) {
     if (!G.FX || !G.FX.itemStrip) return;
     const sheet = getSpellSheet(HELLS_CORE_SHEET);
@@ -830,6 +878,89 @@ G.Tiles = (() => {
       if (sheet.failed) return;
       const m = energyBeamStripMeta(sheet);
       G.FX.itemStrip(ENERGY_BEAM_SHEET, x, y, {
+        tibiaStripDir: 'spells',
+        frames: m.frames,
+        fps: m.fps,
+        tileW: m.tileW,
+        tileH: m.tileH,
+        stripY: m.stripY,
+        stripAnchor: 'bottom',
+        stripOffX: m.stripOffX,
+        stripOffY: m.stripOffY,
+        scale: m.scale,
+        life: m.life,
+        fade: false
+      });
+    };
+    if (sheet.ready) emit();
+    else if (!sheet.failed) sheet.img.addEventListener('load', emit, { once: true });
+  }
+
+  /** Death Strike projectile — spells/197384-197391.png (9×32; celda 5 vacía). */
+  const DEATH_STRIKE_PROJ_SHEET = '197384-197391';
+  const DEATH_STRIKE_PROJ_FRAMES = 9;
+  /** Strip s1…s9: NW,N,NE,W,∅,E,SW,S,SE → dirFromAngle 0=S … 7=SW. */
+  const DEATH_STRIKE_PROJ_DIR_MAP = [7, 8, 5, 2, 1, 0, 3, 6];
+
+  let _deathStrikeProjCache = null;
+
+  function deathStrikeProjectileOpts() {
+    if (_deathStrikeProjCache) return Object.assign({}, _deathStrikeProjCache);
+    const sheet = getSpellSheet(DEATH_STRIKE_PROJ_SHEET);
+    const tw = (sheet && sheet.frameW) || FIRE_WAVE_ART_TILE;
+    const th = (sheet && sheet.frameH) || FIRE_WAVE_ART_TILE;
+    const maxFr = sheet && sheet.ready && sheet.img
+      ? Math.floor(sheet.img.naturalWidth / tw) : DEATH_STRIKE_PROJ_FRAMES;
+    const frames = Math.min(DEATH_STRIKE_PROJ_FRAMES, Math.max(1, maxFr));
+    const scale = energyBeamVisualWorld() / tw;
+    const step = energyBeamCellWorld();
+    const drawH = Math.round(th * scale);
+    _deathStrikeProjCache = {
+      sheet: DEATH_STRIKE_PROJ_SHEET,
+      frames, dirStrip: true, dirMap: DEATH_STRIKE_PROJ_DIR_MAP,
+      tileW: tw, tileH: th, stripY: (sheet && sheet.stripY) || 0,
+      scale,
+      stripOffX: fireWaveStripOffX(scale, tw),
+      stripOffY: Math.round((drawH - step) * 0.35)
+    };
+    return Object.assign({}, _deathStrikeProjCache);
+  }
+
+  /** Great Death Beam — strip spells/194131-194141.png (11×32×32). */
+  const GREAT_DEATH_BEAM_SHEET = '194131-194141';
+  const GREAT_DEATH_BEAM_FPS = 14;
+  const GREAT_DEATH_BEAM_FRAMES = 11;
+
+  function greatDeathBeamStripMeta(sheet) {
+    const tw = (sheet && sheet.frameW) || FIRE_WAVE_ART_TILE;
+    const th = (sheet && sheet.frameH) || FIRE_WAVE_ART_TILE;
+    const maxFr = sheet && sheet.ready && sheet.img
+      ? Math.floor(sheet.img.naturalWidth / tw) : GREAT_DEATH_BEAM_FRAMES;
+    const frames = Math.min(GREAT_DEATH_BEAM_FRAMES, Math.max(1, maxFr));
+    const stripY = (sheet && sheet.stripY) || 0;
+    const scale = energyBeamVisualWorld() / tw;
+    const step = energyBeamCellWorld();
+    const drawH = Math.round(th * scale);
+    return {
+      tileW: tw, tileH: th, stripY, frames, scale, fps: GREAT_DEATH_BEAM_FPS,
+      stripOffX: fireWaveStripOffX(scale, tw),
+      stripOffY: Math.round((drawH - step) * 0.35),
+      life: frames / GREAT_DEATH_BEAM_FPS
+    };
+  }
+
+  /** Impacto Death Strike = mismo strip que Great Death Beam (194131–194141). */
+  function playDeathStrikeImpact(x, y) {
+    playGreatDeathBeamCell(x, y);
+  }
+
+  function playGreatDeathBeamCell(x, y) {
+    if (!G.FX || !G.FX.itemStrip) return;
+    const sheet = getSpellSheet(GREAT_DEATH_BEAM_SHEET);
+    const emit = () => {
+      if (sheet.failed) return;
+      const m = greatDeathBeamStripMeta(sheet);
+      G.FX.itemStrip(GREAT_DEATH_BEAM_SHEET, x, y, {
         tibiaStripDir: 'spells',
         frames: m.frames,
         fps: m.fps,
@@ -1351,10 +1482,15 @@ G.Tiles = (() => {
   getSpellSheet(FIRE_WAVE_SHEET);
   getSpellSheet(HELLS_CORE_SHEET);
   getSpellSheet(ENERGY_BEAM_SHEET);
+  getSpellSheet(DEATH_STRIKE_PROJ_SHEET);
+  getSpellSheet(GREAT_DEATH_BEAM_SHEET);
+  getSpellSheet(DEATH_ECHO_SHEET);
 
   return { T, BIOMES, NORMAL, ARENA, ARENA_THEMES, ARENA_TYPES, paintChunk, propSprite, clearProps,
            drawTrapPoisonTibia, drawTrapExplosiveTibia, drawItemStripFrame, drawSpellStripFrame,
-           playPoisonTrapBurst, playExplosiveTrapBurst, playFireWaveCell, playHellsCoreCell, playEnergyBeamCell,
+           playPoisonTrapBurst, playExplosiveTrapBurst, playFireWaveCell, playDeathEchoCell, playHellsCoreCell,
+           playEnergyBeamCell, playGreatDeathBeamCell, playDeathStrikeImpact,
+           deathStrikeProjectileOpts,
            fireWaveCellWorld, hellsCoreCellWorld, energyBeamCellWorld, trapBurstDrawOffX,
            poisonTrapStepRadius, tibiaFlatTrapStepRadius, trapStepRadius, preloadRockSprites,
            /** Índice de bioma de la arena de un tipo. */

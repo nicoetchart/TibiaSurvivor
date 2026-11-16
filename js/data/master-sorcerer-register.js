@@ -3,8 +3,8 @@
  */
 G.MasterSorcerer = (() => {
   const VOCATION_ID = 'master_sorcerer';
-  const SPELL_COUNT = 10;
-  const PASSIVE_COUNT = 9;
+  const SPELL_COUNT = 9;
+  const PASSIVE_COUNT = 5;
   const MAX_LEVEL = 5;
   /** Cooldown mínimo de hechizos MS (Avatar of Storm no puede bajar de aquí). */
   const MIN_SPELL_COOLDOWN = 0.35;
@@ -220,7 +220,8 @@ G.MasterSorcerer = (() => {
     if (newMaxHp !== pl.maxHp) {
       const ratio = pl.maxHp > 0 ? pl.hp / pl.maxHp : 1;
       pl.maxHp = newMaxHp;
-      pl.hp = Math.min(pl.maxHp, Math.max(1, Math.round(ratio * pl.maxHp)));
+      if (pl.passiveInst && pl.passiveInst.ultimate_healing) pl.hp = pl.maxHp;
+      else pl.hp = Math.min(pl.maxHp, Math.max(1, Math.round(ratio * newMaxHp)));
     }
 
     pl.magicShieldMax = Math.round(pl.maxHp * (pl.msPassive.magicShieldMaxHpFrac || 0));
@@ -251,6 +252,18 @@ G.MasterSorcerer = (() => {
       const el = r.requiresElement;
       const has = pl.moves.some(m => m.type === el || (m.def && m.def.element === el));
       if (!has) return false;
+    }
+    if (r.minSpellsOfElement) {
+      for (const el of Object.keys(r.minSpellsOfElement)) {
+        const need = r.minSpellsOfElement[el] | 0;
+        const n = pl.moves.filter(m => {
+          const mt = m.type || (m.def && m.def.type) || (m.def && m.def.element);
+          if (mt !== el) return false;
+          const t = m.def && m.def.tags;
+          return t && t.indexOf('offensive') >= 0;
+        }).length;
+        if (n < need) return false;
+      }
     }
     return true;
   }

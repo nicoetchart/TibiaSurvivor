@@ -121,9 +121,27 @@ G.Projectiles = (() => {
       ctx.beginPath(); ctx.ellipse(p.x, p.y, p.r * 1.5, p.r * 0.6, 0, 0, 6.2832); ctx.fill();
     }
     for (const p of list) {
+      const a = p.orb ? 1 : Math.min(1, (p.life - p.t) * 4);
+      const tp = p.tibiaProj;
+      if (tp && G.Tiles && G.Tiles.drawSpellStripFrame) {
+        let fr;
+        if (tp.dirStrip && G.Sprites && G.Sprites.dirFromAngle) {
+          const d = G.Sprites.dirFromAngle(Math.atan2(p.vy, p.vx));
+          fr = (tp.dirMap && tp.dirMap[d] != null) ? tp.dirMap[d] : d;
+          fr = Math.min(tp.frames - 1, Math.max(0, fr | 0));
+        } else {
+          const raw = p.t * (tp.fps || 12);
+          fr = Math.min(tp.frames - 1, Math.max(0, raw | 0));
+        }
+        try {
+          G.Tiles.drawSpellStripFrame(ctx, tp.sheet, fr, p.x, p.y - L, tp.scale, tp.frames,
+            tp.tileW, tp.tileH, a, tp.stripY || 0, 'center',
+            tp.stripOffX || 0, tp.stripOffY || 0);
+        } catch (e) { /* strip inválido */ }
+        continue;
+      }
       const v = p.vis || G.VFX.forType('normal');
       const shape = v.proj;
-      const a = p.orb ? 1 : Math.min(1, (p.life - p.t) * 4);
       let angle = 0;
       if (G.VFX.isDir(shape)) angle = p.orb ? p.oa + Math.PI / 2 : Math.atan2(p.vy, p.vx);
       else if (G.VFX.spins(shape)) angle = p.t * 9;

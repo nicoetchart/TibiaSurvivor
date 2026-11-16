@@ -2,6 +2,30 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-15', title: ['Master Sorcerer', 'Master Sorcerer'], chg: [
+    ['Death Echo: rejilla 5×5 con paso sqm Tibia (antes radius 50 amontonaba los 25 FX).',
+     'Death Echo: 5×5 grid uses full Tibia sqm step (radius 50 had collapsed all 25 FX).'],
+    ['Death Echo: animación 195010–195017 al 50 % en cada sqm del 5×5.',
+     'Death Echo: animation 195010–195017 at 50% scale per 5×5 sqm cell.'],
+    ['Death Echo (exevo mort ora): ultimate death nv.10 con 2 hechizos death; área 5×5 en el más cercano.',
+     'Death Echo (exevo mort ora): death ultimate at run level 10 with 2 death spells; 5×5 on nearest target.'],
+    ['Death Echo: hechizo inicial dev al nv. 5 (eco doble activo).',
+     'Death Echo: dev starter spell at level 5 (second echo unlock active).'],
+    ['Death Strike: proyectil 197384–197391 (9 celdas; la 5ª vacía) con mapa NW…SE e impacto 194131–194141.',
+     'Death Strike: projectile 197384–197391 (9 slots; 5th empty) NW…SE map and 194131–194141 impact.'],
+    ['Death Strike nv.5: ejecución en criaturas normales con ≤30% vida (antes 15%).',
+     'Death Strike L5: execute on normal creatures at ≤30% HP (was 15%).'],
+    ['Great Death Beam: hechizo inicial dev; dmg 28; nv.5 +40% daño y sigue 1×7 (sin forma T).',
+     'Great Death Beam: dev starter; base 28 dmg; L5 +40% dmg, stays 1×7 line (no T pattern).'],
+    ['Great Death Beam (exevo gran mort lux): misma lógica que Energy Beam, daño death y sprite 194131–194141.',
+     'Great Death Beam: same grid logic as Energy Beam, death damage, sprite strip 194131–194141.'],
+    ['MS: eliminados Great Fire Wave, Energy Wave, Great Energy Beam, Intense Healing y Magic Shield del pool.',
+     'MS: removed Great Fire Wave, Energy Wave, Great Energy Beam, Intense Healing, and Magic Shield from the pool.'],
+    ['MS: Master of Flames/Thunder/Decay unificados en Master of Elements (+8% fire/energy/death por nivel).',
+     'MS: Master of Flames/Thunder/Decay merged into Master of Elements (+8% fire/energy/death damage per level).'],
+    ['Ultimate Healing: +8% vida máx. y +0,2 HP/s por nivel; al aprender o subir, cura a vida máxima.',
+     'Ultimate Healing: +8% max HP and +0.2 HP/s per level; full heal on acquire or level-up.']
+  ] },
   { d: '2026-11-14', title: ['Combate', 'Combat'], chg: [
     ['Hell\'s Core: área 11×11 sqm con esquinas vacías (patrón Tibia), no diamante lleno; animación 195395–195408 (13 fotogramas) por celda.',
      'Hell\'s Core: 11×11 sqm Tibia pattern with empty corners (not a solid diamond); 195395–195408 animation (13 frames) per cell.'],
@@ -9,8 +33,10 @@ G.CHANGELOG = [
      'Hell\'s Core: same grid step, draw scale, and stripOffX as Fire Wave (FX centered on each sqm and on the caster).'],
     ['Hell\'s Core: de nuevo tamaño de dibujo como Fire Wave; stripOffY baja el arte para centrarlo en el sqm sin encoger la explosión.',
      'Hell\'s Core: Fire Wave draw size again; stripOffY shifts art down to center on sqm without shrinking the blast.'],
-    ['Energy Beam: solo se lanza si el más cercano cabe en la hitbox del rayo (alcance 1×5 sqm).',
-     'Energy Beam: casts only when the nearest valid enemy is inside the 1×5 sqm beam hitbox.'],
+    ['Energy Beam nv.5: punta 1×3, cuerpo 3×3 (6 sqm); nv.4 aplica Electrified 2 s a los golpeados.',
+     'Energy Beam L5: 1×3 tip, 3-wide ×3 body (6 sqm); L4 applies 2s Electrified on hit.'],
+    ['Energy Beam: solo se lanza si el más cercano cabe en la hitbox del rayo.',
+     'Energy Beam: casts only when the nearest valid enemy is inside the beam hitbox.'],
     ['Energy Beam: dirección libre hacia el más cercano (sin rejilla de 8 direcciones); sprite al 75 %.',
      'Energy Beam: free aim at nearest target (no 8-dir snap); sprite drawn at 75% scale.'],
     ['Energy Beam: rayo 1×5 sqm con animación 194043–194058 por sqm.',

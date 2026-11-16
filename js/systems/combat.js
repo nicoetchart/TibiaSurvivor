@@ -33,7 +33,7 @@ G.Combat = (() => {
     if (needsTarget(m)) {
       let ok = false;
       if (m.id === 'fire_wave') ok = anyEnemyInFireWaveCone(pl, m);
-      else if (m.id === 'energy_beam') ok = anyEnemyInEnergyBeam(pl, m);
+      else if (isTibiaGridBeam(m)) ok = anyEnemyInTibiaBeam(pl, m);
       else if (pl.target && G.U.dist(pl.x, pl.y, pl.target.x, pl.target.y) <= reach(m)) ok = true;
       if (!ok) { m.t = 0.05; return; }
     }
@@ -54,13 +54,10 @@ G.Combat = (() => {
       case 'projectile': fireProjectiles(pl, m); break;
       case 'melee':
         if (m.id === 'fire_wave') fireWave(pl, m);
-        else if (m.id === 'great_fire_wave') greatFireWave(pl, m);
         else melee(pl, m);
         break;
       case 'beam':
-        if (m.id === 'energy_wave') energyWave(pl, m);
-        else if (m.id === 'energy_beam') energyBeam(pl, m);
-        else if (m.id === 'great_energy_beam') greatEnergyBeam(pl, m);
+        if (isTibiaGridBeam(m)) tibiaGridBeam(pl, m);
         else beam(pl, m);
         break;
       case 'nova':
@@ -76,6 +73,9 @@ G.Combat = (() => {
         if (m.id === 'rage_of_the_skies') rageOfTheSkies(pl, m);
         else meteors(pl, m);
         break;
+      case 'death_echo':
+        deathEcho(pl, m);
+        break;
       case 'turret':     turret(pl, m); break;
       case 'dash':       dash(pl, m); break;
       case 'trail':      trailPatch(pl, m); break;
@@ -83,11 +83,11 @@ G.Combat = (() => {
     }
   }
 
-  const TARGETED = ['melee', 'beam', 'projectile', 'boomerang', 'chain', 'meteor', 'dash', 'cone'];
+  const TARGETED = ['melee', 'beam', 'projectile', 'boomerang', 'chain', 'meteor', 'dash', 'cone', 'death_echo'];
   function needsTarget(m) { return TARGETED.includes(m.kind); }
   function reach(m, pl) {
     if (m.id === 'fire_wave') return fireWaveSearchRadius(m, 1, pl);
-    if (m.id === 'energy_beam') return energyBeamSearchRadius(m, pl);
+    if (isTibiaGridBeam(m)) return tibiaBeamSearchRadius(m, pl);
     if (m.kind === 'melee') return m.radius + 30;
     if (m.kind === 'beam') return m.radius + 20;
     if (m.kind === 'boomerang') return m.radius + 40;
@@ -95,6 +95,7 @@ G.Combat = (() => {
     if (m.kind === 'meteor') return 340;
     if (m.kind === 'dash') return m.radius + 60;
     if (m.kind === 'cone') return m.speed * m.life + 30;
+    if (m.kind === 'death_echo') return deathEchoCastReach(m, pl);
     return 520;
   }
 
@@ -131,10 +132,12 @@ G.Combat = (() => {
 
   function applySpellEffects(pl, e, m) {
     if (!m || ghost) return;
-    if (m.id === 'death_strike' && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'curse')) {
+    if ((m.id === 'death_strike' || m.id === 'great_death_beam')
+        && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'curse')) {
       e.applyCurse(G.MasterSorcerer.unlockValue(m, 'curse') || 3);
     }
-    if (m.id === 'energy_strike' && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'electrified')) {
+    if ((m.id === 'energy_strike' || m.id === 'energy_beam')
+        && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'electrified')) {
       e.applyElectrified(G.MasterSorcerer.unlockValue(m, 'electrified') || 2);
     }
   }
@@ -142,7 +145,7 @@ G.Combat = (() => {
   function computeStrikeDamage(pl, e, m, dmg) {
     if (m.type === 'death' && e.curse > 0) dmg *= 1.22;
     if (m.id === 'death_strike' && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'execute')) {
-      const frac = G.MasterSorcerer.unlockValue(m, 'execute') || 0.15;
+      const frac = G.MasterSorcerer.unlockValue(m, 'execute') || 0.30;
       const hpF = e.hp / Math.max(1, e.maxHp);
       if (hpF <= frac) {
         if (e.boss || e.elite) dmg = Math.min(Math.max(dmg, 1) * 1.35, e.maxHp * 0.06);
@@ -257,13 +260,17 @@ G.Combat = (() => {
         const off = (i / Math.max(1, n - 1) - 0.5) * spread * n;
         a = pl.aim + off + G.U.rand(-0.03, 0.03);
       }
-      G.Projectiles.spawn(Object.assign({
+      const shot = {
         x: pl.x + Math.cos(a) * 3, y: pl.y + Math.sin(a) * 3,
         vx: Math.cos(a) * m.speed, vy: Math.sin(a) * m.speed,
         dmg: m.dmg * pl.atk, r: m.size, life: m.life,
         pierce: m.pierce | 0, color: col, homing: m.homing || 0,
         hits: new Set(), vis, ghost, owner: pl
-      }, payload(m)));
+      };
+      if (m.id === 'death_strike' && G.Tiles && G.Tiles.deathStrikeProjectileOpts) {
+        shot.tibiaProj = G.Tiles.deathStrikeProjectileOpts();
+      }
+      G.Projectiles.spawn(Object.assign(shot, payload(m)));
     }
     G.FX.spark(pl.x + Math.cos(pl.aim) * pl.r, pl.y - G.LIFT + Math.sin(pl.aim) * pl.r,
                col, Math.cos(pl.aim), Math.sin(pl.aim), 3);
@@ -579,13 +586,46 @@ G.Combat = (() => {
     beam(pl, m);
   }
 
-  const ENERGY_BEAM_BASE_SQM = 5;
+  const TIBIA_BEAM_IDS = { energy_beam: 1, great_death_beam: 1 };
+  function isTibiaGridBeam(m) { return !!(m && TIBIA_BEAM_IDS[m.id]); }
 
-  function energyBeamPattern(m) {
-    const rows = Math.max(1, Math.round(ENERGY_BEAM_BASE_SQM * ((m.radius || 50) / 50)));
+  const TIBIA_BEAM_LEN1 = 5;
+  const TIBIA_BEAM_LEN3 = 7;
+  /** Nv.5: fy 1–3 centro; fy 4–6 ancho 3 (xx0xx×3 + x000x×3). */
+  const TIBIA_BEAM_WIDE_L5 = Object.freeze([
+    [0, 1], [0, 2], [0, 3],
+    [-1, 4], [0, 4], [1, 4],
+    [-1, 5], [0, 5], [1, 5],
+    [-1, 6], [0, 6], [1, 6]
+  ]);
+  const TIBIA_BEAM_WIDE_LEN = 6;
+
+  function tibiaBeamLen7(m) {
+    const token = m.id + '_len7';
+    return m.lvl >= 3 || (G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, token));
+  }
+
+  function tibiaBeamWide(m) {
+    if (m.id === 'great_death_beam') return false;
+    const token = m.id + '_wide';
+    return G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, token);
+  }
+
+  function tibiaBeamPattern(m) {
+    if (tibiaBeamWide(m)) return TIBIA_BEAM_WIDE_L5.slice();
+    const len = tibiaBeamLen7(m) ? TIBIA_BEAM_LEN3 : TIBIA_BEAM_LEN1;
     const cells = [];
-    for (let fy = 1; fy <= rows; fy++) cells.push([0, fy]);
+    for (let fy = 1; fy <= len; fy++) cells.push([0, fy]);
     return cells;
+  }
+
+  function playTibiaBeamCell(m, x, y) {
+    if (!G.Tiles) return;
+    if (m.id === 'great_death_beam' && G.Tiles.playGreatDeathBeamCell) {
+      G.Tiles.playGreatDeathBeamCell(x, y);
+    } else if (G.Tiles.playEnergyBeamCell) {
+      G.Tiles.playEnergyBeamCell(x, y);
+    }
   }
 
   function energyBeamGridStep(m) {
@@ -595,66 +635,73 @@ G.Combat = (() => {
     return cell * ((m.radius || 50) / 50);
   }
 
-  /** Centros del rayo 1×N en el aim real (sin cuantizar a 8 direcciones). */
-  function energyBeamCellPos(pl, aim, fy, step) {
+  /** Centros del patrón en aim libre (fx lateral, fy adelante). */
+  function energyBeamCellPos(pl, aim, fx, fy, step) {
     const ca = Math.cos(aim), sa = Math.sin(aim);
     const base = fireWaveClearFwd(pl, aim);
     const fwd = base + (fy - 1) * step + step * 0.5;
-    return { x: pl.x + ca * fwd, y: pl.y + sa * fwd };
+    const lat = fx * step;
+    return { x: pl.x + ca * fwd - sa * lat, y: pl.y + sa * fwd + ca * lat };
   }
 
-  function energyBeamSearchRadius(m, pl) {
+  function tibiaBeamMaxFwd(m) {
+    if (tibiaBeamWide(m)) return TIBIA_BEAM_WIDE_LEN;
+    return tibiaBeamLen7(m) ? TIBIA_BEAM_LEN3 : TIBIA_BEAM_LEN1;
+  }
+
+  function tibiaBeamSearchRadius(m, pl) {
     const step = energyBeamGridStep(m);
-    const rows = energyBeamPattern(m).length;
+    const rows = tibiaBeamMaxFwd(m);
+    const lat = tibiaBeamWide(m) ? step : 0;
     const rx = pl && fireWaveShadowRx(pl);
-    return (rx || 28) + step * rows + step + 24;
+    return (rx || 28) + step * rows + step + lat + 24;
   }
 
-  function enemyInEnergyBeam(pl, m, e, aim) {
+  function enemyInTibiaBeam(pl, m, e, aim) {
     if (!e || e.dead) return false;
     const step = energyBeamGridStep(m);
-    for (const [, fy] of energyBeamPattern(m)) {
-      const pos = energyBeamCellPos(pl, aim, fy, step);
+    for (const [fx, fy] of tibiaBeamPattern(m)) {
+      const pos = energyBeamCellPos(pl, aim, fx, fy, step);
       if (inFireWaveCellHit(pos.x, pos.y, aim, e.x, e.y, e.r, step)) return true;
     }
     return false;
   }
 
   /** Blanco: el más cercano que cae dentro del rayo 1×N al apuntar a él. */
-  function pickEnergyBeamTarget(pl, m) {
-    const r = energyBeamSearchRadius(m, pl);
+  function pickTibiaBeamTarget(pl, m) {
+    const r = tibiaBeamSearchRadius(m, pl);
     let best = null, bestD = 1e9;
     for (const e of G.EnemyMgr.queryCircle(pl.x, pl.y, r)) {
       if (e.dead || e.remote) continue;
       const aim = Math.atan2(e.y - pl.y, e.x - pl.x);
-      if (!enemyInEnergyBeam(pl, m, e, aim)) continue;
+      if (!enemyInTibiaBeam(pl, m, e, aim)) continue;
       const d = G.U.dist2(pl.x, pl.y, e.x, e.y);
       if (d < bestD) { bestD = d; best = e; }
     }
     return best;
   }
 
-  function anyEnemyInEnergyBeam(pl, m) {
-    return !!pickEnergyBeamTarget(pl, m);
+  function anyEnemyInTibiaBeam(pl, m) {
+    return !!pickTibiaBeamTarget(pl, m);
   }
 
-  /** Energy Beam: línea 1×N sqm + strip 194043–194058; penetrante. */
-  function energyBeamGrid(pl, m, aim, dmgMul = 1) {
+  /** Rayo rejilla Tibia (Energy / Great Death Beam); penetrante. */
+  function tibiaBeamGrid(pl, m, aim, dmgMul = 1) {
     const col = G.U.TYPE_COLOR[m.type];
     const step = energyBeamGridStep(m);
     const queryR = step * 0.75 + 12;
-    const pattern = energyBeamPattern(m);
+    const pattern = tibiaBeamPattern(m);
     const ca = Math.cos(aim), sa = Math.sin(aim);
 
-    for (const [, fy] of pattern) {
-      const pos = energyBeamCellPos(pl, aim, fy, step);
-      if (G.Tiles && G.Tiles.playEnergyBeamCell) G.Tiles.playEnergyBeamCell(pos.x, pos.y);
+    for (const [fx, fy] of pattern) {
+      const pos = energyBeamCellPos(pl, aim, fx, fy, step);
+      playTibiaBeamCell(m, pos.x, pos.y);
     }
     if (ghost) return;
 
     const hitSet = new Set();
-    for (const [, fy] of pattern) {
-      const pos = energyBeamCellPos(pl, aim, fy, step);
+    for (const [fx, fy] of pattern) {
+      const pos = energyBeamCellPos(pl, aim, fx, fy, step);
       for (const e of G.EnemyMgr.queryCircle(pos.x, pos.y, queryR)) {
         if (hitSet.has(e.id)) continue;
         if (!inFireWaveCellHit(pos.x, pos.y, aim, e.x, e.y, e.r, step)) continue;
@@ -669,18 +716,8 @@ G.Combat = (() => {
     }
   }
 
-  /** Energy Beam (MS): rayo 1×5 hacia el más cercano; nv.5 segundo pulso breve. */
-  function energyBeam(pl, m) {
-    energyBeamGrid(pl, m, pl.aim);
-    if (!ghost && G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'beam_persist_double')) {
-      const echoes = fields.filter(o => o.kind === 'beam_echo' && o.owner === pl && !o.gone);
-      for (const o of echoes.slice(0, Math.max(0, echoes.length - 2))) o.gone = true;
-      fields.push({
-        kind: 'beam_echo', owner: pl, ghost, m, aim: pl.aim,
-        t: 0, delay: 0.22, dmgMul: 0.72, done: false, life: 0.55,
-        energyGrid: true
-      });
-    }
+  function tibiaGridBeam(pl, m) {
+    tibiaBeamGrid(pl, m, pl.aim);
     if (!ghost) G.Camera.kick(0.08);
   }
 
@@ -778,6 +815,83 @@ G.Combat = (() => {
       }
     }
     if (G.Camera.sees(cx, cy, hellsCoreReach(m, pl) + 40)) G.Audio.sfx('break');
+  }
+
+  /** Death Echo — cuadrícula 5×5 centrada en el objetivo (sprites 195010–195017). */
+  const DEATH_ECHO_PATTERN = (() => {
+    const cells = [];
+    for (let dy = -2; dy <= 2; dy++) {
+      for (let dx = -2; dx <= 2; dx++) cells.push([dx, dy]);
+    }
+    return cells;
+  })();
+
+  /** Paso 5×5 = 1 sqm Tibia (no usar m.radius: en el spell está el radio de rayo, no la rejilla). */
+  function deathEchoGridStep() {
+    if (G.Tiles && G.Tiles.fireWaveCellWorld) return G.Tiles.fireWaveCellWorld();
+    return 42;
+  }
+
+  function deathEchoCastReach(m, pl) {
+    const pad = pl ? fireWaveShadowRx(pl) : 28;
+    return deathEchoGridStep() * 2.8 + pad + 340;
+  }
+
+  function deathEchoAnchorY(e) {
+    return (e && e.cy) ? e.cy() : (e ? e.y : 0);
+  }
+
+  function deathEchoBlast(pl, m, cx, cy, dmgMul) {
+    const col = G.U.TYPE_COLOR[m.type];
+    const step = deathEchoGridStep();
+    const queryR = step * 0.75 + 12;
+
+    for (const [dx, dy] of DEATH_ECHO_PATTERN) {
+      const pos = hellsCoreCellPos(cx, cy, dx, dy, step);
+      if (G.Tiles && G.Tiles.playDeathEchoCell) G.Tiles.playDeathEchoCell(pos.x, pos.y);
+    }
+    if (ghost) return;
+
+    const hitSet = new Set();
+    for (const [dx, dy] of DEATH_ECHO_PATTERN) {
+      const pos = hellsCoreCellPos(cx, cy, dx, dy, step);
+      for (const e of G.EnemyMgr.queryCircle(pos.x, pos.y, queryR)) {
+        if (hitSet.has(e.id)) continue;
+        if (!inHellsCoreCellHit(pos.x, pos.y, e.x, e.y, e.r, step)) continue;
+        let dmg = capUltimateHit(e, m.dmg * pl.atk * dmgMul);
+        hit(pl, e, dmg, col, e.x - cx, e.y - cy, m.knock || 0, m);
+        if (G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'curse')) {
+          const dur = G.MasterSorcerer.unlockValue(m, 'curse') || 3;
+          e.applyCurse(dur);
+        }
+        hitSet.add(e.id);
+      }
+      for (const p of G.World.propsInCircle(pos.x, pos.y, queryR)) {
+        if (inHellsCoreCellHit(pos.x, pos.y, p.x, p.y, p.r, step)) {
+          G.World.damageProp(p, m.dmg * pl.atk * dmgMul, col);
+        }
+      }
+    }
+    if (G.Camera.sees(cx, cy, deathEchoCastReach(m, pl))) G.Audio.sfx('break');
+  }
+
+  function deathEcho(pl, m) {
+    const tg = pickStrikeTarget(pl, m)
+      || (pl.target && !pl.target.dead ? pl.target : null);
+    if (!tg) return;
+    const cx = tg.x;
+    const cy = deathEchoAnchorY(tg);
+    deathEchoBlast(pl, m, cx, cy, 1);
+    if (!ghost) G.Camera.kick(0.2);
+    if (G.MasterSorcerer && G.MasterSorcerer.hasUnlock(m, 'death_echo_repeat')) {
+      const delay = G.MasterSorcerer.unlockValue(m, 'death_echo_repeat') || 1;
+      const echoes = fields.filter(o => o.kind === 'death_echo_repeat' && o.owner === pl && !o.gone);
+      for (const o of echoes.slice(0, Math.max(0, echoes.length - 1))) o.gone = true;
+      fields.push({
+        kind: 'death_echo_repeat', owner: pl, ghost, m, col: G.U.TYPE_COLOR[m.type],
+        x: cx, y: cy, t: 0, delay, dmgMul: 0.5, done: false, life: delay + 0.55
+      });
+    }
   }
 
   /** Hell's Core (MS): diamante Tibia + segunda detonación nv.5. */
@@ -1080,7 +1194,8 @@ G.Combat = (() => {
     for (let i = fields.length - 1; i >= 0; i--) {
       const f = fields[i];
       f.t += dt;
-      if (f.gone || !f.owner || (f.life && f.t >= f.life && f.kind !== 'mine' && f.kind !== 'hell_core_echo' && f.kind !== 'lightning_storm')) {
+      if (f.gone || !f.owner || (f.life && f.t >= f.life && f.kind !== 'mine'
+          && f.kind !== 'hell_core_echo' && f.kind !== 'death_echo_repeat' && f.kind !== 'lightning_storm')) {
         fields.splice(i, 1); continue;
       }
       if (f.kind === 'mine') {
@@ -1121,8 +1236,8 @@ G.Combat = (() => {
       } else if (f.kind === 'beam_echo') {
         if (!f.done && f.t >= f.delay) {
           f.done = true;
-          if (f.energyGrid || (f.m && f.m.id === 'energy_beam')) {
-            energyBeamGrid(f.owner, f.m, f.aim, f.dmgMul || 0.72);
+          if (f.energyGrid || (f.m && isTibiaGridBeam(f.m))) {
+            tibiaBeamGrid(f.owner, f.m, f.aim, f.dmgMul || 0.72);
           } else beamAt(f.owner, f.m, f.aim, null, f.dmgMul || 0.72);
         }
       } else if (f.kind === 'hell_core_echo') {
@@ -1130,6 +1245,13 @@ G.Combat = (() => {
           f.done = true;
           hellsCoreDiamond(f.owner, f.m, f.x, f.y, f.dmgMul || 0.88);
           if (!f.ghost) G.Camera.kick(0.18);
+        }
+        if (f.done && f.t >= f.delay + 0.35) { fields.splice(i, 1); continue; }
+      } else if (f.kind === 'death_echo_repeat') {
+        if (!f.done && f.t >= f.delay) {
+          f.done = true;
+          deathEchoBlast(f.owner, f.m, f.x, f.y, f.dmgMul || 0.5);
+          if (!f.ghost) G.Camera.kick(0.14);
         }
         if (f.done && f.t >= f.delay + 0.35) { fields.splice(i, 1); continue; }
       } else if (f.kind === 'lightning_storm') {
@@ -1187,14 +1309,15 @@ G.Combat = (() => {
         ctx.globalAlpha = 0.3;
         ctx.fillStyle = '#000';
         ctx.beginPath(); ctx.ellipse(f.x, f.y, 11, 4.5, 0, 0, 6.2832); ctx.fill();
-      } else if (f.kind === 'hell_core_echo' && !f.done) {
+      } else if ((f.kind === 'hell_core_echo' || f.kind === 'death_echo_repeat') && !f.done) {
         const k = Math.min(1, f.t / Math.max(0.05, f.delay));
+        const rad = f.r || deathEchoGridStep() * 2.8;
         ctx.globalAlpha = 0.12 + k * 0.28;
         ctx.strokeStyle = f.col;
         ctx.lineWidth = 2;
         ctx.setLineDash([5, 6]);
         ctx.beginPath();
-        ctx.ellipse(f.x, f.y, f.r * (0.45 + k * 0.55), f.r * 0.38 * (0.45 + k * 0.55), 0, 0, 6.2832);
+        ctx.ellipse(f.x, f.y, rad * (0.45 + k * 0.55), rad * 0.38 * (0.45 + k * 0.55), 0, 0, 6.2832);
         ctx.stroke();
       } else if (f.kind === 'lightning_storm') {
         const a = Math.min(1, (f.life - f.t) * 1.2, f.t * 2);
@@ -1443,7 +1566,11 @@ G.Combat = (() => {
         e.hurt(dealt, p.color, p.vx || (e.x - pl.x), p.vy || (e.y - pl.y), p.knock,
                crit ? 'crit' : p.mtype ? typeLabel(p.mtype, e, p.aid) : null);
         if (!ghost && G.BestiaryCharms) G.BestiaryCharms.onHit(owner, e);
-        if (Math.random() < 0.5) G.FX.sp('impact', p.vis ? p.vis.pal : 'normal', e.x, e.y - e.bodyH * 0.5, { life: 0.12, scale: 1 });
+        if (p.aid === 'death_strike' && G.Tiles && G.Tiles.playDeathStrikeImpact) {
+          G.Tiles.playDeathStrikeImpact(e.x, e.y);
+        } else if (Math.random() < 0.5) {
+          G.FX.sp('impact', p.vis ? p.vis.pal : 'normal', e.x, e.y - e.bodyH * 0.5, { life: 0.12, scale: 1 });
+        }
         owner.dmgDealt += dealt;
         owner.onDealt(dealt);
         if (p.burn) e.applyBurn(p.burn);
@@ -1486,6 +1613,7 @@ G.Combat = (() => {
   }
 
   return { tick, resolve, ghostCast, ghostOrbit, updateFields, drawGroundFields, drawAirFields, clearFields, onEnemyDeath, pickStrikeTarget,
-           pickFireWaveTarget, pickEnergyBeamTarget, fireWaveReach: fireWaveSearchRadius,
+           pickFireWaveTarget, pickTibiaBeamTarget, pickEnergyBeamTarget: pickTibiaBeamTarget,
+           fireWaveReach: fireWaveSearchRadius,
            get fieldCount() { return fields.length; } };
 })();
