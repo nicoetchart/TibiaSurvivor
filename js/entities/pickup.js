@@ -23,6 +23,9 @@ G.Pickups = (() => {
     ticket10: { color: '#c47bff', glow: '#8a3fd0', r: 8 },
     item:     { color: '#ffd23f', glow: '#c08a10', r: 9 }       // value = id del objeto
   };
+  /** Valor del pickup → PNG en assets/tibia/items/ (pilas de oro Tibia). */
+  const COIN_SPRITE_BY_VALUE = { 1: 201280, 2: 201281, 3: 201282, 4: 201283, 5: 201284, 8: 201285 };
+
   /** Probabilidad de que un Pokémon normal suelte un ticket del gacha. */
   const BOSS_T10 = 1 / 3;               // ticket ×10 de un jefe normal
   const LEGEND_T10 = 1 / 2;             // ticket ×10 del legendario de la grieta
@@ -174,14 +177,13 @@ G.Pickups = (() => {
         const sx = Math.max(0.32, Math.abs(Math.cos(p.t * 0.9)));
         const useIcon = G.TibiaTheme && G.TibiaTheme.enabled();
         if (useIcon) {
-          const sz = 22;
-          ctx.save();
-          ctx.translate(p.x, y);
-          ctx.scale(sx, 1);
+          const PX = G.Sprites.PX;
+          const sz = 32 * PX * 0.8;
+          const spriteId = COIN_SPRITE_BY_VALUE[p.value] || COIN_SPRITE_BY_VALUE[1];
           const tibiaCoin = G.TibiaSprites && G.TibiaSprites.enabled
-            && G.TibiaSprites.drawItem(ctx, 'gold_coin', 0, 0, sz);
-          if (!tibiaCoin) G.Icons.draw(ctx, 'goldcoin', -sz / 2, -sz / 2, sz);
-          ctx.restore();
+            && G.TibiaSprites.drawItem(ctx, spriteId, p.x, y, sz);
+          if (tibiaCoin) continue;
+          G.Icons.draw(ctx, 'goldcoin', p.x - sz / 2, y - sz / 2, sz);
           continue;
         } else {
           ctx.beginPath(); ctx.ellipse(p.x, y, r * sx, r, 0, 0, 6.2832); ctx.fill();

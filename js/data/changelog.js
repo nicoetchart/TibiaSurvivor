@@ -3,6 +3,12 @@
  */
 G.CHANGELOG = [
   { d: '2026-11-16', title: ['Master Sorcerer', 'Master Sorcerer'], chg: [
+    ['Altares de poder: sprites Tibia 8 fotogramas (0→236424–431, …) al 100 % del arte 32×32.',
+     'Power altars: Tibia 8-frame strips at full 32×32 sprite scale (100%).'],
+    ['Monedas en suelo: sprite por valor (1→201280 … 8→201285 en items/).',
+     'Floor coins: sprite per pickup value (1→201280 … 8→201285 in items/).'],
+    ['Trampa pegajosa: animación 265028–265033; al saltar 196373–196379; tú 25% vel. 5 s («¡Paralized!»); enemigos Electrified 5 s.',
+     'Sticky trap: 265028–265033; burst 196373–196379; you 25% speed 5s (Paralyzed!); enemies Electrified 5s.'],
     ['Flame Strike nv.3: +5% críticos del hechizo (ya no +1 proyectil); radio +15% se mantiene.',
      'Flame Strike L3: +5% crit chance for this spell (no extra projectile); +15% splash radius kept.'],
     ['Flame Strike: proyectil 197242–197249 e impacto 195450–195457 (mismas direcciones que Energy/Death Strike).',

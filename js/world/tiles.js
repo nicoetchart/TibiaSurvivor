@@ -551,12 +551,15 @@ G.Tiles = (() => {
     return cv;
   }
 
-  /** Trampas planas Tibia (items strip 32×32): veneno · explosiva. */
+  /** Trampas planas Tibia (items strip 32×32): veneno · pegajosa · explosiva. */
   const TRAP_ITEM_TILE = 32;
   const TRAP_ITEM_DRAW_SCALE = 0.75;
   const POISON_TRAP_SHEET = '197955-197960';
   const POISON_TRAP_FRAMES = 6;
   const POISON_TRAP_FPS = 7;
+  const STICKY_TRAP_SHEET = '265028-265033';
+  const STICKY_TRAP_FRAMES = 6;
+  const STICKY_TRAP_FPS = 7;
   const EXPLOSIVE_TRAP_SHEET = '200644-200647';
   const EXPLOSIVE_TRAP_FRAMES = 4;
   const EXPLOSIVE_TRAP_FPS = 8;
@@ -595,6 +598,33 @@ G.Tiles = (() => {
   const EXPLOSIVE_TRAP_BURST_TILE_W = 64;
   const EXPLOSIVE_TRAP_BURST_TILE_H = 64;
   const EXPLOSIVE_TRAP_BURST_FPS = 14;
+
+  const STICKY_TRAP_BURST_SHEET = '196373-196379';
+  const STICKY_TRAP_BURST_FRAMES = 7;
+  const STICKY_TRAP_BURST_TILE_W = 64;
+  const STICKY_TRAP_BURST_TILE_H = 64;
+  const STICKY_TRAP_BURST_FPS = 14;
+
+  /** Efecto al saltar la trampa pegajosa (196373–196379). onFeet: y = pies del personaje/criatura. */
+  function playStickyTrapBurst(x, y, onFeet) {
+    if (!G.FX || !G.FX.itemStrip) return;
+    const px = G.Sprites && G.Sprites.PX ? G.Sprites.PX : 2;
+    const trapH = Math.round(TRAP_ITEM_TILE * px * TRAP_ITEM_DRAW_SCALE);
+    const anchorY = onFeet ? y : y + trapH / 2;
+    G.FX.itemStrip(STICKY_TRAP_BURST_SHEET, x, anchorY, {
+      tibiaStripDir: 'spells',
+      frames: STICKY_TRAP_BURST_FRAMES,
+      fps: STICKY_TRAP_BURST_FPS,
+      tileW: STICKY_TRAP_BURST_TILE_W,
+      tileH: STICKY_TRAP_BURST_TILE_H,
+      stripY: 0,
+      stripAnchor: 'bottom',
+      stripOffX: trapBurstDrawOffX(STICKY_TRAP_BURST_TILE_W),
+      scale: px * TRAP_ITEM_DRAW_SCALE,
+      life: STICKY_TRAP_BURST_FRAMES / STICKY_TRAP_BURST_FPS,
+      fade: false
+    });
+  }
 
   /** Efecto al saltar la trampa explosiva (fuego 195409–195410). onFeet: y = pies del personaje. */
   function playExplosiveTrapBurst(x, y, onFeet) {
@@ -1210,10 +1240,10 @@ G.Tiles = (() => {
 
   function poisonTrapStepRadius() { return tibiaFlatTrapStepRadius(); }
 
-  /** 0 veneno · 2 explosiva usan strip Tibia; 1 pegajosa = procedural 14×14. */
+  /** 0 veneno · 1 pegajosa · 2 explosiva usan strip Tibia en el suelo. */
   function trapStepRadius(p) {
     if (!p || p.type !== 'trap') return 9;
-    return (p.kind === 0 || p.kind === 2) ? tibiaFlatTrapStepRadius() : 13;
+    return (p.kind === 0 || p.kind === 1 || p.kind === 2) ? tibiaFlatTrapStepRadius() : 13;
   }
 
   function drawTrapItemAnim(ctx, p, t, scale, sheetKey, frames, fps) {
@@ -1243,8 +1273,51 @@ G.Tiles = (() => {
     return drawTrapItemAnim(ctx, p, t, scale, POISON_TRAP_SHEET, POISON_TRAP_FRAMES, POISON_TRAP_FPS);
   }
 
+  function drawTrapStickyTibia(ctx, p, t, scale) {
+    return drawTrapItemAnim(ctx, p, t, scale, STICKY_TRAP_SHEET, STICKY_TRAP_FRAMES, STICKY_TRAP_FPS);
+  }
+
   function drawTrapExplosiveTibia(ctx, p, t, scale) {
     return drawTrapItemAnim(ctx, p, t, scale, EXPLOSIVE_TRAP_SHEET, EXPLOSIVE_TRAP_FRAMES, EXPLOSIVE_TRAP_FPS);
+  }
+
+  /** Altares de poder (kind 0–3): strips 8×32 en items/. */
+  const ALTAR_ITEM_TILE = 32;
+  const ALTAR_DRAW_SCALE = 1;
+  const ALTAR_FRAMES = 8;
+  const ALTAR_FPS = 8;
+  const ALTAR_SHEETS = ['236424-236431', '236440-236447', '236392-236399', '236408-236415'];
+  /** Compensa arte Tibia descentrado (suroeste en pantalla). */
+  const ALTAR_DRAW_OFF_X_FRAC = -0.22;
+  const ALTAR_DRAW_OFF_Y_FRAC = 0.16;
+
+  function drawAltarTibia(ctx, p, t, scale) {
+    const kind = (p.kind | 0) % ALTAR_SHEETS.length;
+    const sheetKey = ALTAR_SHEETS[kind];
+    const sheet = getItemPropSheet(sheetKey);
+    const img = sheet && sheet.img;
+    const tw = ALTAR_ITEM_TILE, th = ALTAR_ITEM_TILE;
+    if (!sheet || !sheet.ready || !img || img.naturalWidth < ALTAR_FRAMES * tw
+        || img.naturalHeight < th) return false;
+    const fr = p.used ? 0 : Math.floor(t * ALTAR_FPS + (p.wiggle || 0)) % ALTAR_FRAMES;
+    const k = (scale || 0) * ALTAR_DRAW_SCALE;
+    const w = Math.round(tw * k), h = Math.round(th * k);
+    if (!(w > 0) || !(h > 0) || !Number.isFinite(p.x) || !Number.isFinite(p.y)) return false;
+    const foot = 2;
+    const offX = Math.round(w * ALTAR_DRAW_OFF_X_FRAC);
+    const offY = Math.round(h * ALTAR_DRAW_OFF_Y_FRAC);
+    const dy = Math.round(p.y - h + foot);
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    if (p.used) ctx.globalAlpha = 0.42;
+    try {
+      ctx.drawImage(img, fr * tw, 0, tw, th, Math.round(p.x - w / 2) + offX, dy + offY, w, h);
+    } catch (e) {
+      ctx.restore();
+      return false;
+    }
+    ctx.restore();
+    return true;
   }
 
   /** Árbol PNG del cliente (Plains of Havoc). Sin fallback procedural. */
@@ -1352,9 +1425,12 @@ G.Tiles = (() => {
     for (const id of tileIds) getPropSheet(id);
     for (const id of itemIds) getItemPropSheet(id);
     getItemPropSheet(POISON_TRAP_SHEET);
+    getItemPropSheet(STICKY_TRAP_SHEET);
     getItemPropSheet(EXPLOSIVE_TRAP_SHEET);
     getItemPropSheet(POISON_TRAP_BURST_SHEET);
     getItemPropSheet(EXPLOSIVE_TRAP_BURST_SHEET);
+    getSpellSheet(STICKY_TRAP_BURST_SHEET);
+    for (const id of ALTAR_SHEETS) getItemPropSheet(id);
     return new Promise(resolve => {
       const t0 = performance.now();
       (function tick() {
@@ -1699,9 +1775,12 @@ G.Tiles = (() => {
   function clearProps() { propCache.clear(); }
 
   getItemPropSheet(POISON_TRAP_SHEET);
+  getItemPropSheet(STICKY_TRAP_SHEET);
   getItemPropSheet(EXPLOSIVE_TRAP_SHEET);
   getItemPropSheet(POISON_TRAP_BURST_SHEET);
   getItemPropSheet(EXPLOSIVE_TRAP_BURST_SHEET);
+  getSpellSheet(STICKY_TRAP_BURST_SHEET);
+  for (const id of ALTAR_SHEETS) getItemPropSheet(id);
   getSpellSheet(FIRE_WAVE_SHEET);
   getSpellSheet(HELLS_CORE_SHEET);
   getSpellSheet(ENERGY_BEAM_SHEET);
@@ -1716,8 +1795,9 @@ G.Tiles = (() => {
   getSpellSheet(CRITICAL_HIT_SHEET);
 
   return { T, BIOMES, NORMAL, ARENA, ARENA_THEMES, ARENA_TYPES, paintChunk, propSprite, clearProps,
-           drawTrapPoisonTibia, drawTrapExplosiveTibia, drawItemStripFrame, drawSpellStripFrame,
-           playPoisonTrapBurst, playExplosiveTrapBurst, playFireWaveCell, playDeathEchoCell, playHellsCoreCell,
+           drawTrapPoisonTibia, drawTrapStickyTibia, drawTrapExplosiveTibia, drawAltarTibia,
+           drawItemStripFrame, drawSpellStripFrame,
+           playPoisonTrapBurst, playStickyTrapBurst, playExplosiveTrapBurst, playFireWaveCell, playDeathEchoCell, playHellsCoreCell,
            playRageOfTheSkiesStrike,
            playEnergyBeamCell, playGreatDeathBeamCell, playDeathStrikeImpact,
            energyStrikeProjectileOpts, flameStrikeProjectileOpts, playFlameStrikeImpact,

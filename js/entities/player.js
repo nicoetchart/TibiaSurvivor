@@ -68,7 +68,8 @@ G.Player = class Player {
     this.attackFace = 0;       // tiempo que sigue mirando al objetivo tras atacar
     this.dead = false;
     this.power = null;         // poder de altar activo: { def, t, dur }
-    this.slowT = 0;            // pegado por una trampa
+    this.slowT = 0;            // trampa pegajosa: tiempo restante
+    this.slowMul = 1;          // multiplicador de vel. mientras slowT > 0
     this.venomTrapT = 0;       // veneno de trampa: tiempo restante
     this.venomTrapRem = 0;     // daño HP pendiente
     this.venomTrapRate = 0;    // daño por segundo (constante al aplicar)
@@ -126,7 +127,7 @@ G.Player = class Player {
   // ---------------- stats efectivos ----------------
   get atk() { return this.baseAtk * this.atkMul * (1 + this.buffs.atk.n * this.buffs.atk.amount); }
   get spd() {
-    const s = this.baseSpd * this.spdMul * (1 + this.buffs.spd.n * this.buffs.spd.amount) * (this.slowT > 0 ? 0.5 : 1);
+    const s = this.baseSpd * this.spdMul * (1 + this.buffs.spd.n * this.buffs.spd.amount) * (this.slowT > 0 ? this.slowMul : 1);
     const w = G.Weather.speedFor(this.mon.types);
     const slow = this.inLiquid ? G.World.liquidEffect(this.mon.types).slow || 1 : 1;
     const ms = (this.vocationId && G.MasterSorcerer) ? G.MasterSorcerer.effectiveMoveSpeedMul(this) : 1;
@@ -468,7 +469,10 @@ G.Player = class Player {
       const b = this.buffs[k];
       if (b.n > 0) { b.t -= dt; if (b.t <= 0) b.n = 0; }
     }
-    if (this.slowT > 0) this.slowT -= dt;
+    if (this.slowT > 0) {
+      this.slowT -= dt;
+      if (this.slowT <= 0) { this.slowT = 0; this.slowMul = 1; }
+    }
     this.tickVenomTrap(dt);
     if (this.bellHeal > 0) { const h = Math.min(this.bellHeal, 4 * dt); this.hp = Math.min(this.maxHp, this.hp + h); this.bellHeal -= h; }
     if (this.power && (this.power.t -= dt) <= 0) { this.power.def.off(this); this.power = null; }

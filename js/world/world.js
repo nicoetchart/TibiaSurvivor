@@ -590,6 +590,8 @@ G.World = (() => {
       try {
         if (p.type === 'trap' && p.kind === 0 && G.Tiles.drawTrapPoisonTibia) {
           tibiaTrap = G.Tiles.drawTrapPoisonTibia(ctx, p, t, scale);
+        } else if (p.type === 'trap' && p.kind === 1 && G.Tiles.drawTrapStickyTibia) {
+          tibiaTrap = G.Tiles.drawTrapStickyTibia(ctx, p, t, scale);
         } else if (p.type === 'trap' && p.kind === 2 && G.Tiles.drawTrapExplosiveTibia) {
           tibiaTrap = G.Tiles.drawTrapExplosiveTibia(ctx, p, t, scale);
         }
@@ -607,11 +609,18 @@ G.World = (() => {
       }
       return;
     }
+    if (p.type === 'altar' && G.Tiles.drawAltarTibia) {
+      ctx.fillStyle = 'rgba(0,0,0,.3)';
+      ctx.beginPath(); ctx.ellipse(p.x, p.y, p.r * 1.1, p.r * 0.38, 0, 0, 6.2832); ctx.fill();
+      try {
+        if (G.Tiles.drawAltarTibia(ctx, p, t, scale)) return;
+      } catch (e) { /* fallback procedural */ }
+    }
     const img = G.Tiles.propSprite(biome, p.type, variant);
     if (!img || !img.width || !img.height) return;
     const w = img.width * scale, h = img.height * scale;
     if (p.type === 'altar' && !p.used) {
-      // Halo del orbe, latiendo.
+      // Halo del orbe, latiendo (fallback procedural).
       const col = ['#ff5f6d', '#5fd4ff', '#ff8ad8', '#ffd23f'][p.kind];
       ctx.save();
       ctx.globalAlpha = 0.22 + Math.sin(t * 3 + p.wiggle) * 0.1;

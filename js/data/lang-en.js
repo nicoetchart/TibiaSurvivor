@@ -142,7 +142,7 @@ G.I18n.add({
 
   // ---------------- interactivos y clima ----------------
   '¡Poder {x}! {x} durante {x} s': '{x} power! {x} for {x} s', 'Furia': 'Fury', 'Prisa': 'Haste', 'daño ×2': 'damage ×2', '+45% velocidad': '+45% speed',
-  '-40% recarga': '-40% cooldown', 'atraes todo desde lejos': 'you pull everything from afar', '¡Pegajoso!': 'Sticky!',
+  '-40% recarga': '-40% cooldown', 'atraes todo desde lejos': 'you pull everything from afar', '¡Paralized!': 'Paralyzed!',
   'El manantial se ha secado (se recarga solo)': 'The spring has dried up (it refills on its own)',
   'Lluvia': 'Rain', 'Sol abrasador': 'Harsh sunlight', 'Tormenta de arena': 'Sandstorm', 'Nevada': 'Snowfall', 'Niebla': 'Fog',
   'el Agua se potencia y el Fuego se debilita': 'Water is boosted and Fire is weakened',

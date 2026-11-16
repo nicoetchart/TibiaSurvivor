@@ -34,6 +34,13 @@ G.TIBIA_SPRITE_MAP = {
     gold_coin: { clientId: 3031 },
     platinum_coin: { clientId: 3035 },
     crystal_coin: { clientId: 3043 },
+    /** Pilas de oro en el suelo (pickup.value 1–5, 8). */
+    coin_1: { spriteId: 201280 },
+    coin_2: { spriteId: 201281 },
+    coin_3: { spriteId: 201282 },
+    coin_4: { spriteId: 201283 },
+    coin_5: { spriteId: 201284 },
+    coin_8: { spriteId: 201285 },
     /** Carta de nivel / UI. */
     health_potion: { spriteId: 198233 },
     /** Loot de curación en el suelo (antes baya/manzana). */
