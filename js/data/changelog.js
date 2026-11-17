@@ -3,10 +3,20 @@
  */
 G.CHANGELOG = [
   { d: '2026-11-16', title: ['Master Sorcerer', 'Master Sorcerer'], chg: [
+    ['Altares de poder: activos 8 fotogramas; usados PNG 236687/688/682/684 según kind.',
+     'Power altars: active 8-frame strip; used state 236687/688/682/684 by kind.'],
     ['Altares de poder: sprites Tibia 8 fotogramas (0→236424–431, …) al 100 % del arte 32×32.',
      'Power altars: Tibia 8-frame strips at full 32×32 sprite scale (100%).'],
     ['Monedas en suelo: sprite por valor (1→201280 … 8→201285 en items/).',
      'Floor coins: sprite per pickup value (1→201280 … 8→201285 in items/).'],
+    ['Imán en suelo: animación Tibia 209160–209162 (3 fotogramas).',
+     'Floor magnet pickup: Tibia animation 209160–209162 (3 frames).'],
+    ['Bomba en suelo: animación Tibia 203847–203849 (3 fotogramas) en lugar del icono pixel.',
+     'Floor bomb pickup: Tibia animation 203847–203849 (3 frames) instead of pixel icon.'],
+    ['Fire Wave: orientación continua como Energy Beam / Great Death Beam (sin snap a 8 direcciones).',
+     'Fire Wave: continuous aim like Energy Beam / Great Death Beam (no 8-direction snap).'],
+    ['Manantial: animación Tibia 215435–215437; vacío (carga ≤2 %): fijo en gris.',
+     'Healing spring: Tibia animation 215435–215437; empty (charge ≤2%): static grayscale.'],
     ['Trampa pegajosa: animación 265028–265033; al saltar 196373–196379; tú 25% vel. 5 s («¡Paralized!»); enemigos Electrified 5 s.',
      'Sticky trap: 265028–265033; burst 196373–196379; you 25% speed 5s (Paralyzed!); enemies Electrified 5s.'],
     ['Flame Strike nv.3: +5% críticos del hechizo (ya no +1 proyectil); radio +15% se mantiene.',

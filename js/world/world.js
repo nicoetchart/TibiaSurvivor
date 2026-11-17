@@ -342,6 +342,21 @@ G.World = (() => {
   }
 
   /** Objetos interactivos (altares, manantiales, cofres con candado, trampas) cerca. */
+  /** Coloca un prop interactivo en coordenadas de mundo (pruebas / eventos). */
+  function placePropAt(type, x, y, kind = 0) {
+    const tx = tileOf(x), ty = tileOf(y);
+    const cx = Math.floor(tx / N), cy = Math.floor(ty / N);
+    const c = chunkData(cx, cy);
+    const key = tx + ',' + ty;
+    if (c.propAt.get(key)) return null;
+    const p = makeProp(type, tx, ty, kind);
+    p.x = x;
+    p.y = y;
+    c.props.push(p);
+    if (p.solid) c.propAt.set(key, p);
+    return p;
+  }
+
   function specialsNear(x, y, r) {
     const out = [];
     const c0x = Math.floor((x - r) / CW), c1x = Math.floor((x + r) / CW);
@@ -586,17 +601,19 @@ G.World = (() => {
     const foot = propFootPad(p.type);
     if (p.flat) {
       // Planos (manantial, trampa): pegados al suelo, centrados en su casilla.
-      let tibiaTrap = false;
+      let tibiaFlat = false;
       try {
-        if (p.type === 'trap' && p.kind === 0 && G.Tiles.drawTrapPoisonTibia) {
-          tibiaTrap = G.Tiles.drawTrapPoisonTibia(ctx, p, t, scale);
+        if (p.type === 'spring' && G.Tiles.drawSpringTibia) {
+          tibiaFlat = G.Tiles.drawSpringTibia(ctx, p, t, scale);
+        } else if (p.type === 'trap' && p.kind === 0 && G.Tiles.drawTrapPoisonTibia) {
+          tibiaFlat = G.Tiles.drawTrapPoisonTibia(ctx, p, t, scale);
         } else if (p.type === 'trap' && p.kind === 1 && G.Tiles.drawTrapStickyTibia) {
-          tibiaTrap = G.Tiles.drawTrapStickyTibia(ctx, p, t, scale);
+          tibiaFlat = G.Tiles.drawTrapStickyTibia(ctx, p, t, scale);
         } else if (p.type === 'trap' && p.kind === 2 && G.Tiles.drawTrapExplosiveTibia) {
-          tibiaTrap = G.Tiles.drawTrapExplosiveTibia(ctx, p, t, scale);
+          tibiaFlat = G.Tiles.drawTrapExplosiveTibia(ctx, p, t, scale);
         }
-      } catch (e) { tibiaTrap = false; }
-      if (!tibiaTrap) {
+      } catch (e) { tibiaFlat = false; }
+      if (!tibiaFlat) {
         const variantFlat = p.type === 'trap' ? p.kind : variant;
         const img = G.Tiles.propSprite(biome, p.type, variantFlat);
         const w = img.width * scale, h = img.height * scale;
@@ -714,7 +731,7 @@ G.World = (() => {
   return {
     TS, CW, reset, setBiome, biomeName, liquidKind, liquidEffect, walkable,
     kindAt, isWall, isLiquid, isFree, collide, projectileBlock, propsInCircle, nearestBreakable,
-    damageProp, breakAt, specialsNear, update,
+    damageProp, breakAt, specialsNear, placePropAt, update,
     breakProp(p) { if (!broken.has(p.tx + ',' + p.ty)) destroyProp(p); },
     /** Arena de la grieta: { tx, ty, r } (en tiles) o null. */
     setArena(a) {

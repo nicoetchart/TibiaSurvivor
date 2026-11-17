@@ -45,6 +45,11 @@ G.TIBIA_SPRITE_MAP = {
     health_potion: { spriteId: 198233 },
     /** Loot de curación en el suelo (antes baya/manzana). */
     heal_pickup: { spriteId: 198250 },
+    /** Bomba en suelo: animación 3 fotogramas (pickup.js). */
+    bomb_pickup: { spriteId: '203847-203849' },
+    /** Manantial en mapa (3 fotogramas; vacío en escala de grises). */
+    spring: { spriteId: '215435-215437' },
+    magnet_pickup: { spriteId: '209160-209162' },
     mana_potion: { clientId: 7620 }
   },
 

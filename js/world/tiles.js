@@ -1269,6 +1269,38 @@ G.Tiles = (() => {
     return true;
   }
 
+  /** Manantial — strip items/215435-215437.png (3×32); vacío = f0 + escala de grises. */
+  const SPRING_SHEET = '215435-215437';
+  const SPRING_FRAMES = 3;
+  const SPRING_FPS = 5;
+  const SPRING_ITEM_TILE = 32;
+  const SPRING_DRAW_SCALE = 0.75;
+
+  function drawSpringTibia(ctx, p, t, scale) {
+    const sheet = getItemPropSheet(SPRING_SHEET);
+    const img = sheet && sheet.img;
+    const tw = SPRING_ITEM_TILE, th = SPRING_ITEM_TILE;
+    if (!sheet || !sheet.ready || !img || img.naturalWidth < SPRING_FRAMES * tw
+        || img.naturalHeight < th) return false;
+    const dry = p.charge <= 0.02;
+    const fr = dry ? 0 : Math.floor(t * SPRING_FPS + (p.wiggle || 0)) % SPRING_FRAMES;
+    const k = (scale || 0) * SPRING_DRAW_SCALE;
+    const w = Math.round(tw * k), h = Math.round(th * k);
+    if (!(w > 0) || !(h > 0) || !Number.isFinite(p.x) || !Number.isFinite(p.y)) return false;
+    const dy = Math.round(p.y - 8 - h / 2);
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    if (dry) ctx.filter = 'grayscale(1)';
+    try {
+      ctx.drawImage(img, fr * tw, 0, tw, th, Math.round(p.x - w / 2), dy, w, h);
+    } catch (e) {
+      ctx.restore();
+      return false;
+    }
+    ctx.restore();
+    return true;
+  }
+
   function drawTrapPoisonTibia(ctx, p, t, scale) {
     return drawTrapItemAnim(ctx, p, t, scale, POISON_TRAP_SHEET, POISON_TRAP_FRAMES, POISON_TRAP_FPS);
   }
@@ -1287,21 +1319,38 @@ G.Tiles = (() => {
   const ALTAR_FRAMES = 8;
   const ALTAR_FPS = 8;
   const ALTAR_SHEETS = ['236424-236431', '236440-236447', '236392-236399', '236408-236415'];
+  const ALTAR_USED_SPRITES = ['236687', '236688', '236682', '236684'];
   /** Compensa arte Tibia descentrado (suroeste en pantalla). */
   const ALTAR_DRAW_OFF_X_FRAC = -0.22;
   const ALTAR_DRAW_OFF_Y_FRAC = 0.16;
 
   function drawAltarTibia(ctx, p, t, scale) {
     const kind = (p.kind | 0) % ALTAR_SHEETS.length;
-    const sheetKey = ALTAR_SHEETS[kind];
-    const sheet = getItemPropSheet(sheetKey);
-    const img = sheet && sheet.img;
-    const tw = ALTAR_ITEM_TILE, th = ALTAR_ITEM_TILE;
-    if (!sheet || !sheet.ready || !img || img.naturalWidth < ALTAR_FRAMES * tw
-        || img.naturalHeight < th) return false;
-    const fr = p.used ? 0 : Math.floor(t * ALTAR_FPS + (p.wiggle || 0)) % ALTAR_FRAMES;
     const k = (scale || 0) * ALTAR_DRAW_SCALE;
-    const w = Math.round(tw * k), h = Math.round(th * k);
+    const tw = ALTAR_ITEM_TILE, th = ALTAR_ITEM_TILE;
+    let sheet, img, sw, sh, sx, sy;
+    if (p.used) {
+      const usedId = ALTAR_USED_SPRITES[kind];
+      sheet = getItemPropSheet(usedId);
+      img = sheet && sheet.img;
+      if (!sheet || !sheet.ready || !img || !(img.naturalWidth > 0) || !(img.naturalHeight > 0)) return false;
+      sw = img.naturalWidth;
+      sh = img.naturalHeight;
+      sx = 0;
+      sy = 0;
+    } else {
+      const sheetKey = ALTAR_SHEETS[kind];
+      sheet = getItemPropSheet(sheetKey);
+      img = sheet && sheet.img;
+      if (!sheet || !sheet.ready || !img || img.naturalWidth < ALTAR_FRAMES * tw
+          || img.naturalHeight < th) return false;
+      const fr = Math.floor(t * ALTAR_FPS + (p.wiggle || 0)) % ALTAR_FRAMES;
+      sw = tw;
+      sh = th;
+      sx = fr * tw;
+      sy = 0;
+    }
+    const w = Math.round(sw * k), h = Math.round(sh * k);
     if (!(w > 0) || !(h > 0) || !Number.isFinite(p.x) || !Number.isFinite(p.y)) return false;
     const foot = 2;
     const offX = Math.round(w * ALTAR_DRAW_OFF_X_FRAC);
@@ -1309,9 +1358,8 @@ G.Tiles = (() => {
     const dy = Math.round(p.y - h + foot);
     ctx.save();
     ctx.imageSmoothingEnabled = false;
-    if (p.used) ctx.globalAlpha = 0.42;
     try {
-      ctx.drawImage(img, fr * tw, 0, tw, th, Math.round(p.x - w / 2) + offX, dy + offY, w, h);
+      ctx.drawImage(img, sx, sy, sw, sh, Math.round(p.x - w / 2) + offX, dy + offY, w, h);
     } catch (e) {
       ctx.restore();
       return false;
@@ -1429,8 +1477,12 @@ G.Tiles = (() => {
     getItemPropSheet(EXPLOSIVE_TRAP_SHEET);
     getItemPropSheet(POISON_TRAP_BURST_SHEET);
     getItemPropSheet(EXPLOSIVE_TRAP_BURST_SHEET);
+  getItemPropSheet('203847-203849');
+  getItemPropSheet(SPRING_SHEET);
+  getItemPropSheet('209160-209162');
     getSpellSheet(STICKY_TRAP_BURST_SHEET);
     for (const id of ALTAR_SHEETS) getItemPropSheet(id);
+    for (const id of ALTAR_USED_SPRITES) getItemPropSheet(id);
     return new Promise(resolve => {
       const t0 = performance.now();
       (function tick() {
@@ -1779,8 +1831,12 @@ G.Tiles = (() => {
   getItemPropSheet(EXPLOSIVE_TRAP_SHEET);
   getItemPropSheet(POISON_TRAP_BURST_SHEET);
   getItemPropSheet(EXPLOSIVE_TRAP_BURST_SHEET);
+  getItemPropSheet('203847-203849');
+  getItemPropSheet(SPRING_SHEET);
+  getItemPropSheet('209160-209162');
   getSpellSheet(STICKY_TRAP_BURST_SHEET);
   for (const id of ALTAR_SHEETS) getItemPropSheet(id);
+  for (const id of ALTAR_USED_SPRITES) getItemPropSheet(id);
   getSpellSheet(FIRE_WAVE_SHEET);
   getSpellSheet(HELLS_CORE_SHEET);
   getSpellSheet(ENERGY_BEAM_SHEET);
@@ -1795,7 +1851,8 @@ G.Tiles = (() => {
   getSpellSheet(CRITICAL_HIT_SHEET);
 
   return { T, BIOMES, NORMAL, ARENA, ARENA_THEMES, ARENA_TYPES, paintChunk, propSprite, clearProps,
-           drawTrapPoisonTibia, drawTrapStickyTibia, drawTrapExplosiveTibia, drawAltarTibia,
+           drawTrapPoisonTibia, drawTrapStickyTibia, drawTrapExplosiveTibia, drawSpringTibia,
+           drawAltarTibia,
            drawItemStripFrame, drawSpellStripFrame,
            playPoisonTrapBurst, playStickyTrapBurst, playExplosiveTrapBurst, playFireWaveCell, playDeathEchoCell, playHellsCoreCell,
            playRageOfTheSkiesStrike,

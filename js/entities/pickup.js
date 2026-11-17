@@ -25,6 +25,14 @@ G.Pickups = (() => {
   };
   /** Valor del pickup → PNG en assets/tibia/items/ (pilas de oro Tibia). */
   const COIN_SPRITE_BY_VALUE = { 1: 201280, 2: 201281, 3: 201282, 4: 201283, 5: 201284, 8: 201285 };
+  /** Bomba en suelo: strip 3×32 en assets/tibia/items/203847-203849.png */
+  const BOMB_PICKUP_SHEET = '203847-203849';
+  const BOMB_PICKUP_FRAMES = 3;
+  /** Segundos por fotograma (p.t avanza ×4 en update). */
+  const BOMB_PICKUP_SEC_PER_FRAME = 0.28;
+  const MAGNET_PICKUP_SHEET = '209160-209162';
+  const MAGNET_PICKUP_FRAMES = 3;
+  const MAGNET_PICKUP_SEC_PER_FRAME = 0.28;
 
   /** Probabilidad de que un Pokémon normal suelte un ticket del gacha. */
   const BOSS_T10 = 1 / 3;               // ticket ×10 de un jefe normal
@@ -200,9 +208,29 @@ G.Pickups = (() => {
           G.Icons.draw(ctx, ico, p.x - sz / 2, y - sz / 2 - 1, sz);
         }
         continue;
+      } else if (p.kind === 'bomb') {
+        const PX = G.Sprites.PX;
+        const sz = 32 * PX * 0.8;
+        const scale = sz / 32;
+        const fr = Math.floor((p.t / 4) / BOMB_PICKUP_SEC_PER_FRAME) % BOMB_PICKUP_FRAMES;
+        const tibia = G.TibiaSprites && G.TibiaSprites.enabled && G.Tiles
+          && G.Tiles.drawItemStripFrame(ctx, BOMB_PICKUP_SHEET, fr, p.x, y, scale,
+            BOMB_PICKUP_FRAMES, 32, 32, 1);
+        if (!tibia) G.Icons.draw(ctx, 'bomb', p.x - sz / 2, y - sz / 2 - 1, 18);
+        continue;
+      } else if (p.kind === 'magnet') {
+        const PX = G.Sprites.PX;
+        const sz = 32 * PX * 0.8;
+        const scale = sz / 32;
+        const fr = Math.floor((p.t / 4) / MAGNET_PICKUP_SEC_PER_FRAME) % MAGNET_PICKUP_FRAMES;
+        const tibia = G.TibiaSprites && G.TibiaSprites.enabled && G.Tiles
+          && G.Tiles.drawItemStripFrame(ctx, MAGNET_PICKUP_SHEET, fr, p.x, y, scale,
+            MAGNET_PICKUP_FRAMES, 32, 32, 1);
+        if (!tibia) G.Icons.draw(ctx, 'magnet', p.x - sz / 2, y - sz / 2 - 1, 18);
+        continue;
       } else {
-        // Imán, bomba y tickets: icono pixel art.
-        const ICON = { magnet: 'magnet', bomb: 'bomb', ticket: 'ticket', ticket10: 'ticket10' };
+        // Tickets: icono pixel art.
+        const ICON = { ticket: 'ticket', ticket10: 'ticket10' };
         const sz = p.kind === 'ticket10' || p.kind === 'item' ? 24 : 18;
         if (p.kind === 'item') {
           // Objeto: brillo dorado latiendo, para que se vea desde lejos.

@@ -362,15 +362,6 @@ G.Combat = (() => {
     return (pl.r || 12) * 1.35;
   }
 
-  /** Aim continuo → una de las 8 diagonales/cardinales (como el cono en Tibia). */
-  function fireWaveAim8(aim) {
-    if (G.Sprites && G.Sprites.dirFromAngle) {
-      const d = G.Sprites.dirFromAngle(aim);
-      return Math.PI / 2 - d * (Math.PI / 4);
-    }
-    return aim;
-  }
-
   /** Distancia mínima delante de los pies para no solapar cuerpo / sombra en esa dirección. */
   function fireWaveClearFwd(pl, aim) {
     const body = pl.r || 12;
@@ -384,9 +375,8 @@ G.Combat = (() => {
 
   /** Centros del patrón 1·3·3·5: fila 1 justo fuera del radio del personaje. */
   function fireWaveCellPos(pl, aim, fx, fy, step) {
-    const a = fireWaveAim8(aim);
-    const ca = Math.cos(a), sa = Math.sin(a);
-    const base = fireWaveClearFwd(pl, a);
+    const ca = Math.cos(aim), sa = Math.sin(aim);
+    const base = fireWaveClearFwd(pl, aim);
     const fwd = base + (fy - 1) * step + step * 0.5;
     const lat = fx * step;
     return { x: pl.x + ca * fwd - sa * lat, y: pl.y + sa * fwd + ca * lat };
@@ -420,10 +410,9 @@ G.Combat = (() => {
 
   function enemyInFireWaveCone(pl, m, e, aim, step, patternScale = 1) {
     if (!e || e.dead) return false;
-    const a8 = fireWaveAim8(aim);
     for (const [fx, fy] of fireWavePattern(m)) {
       const pos = fireWaveCellPos(pl, aim, fx * patternScale, fy * patternScale, step);
-      if (inFireWaveCellHit(pos.x, pos.y, a8, e.x, e.y, e.r, step)) return true;
+      if (inFireWaveCellHit(pos.x, pos.y, aim, e.x, e.y, e.r, step)) return true;
     }
     return false;
   }
@@ -462,7 +451,6 @@ G.Combat = (() => {
     const knock = (m.knock || 0) * Math.min(1, scale + 0.2);
 
     const pattern = fireWavePattern(m);
-    const a8 = fireWaveAim8(aim);
     for (const [fx, fy] of pattern) {
       const pos = fireWaveCellPos(pl, aim, fx * scale, fy * scale, step);
       if (G.Tiles && G.Tiles.playFireWaveCell) G.Tiles.playFireWaveCell(pos.x, pos.y);
@@ -475,14 +463,14 @@ G.Combat = (() => {
       for (const e of G.EnemyMgr.queryCircle(pos.x, pos.y, queryR)) {
         if (hitOnce && hitOnce.has(e.id)) continue;
         if (hitSet.has(e.id)) continue;
-        if (!inFireWaveCellHit(pos.x, pos.y, a8, e.x, e.y, e.r, step)) continue;
+        if (!inFireWaveCellHit(pos.x, pos.y, aim, e.x, e.y, e.r, step)) continue;
         const kx = e.x - pl.x, ky = e.y - pl.y;
         hit(pl, e, m.dmg * pl.atk * dmgMul, col, kx, ky, knock, m);
         hitSet.add(e.id);
         if (hitOnce) hitOnce.add(e.id);
       }
       for (const p of G.World.propsInCircle(pos.x, pos.y, queryR)) {
-        if (inFireWaveCellHit(pos.x, pos.y, a8, p.x, p.y, p.r, step)) {
+        if (inFireWaveCellHit(pos.x, pos.y, aim, p.x, p.y, p.r, step)) {
           G.World.damageProp(p, m.dmg * pl.atk * dmgMul, col);
         }
       }
