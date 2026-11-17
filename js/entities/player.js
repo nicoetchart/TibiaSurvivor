@@ -76,7 +76,7 @@ G.Player = class Player {
     this.venomTrapAcc = 0;     // acumulado para mostrar en pantalla
     this.venomTrapShow = 0;
     this.item = null;          // objeto equipado (data/items.js), uno por run
-    this.sashT = -999;         // última vez que salvó la Banda Focus
+    this.sashT = -999;         // última vez que salvó el Moon Mirror
     this.bellHeal = 0;         // curación pendiente del Cascabel Concha
     this.statsTaken = {};      // mejoras de stat cogidas (condición de evolución)
     this.passiveInst = {};     // pasivas MS (id → instancia con lvl)
@@ -205,9 +205,9 @@ G.Player = class Player {
 
   setActive(i) {
     if (i < 0 || i >= this.slots.length || i === this.active) return;
-    // Cinta Elección: no se puede cambiar de movimiento.
-    if (this.hasItem('choiceband') && this.slots[this.active]) {
-      G.FX.dmgText(this.x, this.y - this.bodyH - 8, 'Cinta Elección', '#ff8ad8');
+    // Skull: no se puede cambiar de movimiento.
+    if (this.hasItem('skull') && this.slots[this.active]) {
+      G.FX.dmgText(this.x, this.y - this.bodyH - 8, 'Skull', '#ff8ad8');
       return;
     }
     this.active = i;
@@ -249,9 +249,9 @@ G.Player = class Player {
       target.push(m);
     }
     this.arrange();
-    // Se pasa al grupo, salvo con la Cinta Elección (sigues en el hueco que tenías, si queda).
+    // Se pasa al grupo, salvo con Skull (sigues en el hueco que tenías, si queda).
     const a = this.slots.indexOf(cur);
-    this.active = this.hasItem('choiceband') && a >= 0 ? a : this.slots.indexOf(target);
+    this.active = this.hasItem('skull') && a >= 0 ? a : this.slots.indexOf(target);
     this.bonds = Math.max(0, this.bonds - 1);
     G.Projectiles.clearOrbs(this);
     return target;
@@ -267,10 +267,6 @@ G.Player = class Player {
    * acelera si la recarga es más corta que la animación, para que encadene.
    */
   cast(m) {
-    // Vidasfera: cada ataque cuesta un poco de vida (nunca te deja KO).
-    if (this.hasItem('lifeorb') && m.kind !== 'orbit' && m.kind !== 'trail' && !this.remote) {
-      this.hp = Math.max(1, this.hp - Math.max(1, this.maxHp * 0.01));
-    }
     const anim = { melee: 'Attack', beam: 'Shoot', projectile: 'Shoot', nova: 'Attack',
                    aura: 'Charge', buff: 'Charge', orbit: 'Charge', boomerang: 'Shoot', chain: 'Shoot',
                    mine: 'Charge', meteor: 'Charge', turret: 'Charge', dash: 'Attack', trail: 'Walk', cone: 'Shoot' }[m.kind] || 'Attack';
@@ -331,11 +327,11 @@ G.Player = class Player {
     G.Camera.kick(0.28);
     G.FX.dmgText(this.x, this.y - this.bodyH - 4, '-' + Math.round(d), eff === 'super' ? '#ff3048' : eff === 'weak' ? '#c9a0a8' : '#ff6b7a', eff === 'super');
     G.FX.burst(this.x, this.y - this.bodyH * 0.5, '#ff5f6d', 6, 90);
-    // Banda Focus: aguanta el golpe con 1 de vida (una vez cada 60 s).
-    if (this.hp <= 0 && this.hasItem('focussash') && performance.now() - this.sashT > 60000) {
+    // Moon Mirror: aguanta el golpe con 1 de vida (una vez cada 60 s).
+    if (this.hp <= 0 && this.hasItem('moonMirror') && performance.now() - this.sashT > 60000) {
       this.sashT = performance.now();
       this.hp = 1; this.invuln = 1.2;
-      G.FX.dmgText(this.x, this.y - this.bodyH - 16, '¡Banda Focus!', '#ff9a3d', true);
+      G.FX.dmgText(this.x, this.y - this.bodyH - 16, '¡Moon Mirror!', '#ff9a3d', true);
       G.FX.ring(this.x, this.y, 6, 70, '#ff9a3d', 0.5, 4);
     }
     if (this.hp <= 0) {
@@ -439,7 +435,7 @@ G.Player = class Player {
 
   /** Cascabel Concha: un poco de vida por el daño que haces (tope 4/s). */
   onDealt(dmg) {
-    if (this.item === 'shellbell') this.bellHeal = Math.min(4, this.bellHeal + dmg * 0.04);
+    if (this.item === 'boneFiddle') this.bellHeal = Math.min(4, this.bellHeal + dmg * 0.04);
   }
 
   /** Poder de un altar (ver systems/interact.js): se aplica y se quita solo. */

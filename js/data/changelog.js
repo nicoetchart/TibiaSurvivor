@@ -2,7 +2,38 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-17', title: ['Pickups', 'Pickups'], new: [
+    ['Orbes de XP en suelo: Lesser Spiritualist Gem (49371) y Spiritualist Gem (49372).',
+     'Floor XP orbs: Lesser Spiritualist Gem (49371) and Spiritualist Gem (49372).'],
+  ], chg: [
+    ['Gemas de XP en suelo: 50 % del tamaño base (0.36 / 0.46 sobre 32×PX).',
+     'Floor XP gems: 50% of base scale (0.36 / 0.46 on 32×PX).'],
+  ] },
   { d: '2026-11-16', title: ['Master Sorcerer', 'Master Sorcerer'], chg: [
+    ['Pantalla «¿Qué objeto?»: icono vía PNG Tibia directo (sin caché del pixel antiguo).',
+     'Item choice screen: Tibia item PNG in DOM (no stale legacy pixel cache).'],
+    ['Magical Torch: sprite Tibia (207124, 1.º frame); en ?dev cae al iniciar (más a la izquierda).',
+     'Magical Torch: Tibia sprite (207124, frame 0); ?dev drops at run start (farther left).'],
+    ['Blue Sphere: sprite Tibia (217640); en ?dev cae al iniciar (más a la derecha, fuera del imán).',
+     'Blue Sphere: Tibia sprite (217640); ?dev drops at run start (farther right, outside magnet).'],
+    ['Skull: sprite Tibia (201478); en ?dev cae al iniciar (arriba-derecha, fuera del imán).',
+     'Skull: Tibia sprite (201478); ?dev drops at run start (top-right, outside magnet).'],
+    ['Glowing Mushroom: sprite Tibia (212064); en ?dev cae al iniciar (arriba-izquierda, fuera del imán).',
+     'Glowing Mushroom: Tibia sprite (212064); ?dev drops at run start (top-left, outside magnet).'],
+    ['Frozen Starlight: sprite Tibia (201619); en ?dev cae al iniciar (abajo-izquierda, fuera del imán).',
+     'Frozen Starlight: Tibia sprite (201619); ?dev drops at run start (bottom-left, outside magnet).'],
+    ['Sun Catcher: sprite Tibia (218728); en ?dev cae al iniciar (abajo-derecha, fuera del imán).',
+     'Sun Catcher: Tibia sprite (218728); ?dev drops at run start (bottom-right, outside magnet).'],
+    ['Moon Mirror: sprite Tibia (218724); en ?dev cae al iniciar (abajo, fuera del imán).',
+     'Moon Mirror: Tibia sprite (218724); ?dev drops at run start (below, outside magnet).'],
+    ['Bone Fiddle: sprite Tibia (219552); en ?dev cae al iniciar (arriba, fuera del imán).',
+     'Bone Fiddle: Tibia sprite (219552); ?dev drops at run start (above, outside magnet).'],
+    ['Cursed Coin: sprite Tibia (241367); en ?dev cae al iniciar (izquierda, fuera del imán).',
+     'Cursed Coin: Tibia sprite (241367); ?dev drops at run start (left, outside magnet).'],
+    ['Starlight Vial: sprite Tibia (218726) en HUD, botín y mapa item; en ?dev cae uno al iniciar la run.',
+     'Starlight Vial: Tibia sprite (218726) in HUD, loot and item pickup; ?dev drops one at run start.'],
+    ['Objetos de run renombrados al estilo Tibia (10 piezas); eliminada Vidasfera.',
+     'Run items renamed to Tibia-style loot (10 pieces); Life Orb–style item removed.'],
     ['Altares de poder: activos 8 fotogramas; usados PNG 236687/688/682/684 según kind.',
      'Power altars: active 8-frame strip; used state 236687/688/682/684 by kind.'],
     ['Altares de poder: sprites Tibia 8 fotogramas (0→236424–431, …) al 100 % del arte 32×32.',

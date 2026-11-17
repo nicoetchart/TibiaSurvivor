@@ -118,19 +118,19 @@ G.I18n.add({
   'Faltan por elegir: {x}': 'Still choosing: {x}', 'Esperando a {x}…': 'Waiting for {x}…', 'tú': 'you',
 
   // ---------------- objetos ----------------
-  'Restos': 'Leftovers', 'Cinta Elección': 'Choice Band', 'Garra Rápida': 'Quick Claw', 'Banda Focus': 'Focus Sash',
-  'Cascabel Concha': 'Shell Bell', 'Moneda Amuleto': 'Amulet Coin', 'Huevo Suerte': 'Lucky Egg', 'Vidasfera': 'Life Orb',
-  'Pañuelo Elección': 'Choice Scarf', 'Casco Dentado': 'Rocky Helmet', 'Chaleco Asalto': 'Assault Vest',
+  'Starlight Vial': 'Starlight Vial', 'Skull': 'Skull', 'Sun Catcher': 'Sun Catcher', 'Moon Mirror': 'Moon Mirror',
+  'Bone Fiddle': 'Bone Fiddle', 'Glowing Mushroom': 'Glowing Mushroom', 'Frozen Starlight': 'Frozen Starlight',
+  'Magical Torch': 'Magical Torch', 'Blue Sphere': 'Blue Sphere', 'Cursed Coin': 'Cursed Coin',
   'Recuperas un 1,5% de tu vida por segundo.': 'You recover 1.5% of your HP per second.',
   '+40% de daño, pero no puedes cambiar de movimiento.': '+40% damage, but you can\'t switch moves.',
   '-20% de recarga en todos tus movimientos.': '-20% cooldown on all your moves.',
   'Un golpe que te dejaría KO te deja con 1 de vida (cada 60 s).': 'A hit that would knock you out leaves you at 1 HP (every 60 s).',
   'Recuperas vida con el daño que haces.': 'You heal from the damage you deal.', '+50% de Pokémonedas al acabar la run.': '+50% PokéCoins at the end of the run.',
-  '+30% de experiencia.': '+30% experience.', '+30% de daño, pero cada ataque te quita un poco de vida.': '+30% damage, but each attack costs a little HP.',
+  '+30% de experiencia.': '+30% experience.',
   '+35% de velocidad.': '+35% speed.', 'Los que te golpean cuerpo a cuerpo reciben daño.': 'Foes that hit you in melee take damage.',
   '+20% de reducción de daño recibido.': '+20% damage reduction.',
   '¡Un objeto!': 'An item!', 'Sólo puedes llevar uno ·': 'You can only hold one ·', 'Quedarme con': 'Keep', 'Cambiar a': 'Switch to',
-  '¡Llevas {x}!': 'You\'re holding {x}!', 'Ya llevas {x}': 'You already hold {x}', '¡Banda Focus!': 'Focus Sash!',
+  '¡Llevas {x}!': 'You\'re holding {x}!', 'Ya llevas {x}': 'You already hold {x}', '¡Moon Mirror!': 'Moon Mirror!',
 
   // ---------------- mejoras permanentes ----------------
   'Vitalidad': 'Vitality', 'Fuerza': 'Strength', 'Zancada': 'Stride', 'Fortuna': 'Fortune', 'Sabiduría': 'Wisdom', 'Repertorio': 'Repertoire',

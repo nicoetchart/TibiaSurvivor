@@ -157,6 +157,8 @@ G.RunUI = (() => {
 
   /** Has encontrado un objeto llevando ya otro: ¿con cuál te quedas? */
   function showItemChoice(cur, next, cb) {
+    if (G.Icons.bust) { G.Icons.bust(cur); G.Icons.bust(next); }
+    if (G.TibiaSprites && G.TibiaSprites.preloadItems) G.TibiaSprites.preloadItems([cur, next], 4000);
     const box = $('item-cards');
     box.innerHTML = '';
     [[cur, 'Quedarme con'], [next, 'Cambiar a']].forEach(([id, verb], i) => {

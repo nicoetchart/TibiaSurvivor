@@ -45,6 +45,29 @@ G.TIBIA_SPRITE_MAP = {
     health_potion: { spriteId: 198233 },
     /** Loot de curación en el suelo (antes baya/manzana). */
     heal_pickup: { spriteId: 198250 },
+    /** Orbes de experiencia en el suelo. */
+    xp_pickup: { spriteId: 238430 },
+    xp_big_pickup: { spriteId: 238431 },
+    /** Objeto equipable Starlight Vial (clientId 25976). */
+    starlightVial: { spriteId: 218726 },
+    /** Objeto equipable Cursed Coin (clientId 53423). */
+    cursedCoin: { spriteId: 241367 },
+    /** Objeto equipable Bone Fiddle (clientId 28493). */
+    boneFiddle: { spriteId: 219552 },
+    /** Objeto equipable Moon Mirror (clientId 25730). */
+    moonMirror: { spriteId: 218724 },
+    /** Objeto equipable Sun Catcher (clientId 25977). */
+    sunCatcher: { spriteId: 218728 },
+    /** Objeto equipable Frozen Starlight (clientId 3249). */
+    frozenStarlight: { spriteId: 201619 },
+    /** Objeto equipable Glowing Mushroom (clientId 16097). */
+    glowingMush: { spriteId: 212064 },
+    /** Objeto equipable Skull (clientId 3114, frame 0). */
+    skull: { spriteId: 201478 },
+    /** Objeto equipable Blue Sphere (clientId 23541). */
+    blueSphere: { spriteId: 217640 },
+    /** Objeto equipable Magical Torch (clientId 9042, frame 0 de 207124–207126). */
+    magicalTorch: { spriteId: 207124 },
     /** Bomba en suelo: animación 3 fotogramas (pickup.js). */
     bomb_pickup: { spriteId: '203847-203849' },
     /** Manantial en mapa (3 fotogramas; vacío en escala de grises). */

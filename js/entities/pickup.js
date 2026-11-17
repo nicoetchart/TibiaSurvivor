@@ -177,6 +177,13 @@ G.Pickups = (() => {
       ctx.globalAlpha = 1;
       ctx.fillStyle = k.color;
       if (p.kind === 'xp' || p.kind === 'xpBig') {
+        const PX = G.Sprites.PX;
+        const mul = (p.kind === 'xpBig' ? 0.92 : 0.72) * 0.5;
+        const sz = 32 * PX * mul;
+        const key = p.kind === 'xpBig' ? 'xp_big_pickup' : 'xp_pickup';
+        const tibia = G.TibiaSprites && G.TibiaSprites.enabled
+          && G.TibiaSprites.drawItem(ctx, key, p.x, y, sz);
+        if (tibia) continue;
         ctx.beginPath();
         ctx.moveTo(p.x, y - r); ctx.lineTo(p.x + r * 0.78, y);
         ctx.lineTo(p.x, y + r); ctx.lineTo(p.x - r * 0.78, y);
@@ -238,6 +245,11 @@ G.Pickups = (() => {
           ctx.fillStyle = '#ffe14d';
           ctx.beginPath(); ctx.arc(p.x, y, 18, 0, 6.2832); ctx.fill();
           ctx.globalAlpha = 1;
+          const PX = G.Sprites.PX;
+          const itemSz = 32 * PX * 0.8;
+          const tibiaItem = G.TibiaSprites && G.TibiaSprites.enabled
+            && G.TibiaSprites.drawItem(ctx, p.value, p.x, y, itemSz);
+          if (tibiaItem) continue;
         }
         G.Icons.draw(ctx, p.kind === 'item' ? p.value : ICON[p.kind], p.x - sz / 2, y - sz / 2 - 1, sz);
         continue;

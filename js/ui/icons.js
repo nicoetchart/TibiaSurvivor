@@ -137,37 +137,34 @@ G.Icons = (() => {
     ballLux: { pal: { r: '#30303a', s: '#18181e', w: '#ff5f6d', b: '#ffd23f' }, rows: [
       '....kkkk....', '..kkrrrrkk..', '.krwrrrrrrk.', '.krwrrrrrsk.', 'krrrrkkrrssk', 'kkkkkbbkkkkk', 'kbbbkbbkbbbk', 'kbbbbkkbbbbk', '.kbbbbbbbbk.', '.kbbbbbbbbk.', '..kkbbbbkk..', '....kkkk....'] },
     // ---------- objetos equipables (data/items.js) ----------
-    leftovers: { pal: { r: '#ff5f6d', d: '#b8283a', w: '#ffd8d8', g: '#5fe08a' }, rows: [
+    starlightVial: { pal: { r: '#ff5f6d', d: '#b8283a', w: '#ffd8d8', g: '#5fe08a' }, rows: [
       '.....kgk....', '....kggk....', '..kkkkkkkk..', '.krwrrrrrrk.', 'krwrrrrrrrdk', 'krrrrrrrrrdk',
       'krrrrrrrrrdk', 'krrrrrrrrddk', '.krrrrrrrdk.', '..kdrrrrdk..', '...kkkkkk...', '............'] },
-    choiceband: { pal: { p: '#ff8ad8', q: '#c04a98', w: '#ffe0f4' }, rows: [
+    skull: { pal: { p: '#ff8ad8', q: '#c04a98', w: '#ffe0f4' }, rows: [
       '............', '............', '...kkkkkk...', '.kkppwwppkk.', 'kpp......ppk', 'kq........qk',
       'kq........qk', 'kpp......ppk', '.kkppppppkk.', '...kkkkkk...', '............', '............'] },
-    quickclaw: { pal: { y: '#ffd23f', o: '#c08a10', b: '#8a5a2b' }, rows: [
+    sunCatcher: { pal: { y: '#ffd23f', o: '#c08a10', b: '#8a5a2b' }, rows: [
       '........kk..', '.......kyk..', '......kyok..', '..kk..kyok..', '.kyk.kyok...', '.kyokyok....',
       '.kyyyok..kk.', '.kbbbbk.kyk.', 'kbbbbbbkyok.', 'kbbbbbbyok..', '.kkkkkkkk...', '............'] },
-    focussash: { pal: { o: '#ff9a3d', d: '#c0601a', w: '#ffd0a0' }, rows: [
+    moonMirror: { pal: { o: '#ff9a3d', d: '#c0601a', w: '#ffd0a0' }, rows: [
       '.kk.........', 'kook........', 'kwook.......', '.kwook......', '..kwook.....', '...kwook....',
       '....kwook...', '.....kwook..', '......kwook.', '.......koodk', '........kddk', '.........kk.'] },
-    shellbell: { pal: { p: '#ff9ec4', q: '#c05a88', w: '#ffe0ee', y: '#ffd23f' }, rows: [
+    boneFiddle: { pal: { p: '#ff9ec4', q: '#c05a88', w: '#ffe0ee', y: '#ffd23f' }, rows: [
       '.....kk.....', '....kyyk....', '...kkkkkk...', '..kwppppqk..', '.kwppppppqk.', '.kpppppppqk.',
       'kpppppppppqk', 'kppqpqpqppqk', 'kkkkkkkkkkkk', '....kyyk....', '.....kk.....', '............'] },
-    amuletcoin: { pal: { y: '#ffd23f', o: '#c08a10', w: '#fff3b0', r: '#ff5f6d' }, rows: [
+    glowingMush: { pal: { y: '#ffd23f', o: '#c08a10', w: '#fff3b0', r: '#ff5f6d' }, rows: [
       '..kk....kk..', '..krk..krk..', '...krkkrk...', '....kkkk....', '...kyyyyk...', '..kywyyyok..',
       '..kyyooyok..', '..kyyooyok..', '..kyyyyyok..', '...kooook...', '....kkkk....', '............'] },
-    luckyegg: { pal: { w: '#fffaf0', s: '#e0d6c8', r: '#ff5f6d' }, rows: [
+    frozenStarlight: { pal: { w: '#fffaf0', s: '#e0d6c8', r: '#ff5f6d' }, rows: [
       '....kkkk....', '...kwwwwk...', '..kwwrwwwk..', '..kwwwwwwk..', '.kwrwwwwrwk.', '.kwwwwwwwwk.',
       '.kwwwrwwwsk.', '.kwwwwwwwsk.', '.kwrwwwwssk.', '..kwwwwssk..', '...kkkkkk...', '............'] },
-    lifeorb: { pal: { p: '#c04a98', d: '#7a1f5a', w: '#ffb0e0', r: '#ff3048' }, rows: [
-      '....kkkk....', '..kkpppdkk..', '.kwwpppppdk.', '.kwpprrpppk.', 'kppprrrrppdk', 'kpprrrrrrpdk',
-      'kpprrrrrrpdk', 'kppprrrrppdk', '.kpppprppdk.', '.kdpppppddk.', '..kkddddkk..', '....kkkk....'] },
-    choicescarf: { pal: { b: '#4fb4ff', d: '#2a6fb0', w: '#cfe8ff' }, rows: [
+    magicalTorch: { pal: { b: '#4fb4ff', d: '#2a6fb0', w: '#cfe8ff' }, rows: [
       '............', '............', 'kkkkkkkkkk..', 'kwbbbbbbbbk.', 'kbbbbbbbbdk.', 'kkkkkkkbbdk.',
       '......kbbdk.', '......kbbdk.', '.....kbbbdk.', '.....kbbddk.', '.....kkkkkk.', '............'] },
-    rockyhelmet: { pal: { g: '#9aa6b5', d: '#5d6773', w: '#e0e6ee' }, rows: [
+    blueSphere: { pal: { g: '#9aa6b5', d: '#5d6773', w: '#e0e6ee' }, rows: [
       '............', '.k...k...k..', 'kgk.kgk.kgk.', '.kkkkkkkkk..', 'kwggggggggk.', 'kwgggggggdk.',
       'kggggggggdk.', 'kgggkkkkgdk.', 'kggk....kdk.', 'kkk......kk.', '............', '............'] },
-    assaultvest: { pal: { g: '#4f8a3a', d: '#2f5a22', y: '#ffd23f' }, rows: [
+    cursedCoin: { pal: { g: '#4f8a3a', d: '#2f5a22', y: '#ffd23f' }, rows: [
       '............', '.kkk....kkk.', 'kggk....kggk', 'kgggkkkkgggk', 'kgggyggygggk', 'kgggggggggdk',
       'kggyggggygdk', 'kgggggggggdk', 'kgggggggggdk', 'kddddddddddk', 'kkkkkkkkkkkk', '............'] },
     // ---------- medallas de logros (bronce, plata, oro) ----------
@@ -305,6 +302,20 @@ G.Icons = (() => {
     return name === 'coin' ? coinId() : name;
   }
 
+  function runItemId(name) {
+    return G.Items && G.Items.BY[name] ? name : null;
+  }
+
+  /** PNG en assets/tibia/items/ para objetos de run con entrada spriteId en el mapa. */
+  function runItemPng(name) {
+    if (!G.TibiaSprites || !G.TibiaSprites.enabled) return null;
+    const ref = G.TIBIA_SPRITE_MAP && G.TIBIA_SPRITE_MAP.items && G.TIBIA_SPRITE_MAP.items[name];
+    if (!ref || ref.spriteId == null) return null;
+    const sid = String(ref.spriteId);
+    if (sid.includes('-')) return null;
+    return 'assets/tibia/items/' + sid + '.png';
+  }
+
   function tibiaItemCanvas(itemKey, size) {
     if (!G.TibiaSprites || !G.TibiaSprites.enabled) return null;
     const cv = document.createElement('canvas');
@@ -327,6 +338,15 @@ G.Icons = (() => {
       cv = emblem(m ? m.type : 'normal', m ? m.kind : null);
     } else if (name.startsWith('type:')) {
       cv = emblem(name.slice(5));
+    } else if (runItemId(name)) {
+      const tc = tibiaItemCanvas(name, 32);
+      if (tc) {
+        cache.set(name, tc);
+        return tc;
+      }
+      // Tibia pendiente: no cachear el pixel antiguo (reintento en la siguiente llamada).
+      if (runItemPng(name)) return fromRows(UI[name] || UI.star);
+      cv = fromRows(UI[name] || UI.star);
     } else {
       cv = fromRows(UI[name] || UI.star);
     }
@@ -340,7 +360,9 @@ G.Icons = (() => {
     if (!u) {
       // Los de interfaz, directamente de su dibujo; los emblemas (tipos, movimientos), del canvas.
       const plain = !name.startsWith('move:') && !name.startsWith('type:') && !name.startsWith('item:');
-      u = plain ? svgOfRows(UI[name] || UI.star) : svgOf(canvas(name));
+      const equip = G.Items && G.Items.BY[name];
+      // Objetos de run (Tibia o pixel en canvas): no usar svgOfRows del mapa viejo.
+      u = plain && !equip ? svgOfRows(UI[name] || UI.star) : svgOf(canvas(name));
       urls.set(name, u);
     }
     return u;
@@ -404,14 +426,28 @@ G.Icons = (() => {
   /** <img> pixelado para el DOM. */
   function html(name, size = 20, cls = '') {
     name = resolveName(name);
+    const png = runItemId(name) && runItemPng(name);
+    if (png) {
+      const s = Math.round(size);
+      return `<img class="pix ${cls}" src="${png}" width="${s}" height="${s}" alt="" draggable="false">`;
+    }
     const cv = canvas(name), w = snap(name, size), h = w * cv.height / cv.width;
     return `<img class="pix ${cls}" src="${url(name)}" width="${w}" height="${h}" alt="" draggable="false">`;
+  }
+
+  /** Limpia caché DOM/canvas (p. ej. si un PNG Tibia cargó después del primer intento). */
+  function bust(name) {
+    name = resolveName(name);
+    cache.delete(name);
+    urls.delete(name);
   }
 
   function draw(ctx, name, x, y, size) {
     name = resolveName(name);
     if (name.startsWith('item:') && G.TibiaSprites && G.TibiaSprites.enabled
       && G.TibiaSprites.drawItem(ctx, name.slice(5), x + size / 2, y + size / 2, size * 0.92)) return;
+    if (G.Items && G.Items.BY[name] && G.TibiaSprites && G.TibiaSprites.enabled
+      && G.TibiaSprites.drawItem(ctx, name, x + size / 2, y + size / 2, size * 0.92)) return;
     const cv = canvas(name);
     const s2 = snap(name, size);
     x += (size - s2) / 2; y += (size - s2) / 2; size = s2;
@@ -456,5 +492,5 @@ G.Icons = (() => {
     r.setProperty('--ico-cursor', `url("${url('cursor')}")`);
   }
 
-  return { canvas, url, html, draw, twinkle, rarity, RARITY_BALL, installCss, coinId, UI, TYPE_GLYPH };
+  return { canvas, url, html, draw, twinkle, rarity, RARITY_BALL, installCss, coinId, bust, UI, TYPE_GLYPH };
 })();

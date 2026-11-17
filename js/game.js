@@ -169,6 +169,30 @@ G.Game = (() => {
 
     G.Camera.x = pl.x; G.Camera.y = pl.y; G.Camera.shake = 0;
     G.Sprites.preload([mon.dex], 8000, pl.shiny);
+    // ?dev: objetos equipables en el suelo, fuera del imán (recoger caminando hasta 15px).
+    if (typeof location !== 'undefined' && /[?&]dev\b/.test(location.search)) {
+      const far = pl.magnet + 110;
+      const devItems = [
+        { id: 'starlightVial', dx: far, dy: 0 },
+        { id: 'cursedCoin', dx: -far, dy: 0 },
+        { id: 'boneFiddle', dx: 0, dy: -far },
+        { id: 'moonMirror', dx: 0, dy: far },
+        { id: 'sunCatcher', dx: far, dy: far },
+        { id: 'frozenStarlight', dx: -far, dy: far },
+        { id: 'glowingMush', dx: -far, dy: -far },
+        { id: 'skull', dx: far, dy: -far },
+        { id: 'blueSphere', dx: Math.round(far * 1.5), dy: 0 },
+        { id: 'magicalTorch', dx: -Math.round(far * 1.5), dy: 0 }
+      ];
+      for (const t of devItems) {
+        G.Pickups.drop('item', pl.x + t.dx, pl.y + t.dy, t.id);
+        const orb = G.Pickups.all().at(-1);
+        if (orb) { orb.vx = 0; orb.vy = 0; }
+      }
+      if (G.TibiaSprites && G.TibiaSprites.preloadItems) {
+        G.TibiaSprites.preloadItems(devItems.map(t => t.id), 4000);
+      }
+    }
     G.Audio.music(G.BIOME_MUSIC[biome % G.BIOME_MUSIC.length]);
     deathT = 0;
 

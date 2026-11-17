@@ -199,7 +199,7 @@ navegador: eliges un compañero, te mueves por un mapa infinito y tus ataques sa
 <li><a href="{lk('types')}"><b>Clima y tabla de tipos</b></a>: con lluvia el Agua se potencia y el Fuego se debilita; sol, arena, nieve y niebla.</li>
 <li><a href="{lk('shinies')}"><b>Shinies</b></a> salvajes (1 entre 4096) y en el gacha.</li>
 <li><b>Gacha con forma de tragaperras</b>, por región, con tickets que se ganan jugando.</li>
-<li><a href="{lk('items')}"><b>Objetos equipables</b></a> como Restos, Cinta Elección o Vidasfera.</li>
+<li><a href="{lk('items')}"><b>Objetos equipables</b></a> como Starlight Vial, Skull o Moon Mirror.</li>
 <li><b>Cooperativo online hasta 4</b> con tu lista de amigos.</li>
 <li><b>Misiones</b> diarias y semanales, <a href="{lk('achievements')}"><b>127 logros</b></a> con medallas y títulos, perfil público y ranking.</li>
 <li>En <b>español y en inglés</b>, en PC y en móvil, e <b>instalable como app</b>.</li>
@@ -434,7 +434,7 @@ def items_page(lang):
         h1 = 'Objetos equipables de PokéSurvivor'
         intro = ('<p class="lead">Durante la partida puedes encontrar <b>objetos equipables</b> en los cofres y al derrotar a los jefes. Sólo puedes llevar <b>uno</b> '
                  'a la vez: si encuentras otro, eliges con cuál quedarte. Duran lo que dura la run.</p>')
-        title, desc, c = f'Objetos de PokéSurvivor: los {ni} objetos equipables', f'Los {ni} objetos equipables de PokéSurvivor (Restos, Cinta Elección, Banda Focus, Vidasfera…) y qué hace cada uno.', 'Encuéntralos: jugar gratis'
+        title, desc, c = f'Objetos de TibiaSurvivor: los {ni} objetos equipables', f'Los {ni} objetos equipables de TibiaSurvivor (Starlight Vial, Skull, Moon Mirror…) y qué hace cada uno.', 'Encuéntralos: jugar gratis'
     else:
         h1 = 'PokéSurvivor held items'
         intro = ('<p class="lead">During a run you can find <b>held items</b> in chests and by defeating bosses. You can only hold <b>one</b> at a time: '

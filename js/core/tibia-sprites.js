@@ -567,7 +567,7 @@ G.TibiaSprites = (() => {
       loads.push(getSheet(aid, 'idle', sub), getSheet(aid, 'walk', sub));
     }
     const itemLoads = preloadItems(
-      ['health_potion', 'heal_pickup', 'gold_coin', 'coin_1', 'coin_2', 'coin_3', 'coin_4', 'coin_5', 'coin_8'],
+      ['health_potion', 'heal_pickup', 'xp_pickup', 'xp_big_pickup', 'starlightVial', 'cursedCoin', 'boneFiddle', 'moonMirror', 'sunCatcher', 'frozenStarlight', 'glowingMush', 'skull', 'blueSphere', 'magicalTorch', 'gold_coin', 'coin_1', 'coin_2', 'coin_3', 'coin_4', 'coin_5', 'coin_8'],
       timeout);
     return Promise.all([itemLoads, new Promise(res => {
       const t0 = performance.now();

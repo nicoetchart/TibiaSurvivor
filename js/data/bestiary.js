@@ -76,7 +76,7 @@ G.Bestiary = (() => {
       id: 'pickup_radius',
       name: 'Radio de recogida',
       unit: '+5% orbes por nivel',
-      icon: 'lifeorb',
+      icon: 'frozenStarlight',
       maxLevel: 5,
       baseCost: 6,
       costGrow: 1.42,
