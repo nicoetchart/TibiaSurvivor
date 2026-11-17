@@ -230,6 +230,7 @@ G.Icons = (() => {
 
   const cache = new Map();      // clave -> canvas a 1×
   const urls = new Map();
+  const spellPngLoad = new Map(); // src -> { img, ready, failed }
 
   function shade(hex, k) {
     const n = parseInt(hex.slice(1), 16);
@@ -306,6 +307,58 @@ G.Icons = (() => {
     return G.Items && G.Items.BY[name] ? name : null;
   }
 
+  /** PNG en assets/tibia/spell-icons/ (icono de lista de hechizos del cliente). */
+  function spellIconPng(spellId) {
+    if (!G.TibiaSprites || !G.TibiaSprites.enabled) return null;
+    const map = G.TIBIA_SPRITE_MAP && G.TIBIA_SPRITE_MAP.spell_icons;
+    const ref = map && map[spellId];
+    if (!ref) return null;
+    const file = ref.file || spellId + '.png';
+    return 'assets/tibia/spell-icons/' + file;
+  }
+
+  function ensureSpellPng(src) {
+    let s = spellPngLoad.get(src);
+    if (!s) {
+      const img = new Image();
+      s = { img, ready: false, failed: false };
+      img.onload = () => { s.ready = true; spellPngLoad.set(src, s); };
+      img.onerror = () => { s.failed = true; spellPngLoad.set(src, s); };
+      img.src = src;
+      spellPngLoad.set(src, s);
+    }
+    return s;
+  }
+
+  function spellIconCanvas(spellId) {
+    const src = spellIconPng(spellId);
+    if (!src) return null;
+    const s = ensureSpellPng(src);
+    if (!s.ready || !s.img.naturalWidth) return null;
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 32;
+    const c = cv.getContext('2d');
+    c.imageSmoothingEnabled = false;
+    c.drawImage(s.img, 0, 0, 32, 32);
+    return cv;
+  }
+
+  function preloadSpellIcons(ids, timeout = 4000) {
+    const loads = [];
+    for (const id of ids) {
+      const src = spellIconPng(id);
+      if (src) loads.push(ensureSpellPng(src));
+    }
+    return new Promise(res => {
+      const t0 = performance.now();
+      (function tick() {
+        const ready = loads.every(s => !s || s.ready || s.failed);
+        if (ready || performance.now() - t0 > timeout) res();
+        else setTimeout(tick, 40);
+      })();
+    });
+  }
+
   /** PNG en assets/tibia/items/ para objetos de run con entrada spriteId en el mapa. */
   function runItemPng(name) {
     if (!G.TibiaSprites || !G.TibiaSprites.enabled) return null;
@@ -334,8 +387,13 @@ G.Icons = (() => {
       const fb = itemKey === 'heal_pickup' ? UI.berry : UI.healthpotion;
       cv = tibiaItemCanvas(itemKey, 32) || fromRows(fb);
     } else if (name.startsWith('move:')) {
-      const m = G.Moves.BY_ID[name.slice(5)];
-      cv = emblem(m ? m.type : 'normal', m ? m.kind : null);
+      const id = name.slice(5);
+      const sc = spellIconCanvas(id);
+      if (sc) cv = sc;
+      else {
+        const m = G.Moves.BY_ID[id] || (G.Abilities && G.Abilities.BY_ID[id]);
+        cv = emblem(m ? m.type : 'normal', m ? m.kind : null);
+      }
     } else if (name.startsWith('type:')) {
       cv = emblem(name.slice(5));
     } else if (runItemId(name)) {
@@ -426,6 +484,13 @@ G.Icons = (() => {
   /** <img> pixelado para el DOM. */
   function html(name, size = 20, cls = '') {
     name = resolveName(name);
+    if (name.startsWith('move:')) {
+      const png = spellIconPng(name.slice(5));
+      if (png) {
+        const s = Math.round(size);
+        return `<img class="pix ${cls}" src="${png}" width="${s}" height="${s}" alt="" draggable="false">`;
+      }
+    }
     const png = runItemId(name) && runItemPng(name);
     if (png) {
       const s = Math.round(size);
@@ -444,6 +509,18 @@ G.Icons = (() => {
 
   function draw(ctx, name, x, y, size) {
     name = resolveName(name);
+    if (name.startsWith('move:')) {
+      const sc = spellIconCanvas(name.slice(5));
+      if (sc) {
+        const s2 = snap(name, size);
+        x += (size - s2) / 2; y += (size - s2) / 2; size = s2;
+        const prev = ctx.imageSmoothingEnabled;
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(sc, Math.round(x), Math.round(y), size, size);
+        ctx.imageSmoothingEnabled = prev;
+        return;
+      }
+    }
     if (name.startsWith('item:') && G.TibiaSprites && G.TibiaSprites.enabled
       && G.TibiaSprites.drawItem(ctx, name.slice(5), x + size / 2, y + size / 2, size * 0.92)) return;
     if (G.Items && G.Items.BY[name] && G.TibiaSprites && G.TibiaSprites.enabled
@@ -492,5 +569,6 @@ G.Icons = (() => {
     r.setProperty('--ico-cursor', `url("${url('cursor')}")`);
   }
 
-  return { canvas, url, html, draw, twinkle, rarity, RARITY_BALL, installCss, coinId, bust, UI, TYPE_GLYPH };
+  return { canvas, url, html, draw, twinkle, rarity, RARITY_BALL, installCss, coinId, bust,
+    preloadSpellIcons, UI, TYPE_GLYPH };
 })();

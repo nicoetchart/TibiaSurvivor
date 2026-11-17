@@ -173,6 +173,13 @@ G.UI = (() => {
 
   function initChrome() {
     G.Icons.installCss();
+    if (document.documentElement.getAttribute('data-ui') === 'tibia' && G.Tiles && G.Tiles.getItemPropSheet) {
+      G.Tiles.getItemPropSheet('201280');
+    }
+    if (G.Icons.preloadSpellIcons) {
+      const si = G.TIBIA_SPRITE_MAP && G.TIBIA_SPRITE_MAP.spell_icons;
+      G.Icons.preloadSpellIcons(si ? Object.keys(si) : ['flame_strike']);
+    }
     wireLegal();
     G.DB.onSync(() => { if (!$('topbar').classList.contains('hidden')) refreshCoins(); });
     wireSounds();

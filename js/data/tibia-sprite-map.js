@@ -34,6 +34,8 @@ G.TIBIA_SPRITE_MAP = {
     gold_coin: { clientId: 3031 },
     platinum_coin: { clientId: 3035 },
     crystal_coin: { clientId: 3043 },
+    /** Topbar (monedas de cuenta). */
+    crystal_coin_menu: { spriteId: '201280' },
     /** Pilas de oro en el suelo (pickup.value 1–5, 8). */
     coin_1: { spriteId: 201280 },
     coin_2: { spriteId: 201281 },
@@ -46,8 +48,8 @@ G.TIBIA_SPRITE_MAP = {
     /** Loot de curación en el suelo (antes baya/manzana). */
     heal_pickup: { spriteId: 198250 },
     /** Orbes de experiencia en el suelo. */
-    xp_pickup: { spriteId: 238430 },
-    xp_big_pickup: { spriteId: 238431 },
+    xp_pickup: { spriteId: 207453 },
+    xp_big_pickup: { spriteId: 210950 },
     /** Objeto equipable Starlight Vial (clientId 25976). */
     starlightVial: { spriteId: 218726 },
     /** Objeto equipable Cursed Coin (clientId 53423). */
@@ -74,6 +76,24 @@ G.TIBIA_SPRITE_MAP = {
     spring: { spriteId: '215435-215437' },
     magnet_pickup: { spriteId: '209160-209162' },
     mana_potion: { clientId: 7620 }
+  },
+
+  /** Iconos de hechizo (UI 32×32; ver tools/extract_tibia_spell_icons.mjs). */
+  spell_icons: {
+    flame_strike: { file: 'flame_strike.png', clientSpellId: 89, otIconIndex: 26 },
+    energy_strike: { file: 'energy_strike.png', clientSpellId: 88, otIconIndex: 29 },
+    death_strike: { file: 'death_strike.png', clientSpellId: 87, otIconIndex: 38 },
+    fire_wave: { file: 'fire_wave.png', clientSpellId: 19, otIconIndex: 44 },
+    energy_beam: { file: 'energy_beam.png', clientSpellId: 22, otIconIndex: 41 },
+    great_death_beam: { file: 'great_death_beam.png', clientSpellId: 260, otIconIndex: 157 },
+    hells_core: { file: 'hells_core.png', clientSpellId: 24, otIconIndex: 49 },
+    rage_of_the_skies: { file: 'rage_of_the_skies.png', clientSpellId: 119, otIconIndex: 52 },
+    death_echo: { file: 'death_echo.png', clientSpellId: 310, otIconIndex: 192 },
+    strong_haste: { file: 'strong_haste.png', clientSpellId: 39, otIconIndex: 101 },
+    ultimate_healing: { file: 'ultimate_healing.png', clientSpellId: 3, otIconIndex: 1 },
+    avatar_of_storm: { file: 'avatar_of_storm.png', clientSpellId: 266, otIconIndex: 151 },
+    aura_of_exposed_weakness: { file: 'aura_of_exposed_weakness.png', clientSpellId: 312, otIconIndex: 200 },
+    master_of_elements: { file: 'master_of_elements.png', clientSpellId: 305, otIconIndex: 188 }
   },
 
   /** ability.id → clave en effects-meta (fase 3). */

@@ -416,7 +416,27 @@ html[data-ui="tibia"] .support-ask {
   border-radius: 4px;
 }
 
-html[data-ui="tibia"] .topbar .coin {
-  width: 20px;
-  height: 20px;
+html[data-ui="tibia"] .topbar .coin,
+html[data-ui="tibia"] #scr-over .coin {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  vertical-align: -3px;
+  flex-shrink: 0;
+  background: none;
+  overflow: visible;
+}
+
+html[data-ui="tibia"] .topbar .coin::before,
+html[data-ui="tibia"] #scr-over .coin::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 32px;
+  height: 32px;
+  transform: translate(-50%, -50%);
+  background: url('../assets/tibia/items/201280.png') no-repeat center / 32px 32px;
+  image-rendering: pixelated;
+  pointer-events: none;
 }

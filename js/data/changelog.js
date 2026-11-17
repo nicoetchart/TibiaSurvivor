@@ -3,9 +3,20 @@
  */
 G.CHANGELOG = [
   { d: '2026-11-17', title: ['Pickups', 'Pickups'], new: [
-    ['Orbes de XP en suelo: Lesser Spiritualist Gem (49371) y Spiritualist Gem (49372).',
-     'Floor XP orbs: Lesser Spiritualist Gem (49371) and Spiritualist Gem (49372).'],
+    ['Orbes de XP en suelo: sprites Tibia 207453 (xp) y 210950 (xpBig).',
+     'Floor XP orbs: Tibia sprites 207453 (xp) and 210950 (xpBig).'],
+    ['Hechizos y pasivas MS: iconos Tibia (14 PNG en spell-icons/) en HUD y cartas de subida.',
+     'MS spells and passives: Tibia icons (14 PNGs in spell-icons/) in HUD and level-up cards.'],
+  ], fix: [
+    ['Iconos de hechizo: recorte con fórmula OTClient getImageClip (id cliente 1-based, 12 columnas).',
+     'Spell icons: crop uses OTClient getImageClip (1-based client id, 12 columns).'],
+    ['Great Death Beam y Death Echo: iconos oficiales (atlas 32×32 clientId 157 y 192).',
+     'Great Death Beam and Death Echo: official icons (32×32 strip clientId 157 and 192).'],
+    ['Pasivas MS (Strong Haste, Aura of Exposed Weakness, etc.): iconos de lista de hechizos Tibia.',
+     'MS passives (Strong Haste, Aura of Exposed Weakness, etc.): Tibia spell-list icons.'],
   ], chg: [
+    ['Barra superior y fin de run: icono moneda sprite 201280 a 32×32 (hueco 18×18).',
+     'Top bar and run end screen: coin icon sprite 201280 at 32×32 (18×18 slot).'],
     ['Gemas de XP en suelo: 50 % del tamaño base (0.36 / 0.46 sobre 32×PX).',
      'Floor XP gems: 50% of base scale (0.36 / 0.46 on 32×PX).'],
   ] },

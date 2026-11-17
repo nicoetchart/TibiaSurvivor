@@ -5,7 +5,7 @@ G.MasterSorcererPassives = [
   {
     id: 'master_of_elements',
     name: 'Master of Elements',
-    incantation: '',
+    incantation: 'uteta vis',
     vocationId: 'master_sorcerer',
     element: 'energy',
     kind: 'passive',
@@ -47,7 +47,7 @@ G.MasterSorcererPassives = [
   {
     id: 'avatar_of_storm',
     name: 'Avatar of Storm',
-    incantation: '',
+    incantation: 'uteta res ven',
     vocationId: 'master_sorcerer',
     element: 'energy',
     kind: 'passive',
@@ -89,7 +89,7 @@ G.MasterSorcererPassives = [
   {
     id: 'aura_of_exposed_weakness',
     name: 'Aura of Exposed Weakness',
-    incantation: '',
+    incantation: 'exori moe tempo',
     vocationId: 'master_sorcerer',
     element: 'death',
     kind: 'passive',

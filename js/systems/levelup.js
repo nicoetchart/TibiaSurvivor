@@ -143,7 +143,7 @@ G.LevelUp = (() => {
         const d = G.Abilities.BY_ID[id];
         const pcard = {
           w: d.weight || 6, type: 'new', key: 'newpass:' + id,
-          icon: 'type:' + (d.element || d.type), color: typeColor(d.type),
+          icon: 'move:' + id, color: typeColor(d.type),
           tag: 'Pasiva',
           title: d.name, desc: d.desc,
           apply: p => p.addPassive(id)
@@ -200,7 +200,7 @@ G.LevelUp = (() => {
         if (!txt) continue;
         const upp = {
           w: msCardWeight(p.def, pl, 'up'), type: 'up', key: 'uppass:' + id,
-          icon: 'type:' + (p.def.element || p.type), color: typeColor(p.type),
+          icon: 'move:' + id, color: typeColor(p.type),
           tag: 'Pasiva Nv.' + p.lvl + ' > ' + (p.lvl + 1),
           title: p.name, desc: txt,
           apply: () => pl.levelPassive(id)

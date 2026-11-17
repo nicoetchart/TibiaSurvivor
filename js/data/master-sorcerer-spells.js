@@ -142,7 +142,7 @@ G.MasterSorcererSpells = [
   {
     id: 'great_death_beam',
     name: 'Great Death Beam',
-    incantation: 'exevo gran mort lux',
+    incantation: 'exevo max mort',
     vocationId: 'master_sorcerer',
     element: 'death',
     kind: 'beam',
