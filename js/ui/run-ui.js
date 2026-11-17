@@ -116,7 +116,7 @@ G.RunUI = (() => {
         <div style="font-size:14px;color:var(--muted)">${r.breakdown}</div></div>
       ${!neutral && (r.t1 || r.t10) ? `<div style="grid-column:1/-1"><span>Tickets del gacha</span><b>
         ${r.t1 ? G.Icons.html('ticket', 22) + ' +' + r.t1 + ' ' : ''}${r.t10 ? G.Icons.html('ticket10', 22) + ' +' + r.t10 + ' ×10' : ''}</b></div>` : ''}
-      <div style="grid-column:1/-1"><span>Movimientos</span><b style="font-size:17px">
+      <div style="grid-column:1/-1"><span>${neutral ? 'Spells' : 'Moves'}</span><b style="font-size:17px">
         ${r.moves.map(m => `${G.Icons.html('move:' + m.id, 16)} ${m.name} Nv.${m.lvl}`).join(' · ') || '—'}</b></div>
       ${r.msSpells && r.msSpells.length ? `<div style="grid-column:1/-1" class="ms-over-spells"><span>Hechizos (run)</span>
         <div class="ms-over-table">${r.msSpells.slice(0, 6).map(s =>
@@ -130,7 +130,7 @@ G.RunUI = (() => {
       ${r.record ? '<div style="grid-column:1/-1;text-align:center" class="gold">¡Nuevo récord!</div>' : ''}
       ${askSupport(r) ? `<div class="support-ask" id="over-ask" style="grid-column:1/-1">
         <button class="x" type="button" aria-label="Cerrar">×</button>
-        <p>¿Te está gustando PokéSurvivor? Lo hago yo solo y los servidores cuestan dinero. Si quieres, puedes ayudarme a mantenerlo en línea.</p>
+        <p>Enjoying TibiaSurvivor? If you like the game, you can help keep it online with a voluntary donation.</p>
         <a class="btn small gold" href="${G.Funding.url}" target="_blank" rel="noopener">${G.Icons.html('heart', 14)} Apoyar en Ko-fi</a>
       </div>` : ''}`;
     const ask = $('over-ask');

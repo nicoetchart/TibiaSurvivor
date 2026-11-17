@@ -1,4 +1,4 @@
-# PokéSurvivor
+# TibiaSurvivor
 User-agent: *
 Allow: /
 Disallow: /tools/

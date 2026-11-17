@@ -13,27 +13,14 @@
  *   3. trozos dentro de un texto más largo, sólo palabras enteras
  * Lo que escriben los jugadores (apodos) va marcado con translate="no".
  *
- * Idioma: el elegido en Ajustes; si no, /en/ en la dirección o el del navegador
- * (español si el navegador está en español, inglés en cualquier otro caso).
+ * Idioma: inglés únicamente (MVP TibiaSurvivor); el texto fuente sigue en español
+ * y se traduce con lang-en.js.
  */
 G.I18n = (() => {
   const KEY = 'ts.lang';
-  const LEGACY = 'ps.lang';
-  let saved = null;
-  try {
-    saved = localStorage.getItem(KEY);
-    if (!saved) {
-      const old = localStorage.getItem(LEGACY);
-      if (old === 'es' || old === 'en') {
-        localStorage.setItem(KEY, old);
-        saved = old;
-      }
-    }
-  } catch (e) { /* nada */ }
-  const byPath = /\/en(\/|$)/.test(location.pathname) ? 'en' : null;
-  const nav = ((navigator.languages && navigator.languages[0]) || navigator.language || 'es').toLowerCase();
-  const lang = saved === 'es' || saved === 'en' ? saved : byPath || (nav.startsWith('es') ? 'es' : 'en');
-  document.documentElement.lang = lang;
+  const lang = 'en';
+  document.documentElement.lang = 'en';
+  try { localStorage.setItem(KEY, 'en'); } catch (e) { /* nada */ }
 
   const exact = new Map(), exactLow = new Map();
   let patterns = [], frag = null, fragLow = null, fragMap = new Map();
@@ -164,8 +151,8 @@ G.I18n = (() => {
   }
 
   function set(l) {
-    try { localStorage.setItem(KEY, l); } catch (e) { /* nada */ }
-    location.reload();
+    if (l !== 'en') return;
+    try { localStorage.setItem(KEY, 'en'); } catch (e) { /* nada */ }
   }
 
   return { lang, add, t, f, set, startDom, walk };

@@ -1,4 +1,4 @@
-# Páginas para buscadores, en español y en inglés.
+# Páginas SEO TibiaSurvivor (rutas legacy pokedex/movimientos…), español e inglés.
 #   node tools/export_data.js && node tools/run_make_seo.js
 # Son páginas de texto de verdad (el juego es un canvas que Google no puede leer)
 # hechas con los datos del propio juego, y enlazan al juego. Genera:
@@ -18,6 +18,19 @@ for m in re.finditer(r'^\s*(\d+): (\{.*\}),?\s*$', open(os.path.join(ROOT, 'js/d
     except Exception: pass
 esc = html.escape
 N = len(DEX)
+BRAND = D.get('brand') or 'TibiaSurvivor'
+REPO = 'https://github.com/nicoetchart/TibiaSurvivor'
+CREATURES = D.get('creatures') or []
+SPELLS = D.get('spells') or D.get('moves', [])
+RUN_MIN = int(D.get('runDurationMin', 15))
+N_CRE = len(CREATURES) if CREATURES else N
+N_SPELL = len(SPELLS)
+NA = len(D.get('achievements') or [])
+DT = D.get('damageTypes') or {}
+DTYPES = DT.get('all') or D['typeOrder']
+DTN = DT.get('name') or D['typeName']
+DTC = DT.get('color') or D['typeColor']
+CHANGELOG_SEO = D.get('changelog') or []
 
 # ---------------- traducción con el diccionario del juego ----------------
 EN = D['en']
@@ -43,6 +56,11 @@ def gen_name(g, lang): v = GEN[g]; return v if isinstance(v, str) else (v[0] if 
 TN = D['typeName']; TC = D['typeColor']; TYPES = D['typeOrder']
 def tname(t, lang): return L(lang, TN.get(t, t))
 def tbadge(t, lang): return f'<i class="ty" style="background:{TC.get(t, "#888")}">{esc(tname(t, lang))}</i>'
+DT_EN = {'physical': 'Physical', 'fire': 'Fire', 'ice': 'Ice', 'energy': 'Energy', 'earth': 'Earth', 'death': 'Death', 'holy': 'Holy'}
+def dtname(t, lang):
+    if lang == 'en': return esc(DT_EN.get(t, t.replace('_', ' ').title()))
+    return esc(DTN.get(t, TN.get(t, t)))
+def dtbadge(t, lang): return f'<i class="ty" style="background:{DTC.get(t, TC.get(t, "#888"))}">{dtname(t, lang)}</i>'
 LEG = set(D['legends'])
 
 # ---------------- rutas ----------------
@@ -53,12 +71,12 @@ PATH = {
     'en': {'home': 'en/', 'guide': 'en/guide/', 'pokedex': 'en/pokedex/', 'legends': 'en/legendaries/', 'shinies': 'en/shinies/', 'types': 'en/types/',
            'moves': 'en/moves/', 'items': 'en/items/', 'achievements': 'en/achievements/', 'news': 'en/news/', 'support': 'en/support/'},
 }
-NAV = {'es': [('guide', 'Guía'), ('pokedex', 'Pokédex'), ('legends', 'Legendarios'), ('moves', 'Movimientos'), ('types', 'Tipos')],
-       'en': [('guide', 'Guide'), ('pokedex', 'Pokédex'), ('legends', 'Legendaries'), ('moves', 'Moves'), ('types', 'Types')]}
-FOOT = {'es': [('guide', 'Guía'), ('pokedex', 'Pokédex'), ('legends', 'Legendarios y arenas'), ('shinies', 'Shinies'), ('types', 'Tabla de tipos'),
-               ('moves', 'Movimientos'), ('items', 'Objetos'), ('achievements', 'Logros'), ('news', 'Novedades'), ('support', 'Apoyar el proyecto')],
-        'en': [('guide', 'Guide'), ('pokedex', 'Pokédex'), ('legends', 'Legendaries & arenas'), ('shinies', 'Shinies'), ('types', 'Type chart'),
-               ('moves', 'Moves'), ('items', 'Items'), ('achievements', 'Achievements'), ('news', 'News'), ('support', 'Support the project')]}
+NAV = {'es': [('guide', 'Guía'), ('pokedex', 'Bestiario'), ('legends', 'Élite y jefe'), ('moves', 'Hechizos'), ('types', 'Daño elemental')],
+       'en': [('guide', 'Guide'), ('pokedex', 'Bestiary'), ('legends', 'Elite & boss'), ('moves', 'Spells'), ('types', 'Damage types')]}
+FOOT = {'es': [('guide', 'Guía'), ('pokedex', 'Bestiario'), ('legends', 'Élite y jefe final'), ('types', 'Tipos de daño'),
+               ('moves', 'Hechizos Master Sorcerer'), ('items', 'Objetos'), ('achievements', 'Logros y misiones'), ('news', 'Novedades'), ('support', 'Apoyar el proyecto')],
+        'en': [('guide', 'Guide'), ('pokedex', 'Bestiary'), ('legends', 'Elite & final boss'), ('types', 'Damage types'),
+               ('moves', 'Master Sorcerer spells'), ('items', 'Items'), ('achievements', 'Achievements & missions'), ('news', 'News'), ('support', 'Support the project')]}
 
 def rel(frm, to):
     """Ruta relativa entre dos páginas (las dos son carpetas)."""
@@ -75,14 +93,12 @@ def page(pid, lang, title, desc, body, ld=None):
     foot = ' · '.join(f'<a href="{rel(me, PATH[lang][p])}">{esc(t)}</a>' for p, t in FOOT[lang])
     play = 'Jugar gratis' if lang == 'es' else 'Play free'
     switch = f'<a class="lang" hreflang="{other}" href="{rel(me, PATH[other][pid])}">{"English" if lang == "es" else "Español"}</a>'
-    legal = ('PokéSurvivor es un juego de fans <b>gratuito y sin ánimo de lucro</b>, sin anuncios ni compras (sólo donaciones voluntarias para los servidores). No está afiliado a Nintendo, Creatures, '
-             'GAME FREAK ni The Pokémon Company; Pokémon y sus personajes son propiedad de sus respectivos dueños. Sprites de PMD SpriteCollab '
-             '(CC BY-NC 4.0) · datos de PokéAPI · música y sonidos originales. No tiene ninguna criptomoneda ni token oficial: '
-             'cualquiera que use su nombre es de terceros y no nos hacemos cargo de compras ni inversiones.') if lang == 'es' else (
-             'PokéSurvivor is a <b>free, non-profit</b> fan game with no ads or purchases (only voluntary donations for the servers). It is not affiliated with Nintendo, Creatures, GAME FREAK '
-             'or The Pokémon Company; Pokémon and its characters are owned by their respective owners. Sprites from PMD SpriteCollab (CC BY-NC 4.0) '
-             '· data from PokéAPI · original music and sounds. It has no official cryptocurrency or token: any using its name '
-             'belongs to third parties and we take no responsibility for purchases or investments.')
+    legal = (f'{BRAND} es un juego de fans <b>gratuito</b> inspirado en la sensación de una hunting session clásica, con criaturas y gráficos al estilo Tibia. '
+             'No está afiliado a CipSoft GmbH ni es un producto oficial de Tibia; los nombres y el universo pertenecen a sus respectivos dueños. '
+             'Sprites e iconos según las fuentes del proyecto · música y sonidos propios o con licencia indicada.') if lang == 'es' else (
+             f'{BRAND} is a <b>free</b> fan game inspired by classic hunting sessions, with Tibia-style creatures and art. '
+             'It is not affiliated with CipSoft GmbH and is not an official Tibia product; names and setting belong to their respective owners. '
+             'Sprites and icons per project sources · original or attributed music and sounds.')
     ldj = ('<script type="application/ld+json">\n' + json.dumps(ld, ensure_ascii=False) + '\n</script>') if ld else ''
     return f'''<!doctype html>
 <html lang="{lang}">
@@ -94,7 +110,7 @@ def page(pid, lang, title, desc, body, ld=None):
 <link rel="canonical" href="{SITE}{me}">
 {alts}<meta name="theme-color" content="#12100e">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="PokéSurvivor">
+<meta property="og:site_name" content="{BRAND}">
 <meta property="og:locale" content="{'es_ES' if lang == 'es' else 'en_US'}">
 <meta property="og:url" content="{SITE}{me}">
 <meta property="og:title" content="{esc(title)}">
@@ -111,7 +127,7 @@ def page(pid, lang, title, desc, body, ld=None):
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="{rel(me, PATH[lang]['home'])}">PokéSurvivor</a>
+  <a class="brand" href="{rel(me, PATH[lang]['home'])}">{BRAND}</a>
   <nav>{nav}{switch}<a class="play" href="{rel(me, PATH[lang]['home'])}">{play}</a></nav>
 </header>
 <main>
@@ -120,7 +136,7 @@ def page(pid, lang, title, desc, body, ld=None):
 <footer>
   <p>{foot}</p>
   <p>{legal}</p>
-  <p><a href="https://github.com/JPTER78/pokesurvivor">GitHub</a></p>
+  <p><a href="{REPO}">GitHub</a></p>
 </footer>
 </body>
 </html>
@@ -133,7 +149,7 @@ def write(pid, lang, html_):
 
 def crumbs(pid, lang, name):
     return {'@type': 'BreadcrumbList', 'itemListElement': [
-        {'@type': 'ListItem', 'position': 1, 'name': 'PokéSurvivor', 'item': SITE + PATH[lang]['home']},
+        {'@type': 'ListItem', 'position': 1, 'name': BRAND, 'item': SITE + PATH[lang]['home']},
         {'@type': 'ListItem', 'position': 2, 'name': name, 'item': SITE + PATH[lang][pid]}]}
 
 def sprite(d, shiny=False, up='../', anim='Idle'):
@@ -151,244 +167,241 @@ def cta(pid, lang, text):
 # ================= guía =================
 FAQ = {
  'es': [
-  ('¿PokéSurvivor es gratis?', 'Sí, totalmente. Es un juego de fans sin ánimo de lucro: no tiene anuncios ni compras. Si quieres, puedes apoyarlo con una donación voluntaria, que se usa sólo para los servidores y no da ventajas.'),
-  ('¿Hay que descargar algo?', 'No. Se juega en el navegador, en PC, tablet o móvil. Si quieres, puedes instalarlo como app con «Añadir a pantalla de inicio».'),
-  ('¿Se puede jugar en el móvil?', 'Sí, en horizontal. Pon el dedo en cualquier parte de la pantalla y arrastra para moverte (el joystick aparece donde tocas), toca un ataque para cambiarlo y el botón de arriba a la derecha para pausar.'),
-  ('¿Está en inglés?', 'Sí: el juego sale en español o en inglés según el idioma de tu navegador, y se puede cambiar en Ajustes.'),
-  ('¿Puedo jugar con mis amigos?', 'Sí: el modo cooperativo online admite hasta 4 jugadores. Añade a tus amigos por su apodo, invítalos a tu sala y empezad la partida. La experiencia se comparte y podéis revivir a un compañero caído quedándoos a su lado.'),
-  ('¿Cuántos Pokémon hay?', f'{N} Pokémon de las 9 regiones (de Kanto a Paldea), todos jugables como compañero y con su versión shiny cuando existe.'),
-  ('¿Cómo consigo más Pokémon?', 'Con el gacha, que funciona con tickets que se ganan jugando: los Pokémon normales sueltan tickets de vez en cuando, y los jefes y los legendarios de las grietas, a veces, tickets ×10. No se pueden comprar con dinero real.'),
-  ('¿Qué son las grietas?', 'Portales misteriosos que aparecen muy de vez en cuando. Si entras, luchas contra un Pokémon legendario en una arena de su tipo (hay 18 distintas). Si ganas, te llevas premio; si caes, vuelves al mapa.'),
-  ('¿Se guarda mi progreso?', 'Con una cuenta (nombre y contraseña o Google) tu partida se guarda en la nube y la puedes seguir en cualquier dispositivo. Como invitado se juega al momento, pero no se guarda.'),
-  ('¿Es un juego oficial de Pokémon?', 'No. Es un proyecto hecho por fans, gratuito y sin ánimo de lucro, sin relación con Nintendo, GAME FREAK ni The Pokémon Company.')],
+  (f'¿{BRAND} es gratis?', f'Sí. Es un juego de fans en el navegador: sin descarga obligatoria y sin pagar por ventaja en partida. Puedes apoyar el proyecto con donaciones voluntarias (servidores y dominio).'),
+  ('¿Hay que descargar algo?', 'No. Se juega en el navegador en PC, tablet o móvil (mejor en horizontal en pantallas pequeñas). Puedes añadirlo a la pantalla de inicio como app.'),
+  ('¿Qué personaje uso?', f'En el MVP juegas como <b>Master Sorcerer</b>: hechizos de daño, auras y utilidad que eliges al subir de nivel, al estilo survivor.'),
+  ('¿Cuánto dura una partida?', f'Cada run dura unos <b>{RUN_MIN} minutos</b>: hordas de criaturas, un centinela de élite y un jefe final si aguantas.'),
+  (f'¿Cuántas criaturas hay?', f'En el bestiario del MVP hay <b>{N_CRE} criaturas</b> (orcos, no muertos, demonios…), cada una con debilidades de daño distintas.'),
+  ('¿Qué son los tipos de daño?', 'Físico, fuego, hielo, energía, tierra, muerte y sagrado. Tus hechizos y los ataques enemigos usan estos tipos; las criaturas resisten o son débiles a algunos (ver la tabla de daño).'),
+  ('¿Caen tickets del gacha en partida?', 'No en el modo Tibia actual: el botín de suelo son monedas, experiencia y mejoras; la colección gacha legacy puede seguir en menú según tu guardado.'),
+  ('¿Se guarda mi progreso?', 'Sí: monedas, mejoras permanentes, bestiario y misiones se guardan en el navegador (y en la nube si tienes cuenta). Una partida en curso no se interrumpe por actualizaciones.'),
+  (f'¿Es un juego oficial de Tibia?', 'No. Es un fan game inspirado en la sensación de cazar en mazmorras; no está afiliado a CipSoft.')],
  'en': [
-  ('Is PokéSurvivor free?', 'Yes, completely. It\'s a non-profit fan game with no ads or purchases. If you like, you can support it with a voluntary donation, which only pays for the servers and gives no advantages.'),
-  ('Do I need to download anything?', 'No. You play in your browser on PC, tablet or phone. If you like, you can install it as an app with “Add to Home Screen”.'),
-  ('Can I play on my phone?', 'Yes, in landscape. Put your finger anywhere on the screen and drag to move (the joystick appears where you touch), tap a move to switch to it and the top-right button to pause.'),
-  ('Is it in English?', 'Yes: the game shows up in English or Spanish depending on your browser language, and you can change it in Settings.'),
-  ('Can I play with my friends?', 'Yes: online co-op supports up to 4 players. Add your friends by nickname, invite them to your room and start the game. Experience is shared and you can revive a fallen teammate by standing next to them.'),
-  ('How many Pokémon are there?', f'{N} Pokémon from all 9 regions (Kanto to Paldea), all playable as your partner, with their shiny form when one exists.'),
-  ('How do I get more Pokémon?', 'From the gacha, which uses tickets you earn by playing: regular Pokémon drop tickets now and then, and bosses and rift legendaries sometimes drop ×10 tickets. They can\'t be bought with real money.'),
-  ('What are rifts?', 'Mysterious portals that open very rarely. If you go in, you fight a legendary Pokémon in an arena of its type (there are 18). Win and you get a reward; fall and you\'re sent back to the map.'),
-  ('Is my progress saved?', 'With an account (name and password, or Google) your game is saved in the cloud and you can continue on any device. Guests can play right away, but nothing is saved.'),
-  ('Is this an official Pokémon game?', 'No. It\'s a free, non-profit fan project, unrelated to Nintendo, GAME FREAK or The Pokémon Company.')]}
+  (f'Is {BRAND} free?', f'Yes. It is a browser fan game: no mandatory download and no pay-to-win in a run. You can support the project with voluntary donations (servers and domain).'),
+  ('Do I need to download anything?', 'No. Play in your browser on PC, tablet or phone (landscape works best on small screens). You can add it to your home screen as an app.'),
+  ('Which character do I play?', f'In the MVP you are a <b>Master Sorcerer</b>: damage spells, auras and utility you pick on level-up, survivor-style.'),
+  ('How long is a run?', f'Each run lasts about <b>{RUN_MIN} minutes</b>: creature hordes, an elite sentinel and a final boss if you last long enough.'),
+  (f'How many creatures are there?', f'The MVP bestiary lists <b>{N_CRE} creatures</b> (orcs, undead, demons…), each with different damage weaknesses.'),
+  ('What are damage types?', 'Physical, fire, ice, energy, earth, death and holy. Your spells and enemy attacks use these; creatures resist or are weak to some (see the damage chart).'),
+  ('Do gacha tickets drop in a run?', 'Not in the current Tibia mode: floor loot is coins, XP and upgrades; legacy gacha collection may still appear in the menu depending on your save.'),
+  ('Is my progress saved?', 'Yes: coins, permanent upgrades, bestiary and missions are saved in the browser (and in the cloud with an account). A run in progress is not interrupted by updates.'),
+  (f'Is this an official Tibia game?', 'No. It is a fan game inspired by dungeon hunting; it is not affiliated with CipSoft.')]}
 
 def guide(lang):
     pid = 'guide'; me = PATH[lang][pid]
     lk = lambda p: rel(me, PATH[lang][p])
+    fq = ''.join(f'<h3>{q}</h3><p>{a}</p>' for q, a in FAQ[lang])
     if lang == 'es':
         body = f'''<article class="doc">
-<h1>Guía de PokéSurvivor</h1>
-<p class="lead">PokéSurvivor es un <b>juego de supervivencia con Pokémon</b> al estilo de Survivor.io o Vampire Survivors, gratis y en el
-navegador: eliges un compañero, te mueves por un mapa infinito y tus ataques salen solos mientras hordas de Pokémon salvajes intentan rodearte.
-¿Cuánto aguantarás?</p>
+<h1>Guía de {BRAND}</h1>
+<p class="lead"><b>{BRAND}</b> es un survivor de fantasía pixel art en el navegador: juegas como <b>Master Sorcerer</b>,
+te mueves por una mazmorra infinita y tus <a href="{lk('moves')}">hechizos</a> disparan solos mientras hordas de criaturas
+intentan rodearte. Cada partida dura unos <b>{RUN_MIN} minutos</b> hasta el jefe final.</p>
 {cta(pid, lang, 'Jugar gratis ahora')}
 <h2>Cómo se juega</h2>
 <ul>
-<li><b>En PC:</b> muévete con <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o las flechas. Cambia de ataque con <kbd>1</kbd>–<kbd>4</kbd>, <kbd>Q</kbd>/<kbd>E</kbd> o haciendo clic en su icono. Pausa con <kbd>Esc</kbd>.</li>
-<li><b>En móvil o tablet (horizontal):</b> arrastra el dedo en cualquier parte para moverte, toca un ataque para cambiarlo y el botón de arriba a la derecha para pausar.</li>
-<li>Tu Pokémon <b>ataca solo</b> con el movimiento activo. Tú te encargas de esquivar y de colocarte bien.</li>
-<li>Recoge la experiencia para <b>subir de nivel</b> y elige entre tres cartas: <a href="{lk('moves')}">movimientos</a> nuevos, mejorar los que tienes o potenciar a tu Pokémon.</li>
+<li><b>En PC:</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o flechas para moverte. <kbd>1</kbd>–<kbd>4</kbd>, <kbd>Q</kbd>/<kbd>E</kbd> o clic en el HUD para cambiar de hechizo. <kbd>Esc</kbd> pausa.</li>
+<li><b>En móvil (horizontal):</b> arrastra para moverte; toca un icono de hechizo para activarlo.</li>
+<li>El hechizo activo <b>se lanza solo</b>; tú esquivas y te colocas para no quedar atrapado.</li>
+<li>Recoge orbes de XP, elige cartas al subir de nivel y combina hechizos vinculados en el mismo hueco del HUD.</li>
 </ul>
-<h2>Características</h2>
+<h2>Contenido del MVP</h2>
 <ul class="feat">
-<li><b>{N} Pokémon de las 9 regiones</b> (<a href="{lk('pokedex')}">ver la Pokédex</a>), cada uno con sus ataques y sus propias mejoras permanentes.</li>
-<li><b>Los movimientos evolucionan</b>: al nivel máximo y con la mejora adecuada, Ascuas se convierte en Llamarada, Burbuja en Surf…</li>
-<li><b>Enemigos con personalidad</b>: hay Pokémon que curan, ponen escudos, invocan ayuda, explotan o disparan rayos avisando en el suelo.</li>
-<li><b>Jefes</b> y <a href="{lk('legends')}"><b>grietas</b> con 18 arenas legendarias</a>, una por tipo.</li>
-<li><a href="{lk('types')}"><b>Clima y tabla de tipos</b></a>: con lluvia el Agua se potencia y el Fuego se debilita; sol, arena, nieve y niebla.</li>
-<li><a href="{lk('shinies')}"><b>Shinies</b></a> salvajes (1 entre 4096) y en el gacha.</li>
-<li><b>Gacha con forma de tragaperras</b>, por región, con tickets que se ganan jugando.</li>
-<li><a href="{lk('items')}"><b>Objetos equipables</b></a> como Starlight Vial, Skull o Moon Mirror.</li>
-<li><b>Cooperativo online hasta 4</b> con tu lista de amigos.</li>
-<li><b>Misiones</b> diarias y semanales, <a href="{lk('achievements')}"><b>127 logros</b></a> con medallas y títulos, perfil público y ranking.</li>
-<li>En <b>español y en inglés</b>, en PC y en móvil, e <b>instalable como app</b>.</li>
+<li><b>{N_CRE} criaturas</b> en el <a href="{lk('pokedex')}">bestiario</a> (orcos, no muertos, demonios…).</li>
+<li><b>{N_SPELL} hechizos y pasivas</b> del Master Sorcerer con iconos al estilo Tibia.</li>
+<li><a href="{lk('legends')}"><b>Centinela de élite</b></a> (Minotaur Guard) y <b>jefe Demon</b> al final de la run.</li>
+<li><a href="{lk('types')}"><b>Tipos de daño</b></a>: debilidades y resistencias por criatura.</li>
+<li>Monedas, mejoras permanentes, <a href="{lk('items')}">objetos</a> de run y <a href="{lk('achievements')}">misiones / logros</a>.</li>
+<li>Español e inglés; instalable como app desde el navegador.</li>
 </ul>
-<h2>Consejos para aguantar más</h2>
+<h2>Consejos</h2>
 <ol>
-<li>No te quedes quieto: muévete en círculos amplios para que las hordas te sigan en fila.</li>
-<li>Aprovecha la tabla de tipos: cambia al ataque que sea muy eficaz contra lo que tienes delante.</li>
-<li>Los avisos en el suelo (círculos y rayas que se llenan) son ataques a punto de caer: sal de ellos.</li>
-<li>Elimina primero a los Pokémon que curan o ponen escudos.</li>
-<li>Gasta tus monedas en las mejoras de tu compañero favorito.</li>
+<li>Circula en bucles amplios: las hordas se alinean y tus hechizos en cadena pegan más.</li>
+<li>Mira las debilidades del <a href="{lk('pokedex')}">bestiario</a> y prioriza el elemento correcto.</li>
+<li>Sal de los círculos y rayas en el suelo: son ataques enemigos avisados.</li>
+<li>Derrota primero a los que curan o ponen escudo (centinela, ghouls…).</li>
+<li>Invierte monedas en mejoras permanentes entre partidas.</li>
 </ol>
 <h2>Preguntas frecuentes</h2>
-{''.join(f'<h3>{esc(q)}</h3><p>{esc(a)}</p>' for q, a in FAQ[lang])}
-{cta(pid, lang, 'Jugar a PokéSurvivor')}
+{fq}
+{cta(pid, lang, f'Jugar a {BRAND}')}
 </article>'''
-        title = 'Guía de PokéSurvivor: cómo jugar, trucos y preguntas frecuentes'
-        desc = f'Cómo se juega a PokéSurvivor en PC y móvil, sus características ({N} Pokémon, cooperativo, grietas legendarias, gacha), trucos y preguntas frecuentes.'
+        title = f'Guía de {BRAND}: cómo jugar, trucos y preguntas frecuentes'
+        desc = f'Cómo jugar {BRAND} en PC y móvil: Master Sorcerer, {N_CRE} criaturas, hechizos, élite y jefe en partidas de {RUN_MIN} minutos.'
     else:
         body = f'''<article class="doc">
-<h1>PokéSurvivor guide</h1>
-<p class="lead">PokéSurvivor is a free <b>Pokémon survival game</b> in the style of Survivor.io and Vampire Survivors that you play in your
-browser: pick a partner, roam an endless map and your moves fire on their own while hordes of wild Pokémon try to surround you.
-How long can you last?</p>
+<h1>{BRAND} guide</h1>
+<p class="lead"><b>{BRAND}</b> is a pixel-art fantasy survivor in your browser: you play a <b>Master Sorcerer</b>,
+roam an endless dungeon and your <a href="{lk('moves')}">spells</a> fire on their own while creature hordes close in.
+Each run lasts about <b>{RUN_MIN} minutes</b> up to the final boss.</p>
 {cta(pid, lang, 'Play free now')}
 <h2>How to play</h2>
 <ul>
-<li><b>On PC:</b> move with <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or the arrow keys. Switch moves with <kbd>1</kbd>–<kbd>4</kbd>, <kbd>Q</kbd>/<kbd>E</kbd> or by clicking their icon. Pause with <kbd>Esc</kbd>.</li>
-<li><b>On phone or tablet (landscape):</b> drag your finger anywhere to move, tap a move to switch to it and the top-right button to pause.</li>
-<li>Your Pokémon <b>attacks on its own</b> with the active move. Your job is to dodge and position yourself well.</li>
-<li>Collect experience to <b>level up</b> and pick one of three cards: new <a href="{lk('moves')}">moves</a>, upgrades to the ones you have, or boosts for your Pokémon.</li>
+<li><b>On PC:</b> <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or arrows to move. <kbd>1</kbd>–<kbd>4</kbd>, <kbd>Q</kbd>/<kbd>E</kbd> or HUD click to switch spells. <kbd>Esc</kbd> pauses.</li>
+<li><b>On mobile (landscape):</b> drag to move; tap a spell icon to activate it.</li>
+<li>The active spell <b>casts itself</b>; you dodge and position to avoid being surrounded.</li>
+<li>Collect XP orbs, pick level-up cards and bind fused spells into one HUD slot.</li>
 </ul>
-<h2>Features</h2>
+<h2>MVP content</h2>
 <ul class="feat">
-<li><b>{N} Pokémon from all 9 regions</b> (<a href="{lk('pokedex')}">see the Pokédex</a>), each with its own moves and permanent upgrades.</li>
-<li><b>Moves evolve</b>: at max level with the right upgrade, Ember becomes Fire Blast, Bubble becomes Surf…</li>
-<li><b>Enemies with personality</b>: some Pokémon heal, shield their allies, summon help, explode or fire telegraphed beams.</li>
-<li><b>Bosses</b> and <a href="{lk('legends')}"><b>rifts</b> with 18 legendary arenas</a>, one per type.</li>
-<li><a href="{lk('types')}"><b>Weather and type chart</b></a>: in the rain Water gets stronger and Fire weaker; plus sun, sand, snow and fog.</li>
-<li>Wild <a href="{lk('shinies')}"><b>shinies</b></a> (1 in 4096) and in the gacha.</li>
-<li>A <b>slot-machine gacha</b> for each region, with tickets you earn by playing.</li>
-<li><a href="{lk('items')}"><b>Held items</b></a> such as Leftovers, Choice Band and Life Orb.</li>
-<li><b>Online co-op for up to 4</b> with your friends list.</li>
-<li>Daily and weekly <b>missions</b>, <a href="{lk('achievements')}"><b>127 achievements</b></a> with medals and titles, a public profile and leaderboards.</li>
-<li>In <b>English and Spanish</b>, on PC and mobile, and <b>installable as an app</b>.</li>
+<li><b>{N_CRE} creatures</b> in the <a href="{lk('pokedex')}">bestiary</a> (orcs, undead, demons…).</li>
+<li><b>{N_SPELL} Master Sorcerer spells and passives</b> with Tibia-style icons.</li>
+<li><a href="{lk('legends')}"><b>Elite sentinel</b></a> (Minotaur Guard) and <b>Demon</b> boss at the end of the run.</li>
+<li><a href="{lk('types')}"><b>Damage types</b></a>: weaknesses and resistances per creature.</li>
+<li>Coins, permanent upgrades, run <a href="{lk('items')}">items</a> and <a href="{lk('achievements')}">missions / achievements</a>.</li>
+<li>English and Spanish; installable as an app from the browser.</li>
 </ul>
-<h2>Tips to survive longer</h2>
+<h2>Tips</h2>
 <ol>
-<li>Don't stand still: move in wide circles so the hordes follow you in a line.</li>
-<li>Use the type chart: switch to the move that's super effective against what's in front of you.</li>
-<li>Markers on the ground (circles and lines filling up) are attacks about to land: step out of them.</li>
-<li>Take out healers and shield-casters first.</li>
-<li>Spend your coins on upgrades for your favorite partner.</li>
+<li>Loop in wide circles so hordes line up for chain spells.</li>
+<li>Check <a href="{lk('pokedex')}">bestiary</a> weaknesses and swap to the right element.</li>
+<li>Step out of ground circles and lines: telegraphed enemy attacks.</li>
+<li>Drop healers and shielders first (sentinel, ghouls…).</li>
+<li>Spend coins on permanent upgrades between runs.</li>
 </ol>
 <h2>Frequently asked questions</h2>
-{''.join(f'<h3>{esc(q)}</h3><p>{esc(a)}</p>' for q, a in FAQ[lang])}
-{cta(pid, lang, 'Play PokéSurvivor')}
+{fq}
+{cta(pid, lang, f'Play {BRAND}')}
 </article>'''
-        title = 'PokéSurvivor guide: how to play, tips and FAQ'
-        desc = f'How to play PokéSurvivor on PC and mobile, its features ({N} Pokémon, online co-op, legendary rifts, gacha), tips and frequently asked questions.'
+        title = f'{BRAND} guide: how to play, tips and FAQ'
+        desc = f'How to play {BRAND} on PC and mobile: Master Sorcerer, {N_CRE} creatures, spells, elite and boss in {RUN_MIN}-minute runs.'
     ld = {'@context': 'https://schema.org', '@graph': [
-        {'@type': 'FAQPage', 'inLanguage': lang, 'mainEntity': [{'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': a}} for q, a in FAQ[lang]]},
+        {'@type': 'FAQPage', 'inLanguage': lang, 'mainEntity': [{'@type': 'Question', 'name': q, 'acceptedAnswer': {'@type': 'Answer', 'text': re.sub(r'<[^>]+>', '', a)}} for q, a in FAQ[lang]]},
         crumbs(pid, lang, 'Guía' if lang == 'es' else 'Guide')]}
     write(pid, lang, page(pid, lang, title, desc, body, ld))
 
-# ================= Pokédex =================
-def dexcard(e, lang, up):
-    d = e['dex']
-    tag = f'<b class="leg">{"Legendario" if lang == "es" else "Legendary"}</b>' if d in LEG else (
-          f'<b class="st">{"Inicial" if lang == "es" else "Starter"}</b>' if e.get('starter') else '')
-    return (f'<li id="p{d}">{sprite(d, up=up)}<span class="n">#{d:03d}</span><span class="nm">{esc(e["name"])}</span>'
-            f'<span class="tys">{"".join(tbadge(t, lang) for t in e.get("types", []))}</span>{tag}</li>')
+# ================= Bestiario (ruta pokedex/) =================
+FAM_ES = {'humanoid': 'Humanoides', 'undead': 'No muertos', 'demon': 'Demonios', 'vermin': 'Vermin', 'magical': 'Mágicos'}
+FAM_EN = {'humanoid': 'Humanoids', 'undead': 'Undead', 'demon': 'Demons', 'vermin': 'Vermin', 'magical': 'Magical'}
+
+def creature_li(c, lang):
+    role = c.get('role', 'enemy')
+    tag = ''
+    if role == 'elite':
+        tag = f'<b class="leg">{"Élite" if lang == "es" else "Elite"}</b>'
+    elif role == 'boss':
+        tag = f'<b class="leg">{"Jefe" if lang == "es" else "Boss"}</b>'
+    wk = ''.join(dtbadge(t, lang) for t in (c.get('weaknesses') or [])[:4])
+    desc = esc(c.get('description', ''))
+    diff = esc(c.get('difficulty', ''))
+    return (f'<li id="{esc(c["id"])}"><span class="nm">{esc(c["name"])}</span>'
+            f'<span class="n">{diff}</span><span class="tys">{wk}</span>{tag}<p class="sm">{desc}</p></li>')
 
 def pokedex(lang):
-    pid = 'pokedex'; up = upof(pid, lang)
+    pid = 'pokedex'
+    fam_l = FAM_ES if lang == 'es' else FAM_EN
+    by_fam = {}
+    for c in sorted(CREATURES, key=lambda x: x['name']):
+        fam = fam_l.get(c.get('family', ''), c.get('family', 'Other' if lang == 'en' else 'Otros'))
+        by_fam.setdefault(fam, []).append(c)
     secs = []
-    for g in range(1, 10):
-        mons = [e for e in DEX if e.get('gen') == g]
-        gn = gen_name(g, lang)
-        head = f'(generación {g} · {len(mons)} Pokémon)' if lang == 'es' else f'(generation {g} · {len(mons)} Pokémon)'
-        secs.append(f'<section id="{gn.lower()}"><h2>{gn} <small>{head}</small></h2><ul class="dexgrid">{"".join(dexcard(e, lang, up) for e in mons)}</ul></section>')
-    gens = ''.join(f'<a href="#{gen_name(g, lang).lower()}">{gen_name(g, lang)}</a>' for g in range(1, 10))
+    nav = []
+    for fam, lst in sorted(by_fam.items(), key=lambda x: x[0].lower()):
+        fid = re.sub(r'[^a-z0-9]+', '-', fam.lower()).strip('-')
+        nav.append(f'<a href="#{fid}">{esc(fam)}</a>')
+        secs.append(f'<section id="{fid}"><h2>{esc(fam)} <small>({len(lst)})</small></h2><ul class="dexgrid">{"".join(creature_li(c, lang) for c in lst)}</ul></section>')
     if lang == 'es':
-        h1, lead, c = f'Pokédex de PokéSurvivor: los {N} Pokémon jugables', (f'Todos estos Pokémon pueden ser tu compañero en PokéSurvivor, el juego gratis de supervivencia con Pokémon para '
-              f'navegador y móvil. Hay {N} de las 9 regiones; los consigues como compañero inicial o en el gacha (con tickets que se ganan jugando), y también '
-              f'aparecen como enemigos salvajes, jefes y legendarios en las grietas.'), 'Elige tu compañero y juega gratis'
-        title, desc = f'Pokédex de PokéSurvivor: los {N} Pokémon jugables (9 regiones)', f'Lista completa de los {N} Pokémon que puedes usar en PokéSurvivor, de Kanto a Paldea, con sus tipos. Juego de Pokémon gratis en el navegador.'
+        h1 = f'Bestiario de {BRAND}: {N_CRE} criaturas del MVP'
+        lead = (f'Criaturas que aparecen en las partidas de {BRAND}: debilidades de daño, familia y notas de comportamiento. '
+                f'Desbloquea entradas derrotándolas y consulta el libro del menú en el juego.')
+        c = 'Entra en la mazmorra'
+        title = f'Bestiario {BRAND}: {N_CRE} criaturas y debilidades'
+        desc = f'Lista de las {N_CRE} criaturas del MVP de {BRAND} con tipos de daño débiles y descripción. Survivor gratis en el navegador.'
+        crumb = 'Bestiario'
     else:
-        h1, lead, c = f'PokéSurvivor Pokédex: all {N} playable Pokémon', (f'Every one of these Pokémon can be your partner in PokéSurvivor, the free Pokémon survival game for your browser and phone. '
-              f'There are {N} from all 9 regions; you get them as a starter or from the gacha (with tickets you earn by playing), and they also show up as wild '
-              f'enemies, bosses and legendaries in rifts.'), 'Pick your partner and play free'
-        title, desc = f'PokéSurvivor Pokédex: all {N} playable Pokémon (9 regions)', f'The full list of the {N} Pokémon you can play in PokéSurvivor, from Kanto to Paldea, with their types. A free Pokémon game in your browser.'
-    body = f'<article class="doc wide"><h1>{esc(h1)}</h1><p class="lead">{esc(lead)}</p><nav class="gens">{gens}</nav>{"".join(secs)}{cta(pid, lang, c)}</article>'
-    ld = {'@context': 'https://schema.org', '@graph': [{'@type': 'CollectionPage', 'name': h1, 'url': SITE + PATH[lang][pid], 'inLanguage': lang}, crumbs(pid, lang, 'Pokédex')]}
+        h1 = f'{BRAND} bestiary: {N_CRE} MVP creatures'
+        lead = (f'Creatures that spawn in {BRAND} runs: damage weaknesses, family and behaviour notes. '
+                f'Unlock entries by defeating them and read the in-game bestiary book.')
+        c = 'Enter the dungeon'
+        title = f'{BRAND} bestiary: {N_CRE} creatures and weaknesses'
+        desc = f'All {N_CRE} MVP creatures in {BRAND} with weak damage types and descriptions. Free browser survivor.'
+        crumb = 'Bestiary'
+    body = f'<article class="doc wide"><h1>{esc(h1)}</h1><p class="lead">{esc(lead)}</p><nav class="gens">{"".join(nav)}</nav>{"".join(secs)}{cta(pid, lang, c)}</article>'
+    ld = {'@context': 'https://schema.org', '@graph': [{'@type': 'CollectionPage', 'name': h1, 'url': SITE + PATH[lang][pid], 'inLanguage': lang}, crumbs(pid, lang, crumb)]}
     write(pid, lang, page(pid, lang, title, desc, body, ld))
 
-# ================= legendarios y arenas =================
+# ================= élite y jefe final =================
 def legends(lang):
-    pid = 'legends'; up = upof(pid, lang)
-    cards = ''.join(dexcard(BY[d], lang, up) for d in sorted(LEG))
-    ar = ''.join(f'<li>{tbadge(t, lang)} <b>{esc(L(lang, D["arenas"][t]))}</b></li>' for t in TYPES if t in D['arenas'])
+    pid = 'legends'
+    elites = [c for c in CREATURES if c.get('role') == 'elite']
+    bosses = [c for c in CREATURES if c.get('role') == 'boss']
+    el = ''.join(creature_li(c, lang) for c in elites)
+    bo = ''.join(creature_li(c, lang) for c in bosses)
     if lang == 'es':
-        h1 = 'Legendarios y grietas: las 18 arenas de PokéSurvivor'
-        intro = ('<p class="lead">De vez en cuando se abre una <b>grieta misteriosa</b> en el mapa. Si entras, te enfrentas a un <b>Pokémon legendario</b> '
-                 'en una arena de su tipo, con su propio terreno y clima. Si ganas te llevas un <b>ticket ×10</b> para el gacha; si caes, vuelves al mapa sin premio. '
-                 'En grupo, entráis todos juntos.</p>')
-        h2a, h2b = '18 arenas, una por tipo', f'Los {len(LEG)} legendarios'
-        tip = '<p>Los legendarios de dos tipos eligen uno al azar para la arena. El terreno cuenta: hay lava que quema, hielo que resbala, agua que frena…</p>'
-        title, desc, c = 'Legendarios y grietas de PokéSurvivor: las 18 arenas por tipo', f'Cómo funcionan las grietas de PokéSurvivor, las 18 arenas legendarias (una por tipo) y los {len(LEG)} Pokémon legendarios a los que te puedes enfrentar.', 'Busca una grieta: jugar gratis'
+        h1 = f'Élite y jefe final en {BRAND}'
+        intro = (f'<p class="lead">En una run típica de <b>{RUN_MIN} minutos</b> te cruzas con un <b>centinela de élite</b> '
+                 f'y, si aguantas hasta el final, el <b>jefe</b> de la sesión.</p>')
+        h2a, h2b = 'Centinelas de élite', 'Jefe final de la run'
+        tip = '<p>Usa hechizos del elemento correcto (consulta el bestiario) y esquiva los avisos en el suelo.</p>'
+        title, desc, c = f'Élite y jefe en {BRAND}', f'Centinela de élite y jefe Demon en partidas de {RUN_MIN} minutos de {BRAND}.', 'Aguanta hasta el jefe'
+        crumb = 'Élite y jefe'
     else:
-        h1 = 'Legendaries and rifts: PokéSurvivor\'s 18 arenas'
-        intro = ('<p class="lead">Every now and then a <b>mysterious rift</b> opens on the map. Step inside and you face a <b>legendary Pokémon</b> in an arena '
-                 'of its type, with its own terrain and weather. Win and you get a <b>×10 ticket</b> for the gacha; fall and you\'re sent back to the map with no reward. '
-                 'In a group, you all go in together.</p>')
-        h2a, h2b = '18 arenas, one per type', f'The {len(LEG)} legendaries'
-        tip = '<p>Dual-type legendaries pick one of their types at random for the arena. Terrain matters: lava burns, ice is slippery, water slows you down…</p>'
-        title, desc, c = 'PokéSurvivor legendaries and rifts: the 18 type arenas', f'How rifts work in PokéSurvivor, the 18 legendary arenas (one per type) and the {len(LEG)} legendary Pokémon you can battle.', 'Find a rift: play free'
-    body = f'<article class="doc wide"><h1>{esc(h1)}</h1>{intro}<h2>{h2a}</h2><ul class="arenas">{ar}</ul>{tip}<h2>{h2b}</h2><ul class="dexgrid">{cards}</ul>{cta(pid, lang, c)}</article>'
-    write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, h1)]}))
+        h1 = f'Elite and final boss in {BRAND}'
+        intro = (f'<p class="lead">In a typical <b>{RUN_MIN}-minute</b> run you meet an <b>elite sentinel</b> '
+                 f'and, if you last until the end, the session <b>boss</b>.</p>')
+        h2a, h2b = 'Elite sentinels', 'Final run boss'
+        tip = '<p>Use the right element (check the bestiary) and dodge telegraphed ground markers.</p>'
+        title, desc, c = f'Elite and boss in {BRAND}', f'Elite sentinel and Demon boss in {RUN_MIN}-minute {BRAND} runs.', 'Survive to the boss'
+        crumb = 'Elite & boss'
+    body = f'<article class="doc wide"><h1>{esc(h1)}</h1>{intro}<h2>{h2a}</h2><ul class="dexgrid">{el or "<li>—</li>"}</ul>{tip}<h2>{h2b}</h2><ul class="dexgrid">{bo or "<li>—</li>"}</ul>{cta(pid, lang, c)}</article>'
+    write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, crumb)]}))
 
-# ================= shinies =================
-SHOW = [1, 4, 7, 25, 133, 6, 150, 151, 152, 155, 158, 249, 250, 252, 255, 258, 384, 393, 448, 445, 495, 658, 722, 906]
+# ================= shinies (legacy URL, contenido Tibia) =================
 def shinies(lang):
-    pid = 'shinies'; up = upof(pid, lang)
-    pairs = ''.join(f'<li><span class="pair">{sprite(d, up=up)}{sprite(d, True, up=up)}</span><span class="nm">{esc(BY[d]["name"])}</span></li>'
-                    for d in SHOW if META.get(d, {}).get('sh'))
+    pid = 'shinies'
+    home = rel(PATH[lang][pid], PATH[lang]['pokedex'])
     if lang == 'es':
-        h1 = 'Shinies en PokéSurvivor: cómo conseguirlos'
-        body = f'''<article class="doc wide"><h1>{h1}</h1>
-<p class="lead">Los <b>shiny</b> son versiones de otro color, muy raras. En PokéSurvivor casi todos los {N} Pokémon tienen su forma shiny, con sprites de verdad.</p>
-<h2>Cómo conseguirlos</h2>
-<ul><li><b>Salvajes:</b> cada Pokémon que aparece tiene <b>1 entre 4096</b> de salir shiny (como en los juegos clásicos). Lo verás brillar y saldrá un aviso: derrótalo y es tuyo.</li>
-<li><b>En el gacha:</b> cada tirada tiene <b>1 entre 100</b> de ser shiny.</li>
-<li>Un shiny repetido da el triple de Pokémonedas.</li>
-<li>Cuando tienes la forma shiny de tu compañero, puedes jugar con ella (se elige en la colección).</li></ul>
-<h2>Normal y shiny</h2><ul class="dexgrid pairs">{pairs}</ul>{cta(pid, lang, 'Sal a cazar shinies')}</article>'''
-        title, desc = 'Shinies en PokéSurvivor: probabilidades y cómo conseguirlos', 'Cómo conseguir Pokémon shiny en PokéSurvivor: 1 entre 4096 en estado salvaje y 1 entre 100 en el gacha. Galería de formas normales y shiny.'
+        h1 = f'Colección shiny (modo legacy)'
+        body = f'''<article class="doc"><h1>{h1}</h1>
+<p class="lead">En el <b>MVP de {BRAND}</b> no hay criaturas shiny en partida: juegas como Master Sorcerer contra el bestiario Tibia.
+La ruta <code>/shinies/</code> se mantiene por enlaces antiguos del modo Pokémon.</p>
+<p>Si tu guardado aún tiene colección o gacha legacy, sigue en el menú del juego. Para el contenido actual, mira el
+<a href="{home}">bestiario</a> y los <a href="{rel(PATH[lang][pid], PATH[lang]['moves'])}">hechizos</a>.</p>
+{cta(pid, lang, 'Jugar gratis')}</article>'''
+        title, desc = f'{BRAND}: sin shinies en el MVP Tibia', f'El MVP de {BRAND} no incluye shinies en caza; página informativa para la URL legacy /shinies/.'
     else:
-        h1 = 'Shinies in PokéSurvivor: how to get them'
-        body = f'''<article class="doc wide"><h1>{h1}</h1>
-<p class="lead"><b>Shiny</b> Pokémon are rare, differently colored versions. In PokéSurvivor almost all {N} Pokémon have a shiny form, with real sprites.</p>
-<h2>How to get them</h2>
-<ul><li><b>In the wild:</b> every Pokémon that spawns has a <b>1 in 4096</b> chance of being shiny (just like the classic games). You'll see it sparkle and get an alert: defeat it and it's yours.</li>
-<li><b>From the gacha:</b> every pull has a <b>1 in 100</b> chance of being shiny.</li>
-<li>A duplicate shiny gives triple PokéCoins.</li>
-<li>Once you own your partner's shiny form, you can play with it (pick it in your collection).</li></ul>
-<h2>Normal and shiny</h2><ul class="dexgrid pairs">{pairs}</ul>{cta(pid, lang, 'Go shiny hunting')}</article>'''
-        title, desc = 'Shinies in PokéSurvivor: odds and how to get them', 'How to get shiny Pokémon in PokéSurvivor: 1 in 4096 in the wild and 1 in 100 from the gacha. A gallery of normal and shiny forms.'
+        h1 = 'Shiny collection (legacy mode)'
+        body = f'''<article class="doc"><h1>{h1}</h1>
+<p class="lead">In the <b>{BRAND} MVP</b> there are no in-run shiny creatures: you play Master Sorcerer versus the Tibia bestiary.
+The <code>/shinies/</code> URL is kept for old Pokémon-mode links.</p>
+<p>If your save still has legacy collection or gacha, it remains in the game menu. For current content see the
+<a href="{home}">bestiary</a> and <a href="{rel(PATH[lang][pid], PATH[lang]['moves'])}">spells</a>.</p>
+{cta(pid, lang, 'Play free')}</article>'''
+        title, desc = f'{BRAND}: no shinies in the Tibia MVP', f'The {BRAND} MVP has no hunt shinies; info page for legacy /shinies/ URL.'
     write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, h1)]}))
 
-# ================= tabla de tipos =================
+# ================= tipos de daño (Tibia MVP) =================
 def types_page(lang):
     pid = 'types'
-    M = D['matrix']
-    def cell(v):
-        cls = 'x16' if v > 1.05 else ('x03' if v < 0.35 else ('x06' if v < 0.95 else ''))
-        num = f'{v:g}' if lang == 'en' else f'{v:g}'.replace('.', ',')
-        return f'<td class="{cls}">{"×" + num if cls else ""}</td>'
-    head = ''.join(f'<th class="vt" title="{esc(tname(t, lang))}"><span style="background:{TC[t]}">{esc(tname(t, lang)[:3])}</span></th>' for t in TYPES)
-    rows = ''.join(f'<tr><th>{tbadge(a, lang)}</th>{"".join(cell(M[a][d]) for d in TYPES)}</tr>' for a in TYPES)
-    table = f'<div class="tablewrap"><table class="chart" id="chart"><thead><tr><th></th>{head}</tr></thead><tbody>{rows}</tbody></table></div>'
-    script = '''<script>
-document.querySelectorAll('#chart td').forEach(td => {
-  td.onmouseenter = () => { const r = td.parentElement, i = [...r.children].indexOf(td);
-    document.querySelectorAll('#chart tr').forEach(tr => tr.children[i] && tr.children[i].classList.add('hl')); r.classList.add('hl'); };
-  td.onmouseleave = () => document.querySelectorAll('#chart .hl').forEach(e => e.classList.remove('hl'));
-});
-</script>'''
+    cells = []
+    for t in DTYPES:
+        weak = '×1,25' if lang == 'es' else '×1.25'
+        res = '×0,70' if lang == 'es' else '×0.70'
+        cells.append(f'<tr><td>{dtbadge(t, lang)}</td><td>{weak}</td><td>{res}</td><td>×0</td></tr>')
+    th = ('<th>Tipo</th><th>Débil (recibe)</th><th>Resiste</th><th>Inmune</th>' if lang == 'es'
+          else '<th>Type</th><th>Weak (takes)</th><th>Resists</th><th>Immune</th>')
+    table = f'<div class="tablewrap"><table class="list"><thead><tr>{th}</tr></thead><tbody>{"".join(cells)}</tbody></table></div>'
+    legacy = ''
     if lang == 'es':
-        h1 = 'Tabla de tipos de PokéSurvivor'
-        intro = ('<p class="lead">La tabla de tipos de los juegos, pero <b>suavizada</b> para un survivor (sólo llevas un ataque activo y no puedes cambiar '
-                 'de Pokémon): lo muy eficaz hace <b>×1,6</b>, lo poco eficaz <b>×0,6</b> y las inmunidades se quedan en <b>×0,3</b>. Con dos tipos se multiplican '
-                 '(tope ×2,4). Vale en los dos sentidos: tus ataques contra los enemigos y los suyos contra ti.</p>'
-                 '<p>Filas: tipo del ataque · columnas: tipo del Pokémon que lo recibe.</p>')
-        wx = ('<h2>El clima también cuenta</h2><ul><li><b>Lluvia:</b> el Agua se potencia y el Fuego se debilita.</li><li><b>Sol abrasador:</b> el Fuego se potencia y el Agua se debilita.</li>'
-              '<li><b>Tormenta de arena:</b> Roca, Tierra y Acero se potencian; el resto sufre.</li><li><b>Nevada:</b> el Hielo se potencia; el resto sufre y va más lento.</li>'
-              '<li><b>Niebla:</b> Fantasma, Hada y Psíquico se potencian.</li></ul>')
-        title, desc, c = 'Tabla de tipos de PokéSurvivor (interactiva) y efectos del clima', 'Tabla de tipos interactiva de PokéSurvivor: multiplicadores ×1,6 / ×0,6 / ×0,3 para los 18 tipos y cómo afectan la lluvia, el sol, la arena, la nieve y la niebla.', 'Ponlo en práctica: jugar gratis'
+        h1 = f'Tipos de daño en {BRAND}'
+        intro = ('<p class="lead">En el MVP Tibia el combate usa <b>tipos de daño elementales</b> (físico, fuego, hielo, energía, tierra, muerte, sagrado). '
+                 'Cada criatura lista debilidades y resistencias en el <b>bestiario</b>. Valores habituales en partida: '
+                 '<b>débil ×1,25</b>, <b>resiste ×0,70</b>, <b>inmune ×0</b> (sin daño).</p>')
+        legacy = ('<h2>Tabla Pokémon (modo legacy)</h2><p>Si juegas contenido legacy con tipos Pokémon, la matriz completa de 18 tipos sigue en los datos del juego; '
+                  'el modo Master Sorcerer actual usa la tabla de daño Tibia de arriba.</p>')
+        title, desc, c = f'Tipos de daño {BRAND} (Tibia MVP)', f'Tipos de daño en {BRAND}: debilidad, resistencia e inmunidad para hechizos y criaturas.', 'Aplica el elemento correcto'
+        crumb = 'Tipos de daño'
     else:
-        h1 = 'PokéSurvivor type chart'
-        intro = ('<p class="lead">The type chart from the main games, but <b>softened</b> for a survivor game (you only have one active move and can\'t swap Pokémon): '
-                 'super effective deals <b>×1.6</b>, not very effective <b>×0.6</b>, and immunities become <b>×0.3</b>. Two types multiply (capped at ×2.4). '
-                 'It works both ways: your attacks against enemies and theirs against you.</p><p>Rows: attacking type · columns: type of the Pokémon being hit.</p>')
-        wx = ('<h2>Weather matters too</h2><ul><li><b>Rain:</b> Water is boosted and Fire is weakened.</li><li><b>Harsh sunlight:</b> Fire is boosted and Water is weakened.</li>'
-              '<li><b>Sandstorm:</b> Rock, Ground and Steel are boosted; the rest suffer.</li><li><b>Snowfall:</b> Ice is boosted; the rest suffer and slow down.</li>'
-              '<li><b>Fog:</b> Ghost, Fairy and Psychic are boosted.</li></ul>')
-        title, desc, c = 'PokéSurvivor type chart (interactive) and weather effects', 'Interactive PokéSurvivor type chart: ×1.6 / ×0.6 / ×0.3 multipliers for all 18 types, plus how rain, sun, sand, snow and fog change the fight.', 'Put it into practice: play free'
-    body = f'<article class="doc wide"><h1>{h1}</h1>{intro}{table}{wx}{cta(pid, lang, c)}</article>{script}'
-    write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, h1)]}))
+        h1 = f'Damage types in {BRAND}'
+        intro = ('<p class="lead">In the Tibia MVP, combat uses <b>elemental damage types</b> (physical, fire, ice, energy, earth, death, holy). '
+                 'Each creature lists weaknesses and resistances in the <b>bestiary</b>. Typical in-run values: '
+                 '<b>weak ×1.25</b>, <b>resist ×0.70</b>, <b>immune ×0</b> (no damage).</p>')
+        legacy = ('<h2>Pokémon types (legacy mode)</h2><p>If you play legacy Pokémon content, the full 18-type matrix remains in game data; '
+                  'the current Master Sorcerer mode uses the Tibia damage table above.</p>')
+        title, desc, c = f'{BRAND} damage types (Tibia MVP)', f'Damage types in {BRAND}: weakness, resistance and immunity for spells and creatures.', 'Use the right element'
+        crumb = 'Damage types'
+    body = f'<article class="doc wide"><h1>{h1}</h1>{intro}{table}{legacy}{cta(pid, lang, c)}</article>'
+    write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, crumb)]}))
 
 # ================= movimientos =================
 KIND = {'es': {'projectile': 'Proyectil', 'melee': 'Cuerpo a cuerpo', 'beam': 'Rayo', 'orbit': 'Órbita', 'nova': 'Ráfaga', 'aura': 'Aura', 'buff': 'Mejora',
@@ -399,31 +412,30 @@ KIND = {'es': {'projectile': 'Proyectil', 'melee': 'Cuerpo a cuerpo', 'beam': 'R
                'trail': 'Trail', 'cone': 'Spray'}}
 def moves_page(lang):
     pid = 'moves'
+    spell_types = sorted({s.get('type', 'energy') for s in SPELLS}, key=lambda x: (x not in DTYPES, x))
     rows = []
-    for t in TYPES:
-        for m in [x for x in D['moves'] if x['type'] == t]:
-            evo = m['evo']
-            evo_txt = (f'<b>{esc(L(lang, evo["name"]))}</b><small>{"con" if lang == "es" else "with"} {esc(L(lang, evo["needs"]))} · {esc(L(lang, evo["text"]))}</small>' if evo else '—')
-            rows.append(f'<tr><td><b>{esc(L(lang, m["name"]))}</b></td><td>{tbadge(t, lang)}</td><td>{KIND[lang].get(m["kind"], m["kind"])}</td>'
-                        f'<td>{esc(L(lang, m["desc"]))}</td><td class="evo">{evo_txt}</td></tr>')
-    th = ('<th>Movimiento</th><th>Tipo</th><th>Clase</th><th>Qué hace</th><th>Evoluciona a</th>' if lang == 'es'
-          else '<th>Move</th><th>Type</th><th>Kind</th><th>What it does</th><th>Evolves into</th>')
-    nevo = sum(1 for m in D['moves'] if m['evo'])
-    nm = len(D['moves'])
+    for t in spell_types:
+        for m in [x for x in SPELLS if x.get('type') == t]:
+            inc = m.get('incantation') or ''
+            inc_html = f'<small class="inc">{esc(inc)}</small>' if inc else ''
+            rows.append(f'<tr><td><b>{esc(m["name"])}</b>{inc_html}</td><td>{dtbadge(t, lang)}</td>'
+                        f'<td>{KIND[lang].get(m.get("kind"), m.get("kind", ""))}</td><td>{esc(m.get("desc", ""))}</td></tr>')
+    th = ('<th>Hechizo</th><th>Daño</th><th>Clase</th><th>Qué hace</th>' if lang == 'es'
+          else '<th>Spell</th><th>Damage</th><th>Kind</th><th>What it does</th>')
     if lang == 'es':
-        h1 = 'Movimientos de PokéSurvivor y sus evoluciones'
-        intro = (f'<p class="lead">Hay <b>{nm} movimientos</b> de los 18 tipos. Tu Pokémon ataca solo con el activo, y al subir de nivel eliges cartas '
-                 f'para aprender otros o mejorarlos hasta el nivel 5. <b>{nevo} pueden evolucionar</b>: llévalos al nivel máximo, consigue la carta de mejora '
-                 f'que indican (Potencia, Vigor, Reflejos…) y aparecerá una carta dorada de evolución.</p>')
-        title, desc, c = f'Movimientos de PokéSurvivor: los {nm} ataques y sus evoluciones', f'Lista de los {nm} movimientos de PokéSurvivor por tipo, qué hace cada uno y en qué evoluciona (Ascuas → Llamarada, Burbuja → Surf…).', 'Pruébalos: jugar gratis'
+        h1 = f'Hechizos Master Sorcerer en {BRAND}'
+        intro = (f'<p class="lead">El MVP incluye <b>{N_SPELL} hechizos y pasivas</b> del Master Sorcerer. El activo se lanza solo; '
+                 f'al subir de nivel eliges cartas para aprender, mejorar o <b>vincular</b> hechizos en un mismo hueco del HUD.</p>')
+        title, desc, c = f'Hechizos {BRAND}: lista Master Sorcerer', f'Los {N_SPELL} hechizos y pasivas del Master Sorcerer en {BRAND}, por tipo de daño.', 'Lánzalos en partida'
+        crumb = 'Hechizos'
     else:
-        h1 = 'PokéSurvivor moves and their evolutions'
-        intro = (f'<p class="lead">There are <b>{nm} moves</b> across all 18 types. Your Pokémon attacks on its own with the active one, and when you level up '
-                 f'you pick cards to learn new moves or upgrade them up to level 5. <b>{nevo} of them can evolve</b>: max them out, get the upgrade card they ask for '
-                 f'(Power, Vigor, Reflexes…) and a golden evolution card will appear.</p>')
-        title, desc, c = f'PokéSurvivor moves: all {nm} attacks and their evolutions', f'All {nm} PokéSurvivor moves by type, what each one does and what it evolves into (Ember → Fire Blast, Bubble → Surf…).', 'Try them: play free'
+        h1 = f'Master Sorcerer spells in {BRAND}'
+        intro = (f'<p class="lead">The MVP has <b>{N_SPELL} spells and passives</b> for the Master Sorcerer. The active one casts itself; '
+                 f'on level-up you pick cards to learn, upgrade or <b>bind</b> spells into one HUD slot.</p>')
+        title, desc, c = f'{BRAND} spells: Master Sorcerer list', f'All {N_SPELL} Master Sorcerer spells and passives in {BRAND}, by damage type.', 'Cast them in a run'
+        crumb = 'Spells'
     body = f'<article class="doc wide"><h1>{h1}</h1>{intro}<div class="tablewrap"><table class="list"><thead><tr>{th}</tr></thead><tbody>{"".join(rows)}</tbody></table></div>{cta(pid, lang, c)}</article>'
-    write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, h1)]}))
+    write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, crumb)]}))
 
 # ================= objetos =================
 def items_page(lang):
@@ -431,15 +443,13 @@ def items_page(lang):
     rows = ''.join(f'<li><b>{esc(L(lang, i["name"]))}</b><span>{esc(L(lang, i["desc"]))}</span></li>' for i in D['items'])
     ni = len(D['items'])
     if lang == 'es':
-        h1 = 'Objetos equipables de PokéSurvivor'
-        intro = ('<p class="lead">Durante la partida puedes encontrar <b>objetos equipables</b> en los cofres y al derrotar a los jefes. Sólo puedes llevar <b>uno</b> '
-                 'a la vez: si encuentras otro, eliges con cuál quedarte. Duran lo que dura la run.</p>')
-        title, desc, c = f'Objetos de TibiaSurvivor: los {ni} objetos equipables', f'Los {ni} objetos equipables de TibiaSurvivor (Starlight Vial, Skull, Moon Mirror…) y qué hace cada uno.', 'Encuéntralos: jugar gratis'
+        h1 = f'Objetos equipables de {BRAND}'
+        intro = ('<p class="lead">Durante la partida puedes encontrar <b>objetos equipables</b> en cofres y al derrotar élite o jefe. Solo uno a la vez; dura toda la run.</p>')
+        title, desc, c = f'Objetos de {BRAND}: los {ni} equipables', f'Los {ni} objetos equipables de {BRAND} y qué hace cada uno.', 'Encuéntralos: jugar gratis'
     else:
-        h1 = 'PokéSurvivor held items'
-        intro = ('<p class="lead">During a run you can find <b>held items</b> in chests and by defeating bosses. You can only hold <b>one</b> at a time: '
-                 'if you find another, you choose which one to keep. They last for the whole run.</p>')
-        title, desc, c = f'PokéSurvivor items: all {ni} held items', f'The {ni} held items in PokéSurvivor (Leftovers, Choice Band, Focus Sash, Life Orb…) and what each one does.', 'Find them: play free'
+        h1 = f'{BRAND} held items'
+        intro = ('<p class="lead">During a run you can find <b>held items</b> in chests and by defeating elites or the boss. Only one at a time; lasts the whole run.</p>')
+        title, desc, c = f'{BRAND} items: all {ni} held items', f'The {ni} held items in {BRAND} and what each one does.', 'Find them: play free'
     body = f'<article class="doc"><h1>{h1}</h1>{intro}<ul class="items">{rows}</ul>{cta(pid, lang, c)}</article>'
     write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, h1)]}))
 
@@ -456,57 +466,37 @@ def ach_page(lang):
         secs.append(f'<h2>{esc(L(lang, cname))} <small>({len(items)})</small></h2><ul class="items ach">{li}</ul>')
     na = len(D['achievements'])
     if lang == 'es':
-        h1 = f'Los {na} logros de PokéSurvivor'
-        intro = ('<p class="lead">Cada logro da una <b>medalla</b>, un <b>premio</b> (tickets y monedas) y, los más difíciles, un <b>título</b> para tu perfil público. '
-                 'Hay uno por cada legendario, por coleccionar Pokémon, por aguantar, por derrotar jefes, por evolucionar movimientos…</p>'
+        h1 = f'Logros y misiones de {BRAND}'
+        intro = (f'<p class="lead">Hay <b>{na} logros</b> en los datos del juego (parte del sistema legacy Pokémon y metas generales). '
+                 f'En el MVP Tibia también hay <b>misiones Golden Goblet</b> en el menú. Cada logro puede dar medalla, monedas y títulos de perfil.</p>'
                  '<p>En cursiva, el título que desbloquea.</p>')
-        title, desc, c = f'Logros de PokéSurvivor: los {na} logros, medallas y títulos', f'Lista completa de los {na} logros de PokéSurvivor con sus medallas y títulos: colección, supervivencia, combate, grietas y legendarios.', 'Empieza a conseguirlos'
+        title, desc, c = f'Logros de {BRAND}', f'Lista de los {na} logros registrados en {BRAND} y misiones del menú.', 'Empieza a conseguirlos'
     else:
-        h1 = f'All {na} PokéSurvivor achievements'
-        intro = ('<p class="lead">Every achievement gives you a <b>medal</b>, a <b>reward</b> (tickets and coins) and, for the hardest ones, a <b>title</b> for your public profile. '
-                 'There\'s one for each legendary, for collecting Pokémon, surviving, defeating bosses, evolving moves…</p><p>In italics, the title it unlocks.</p>')
-        title, desc, c = f'PokéSurvivor achievements: all {na} achievements, medals and titles', f'The full list of the {na} PokéSurvivor achievements with their medals and titles: collection, survival, combat, rifts and legendaries.', 'Start unlocking them'
+        h1 = f'{BRAND} achievements and missions'
+        intro = (f'<p class="lead">There are <b>{na} achievements</b> in game data (part legacy Pokémon, part general goals). '
+                 f'The Tibia MVP also has <b>Golden Goblet missions</b> in the menu. Achievements may grant medals, coins and profile titles.</p>'
+                 '<p>In italics, the title it unlocks.</p>')
+        title, desc, c = f'{BRAND} achievements', f'List of the {na} achievements in {BRAND} plus menu missions.', 'Start unlocking them'
     body = f'<article class="doc wide"><h1>{h1}</h1>{intro}{"".join(secs)}{cta(pid, lang, c)}</article>'
     write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, h1)]}))
 
 # ================= novedades =================
-NEWS = [
- ('2026-10-14', ('Recupera tu cuenta con Gmail', 'Recover your account with Gmail'),
-  ('Si juegas con nombre y contraseña, ya puedes vincular tu Gmail: si olvidas la contraseña, entras con Google y es tu misma cuenta.',
-   'If you play with a name and password, you can now link your Gmail: if you forget your password, sign in with Google and it is the same account.')),
- ('2026-10-13', ('La Sentencia de Arceus', 'The Judgment of Arceus'),
-  ('Al llegar al minuto 30, Arceus baja del cielo y te lleva a las Ruinas del Juicio: es invencible, te persigue cada vez más deprisa y cada 5 segundos acude un legendario con el doble de vida y de daño que el anterior. Tres logros nuevos, música nueva y el ranking histórico empieza de cero.',
-   'At minute 30, Arceus descends from the sky and takes you to the Ruins of Judgment: it is invincible, chases you faster and faster, and every 5 seconds a legendary joins with twice the HP and damage of the previous one. Three new achievements, new music, and the all-time leaderboard starts from scratch.')),
- ('2026-10-12', ('Partidas sin límite, grietas con menos azar y novedades en el juego', 'Endless runs, less random rifts and a "What\'s new" screen'),
-  ('Arreglado el fallo que dejaba la pantalla en negro o subía de nivel sin fin pasados 84 minutos; si algo falla, la partida se guarda sola. Las grietas salen como mucho cada 2,5 minutos y los legendarios que te faltan aparecen más. Los curanderos curan según lo fuerte que pegas, con tope. En cooperativo, si el anfitrión cambia de pestaña la partida se pausa para todos. Arreglos para iPhone, selector shiny en el menú, ataques cuerpo a cuerpo más fuertes y un botón de Novedades dentro del juego.',
-   'Fixed the bug that turned the screen black or levelled you up forever after 84 minutes; if something fails, the run saves itself. Rifts show up at least every 2.5 minutes and the legendaries you are missing appear more often. Healers heal based on how hard you hit, with a cap. In co-op, if the host switches tabs the run pauses for everyone. iPhone fixes, a shiny toggle in the menu, stronger melee attacks and a "What\'s new" button inside the game.')),
- ('2026-10-11', ('Vínculos: fusiona movimientos al vencer legendarios', 'Bonds: fuse moves by defeating legendaries'),
-  ('Cada legendario que vences en una grieta te da un vínculo: une dos movimientos para que se lancen a la vez y ocupen un solo hueco, y con cada legendario siguiente se suma otro, hasta 4 a la vez. Así queda sitio para aprender más movimientos. Además, las grietas salen más a menudo.',
-   'Every legendary you defeat in a rift gives you a bond: link two moves so they fire at the same time from a single slot, and each further legendary adds another one, up to 4 at once. That frees slots to learn more moves. Rifts also show up more often.')),
- ('2026-10-10', ('Jefes con varios ataques, 8 tipos de movimiento nuevos y más reto', 'Bosses with several attacks, 8 new move kinds and a tougher game'),
-  ('Los jefes y legendarios tienen 4 ataques avisados, se acercan o pelean de lejos y se enfurecen a media vida. 12 movimientos nuevos y 8 formas de atacar: bumerán, cadena, minas, meteoros, torreta, embestida, rastro y abanico. Menos enemigos pero más duros, eventos a mitad de partida (hordas de un tipo, hora dorada, Pokémon perdidos), Meowth que huyen cargados de monedas, los de tipo Agua nadan sin frenarse y el ranking tiene anti-trampas.',
-   'Bosses and legendaries have 4 telegraphed attacks, close in or fight from range and get enraged at half health. 12 new moves and 8 new ways to attack: boomerang, chain, mines, meteors, turret, dash, trail and spray. Fewer but tougher enemies, mid-run events (single-type hordes, golden hour, lost Pokémon), Meowth running away loaded with coins, Water types swim at full speed and the leaderboard has anti-cheat.')),
- ('2026-10-09', ('Móvil, inglés y ajustes', 'Mobile, English and settings'),
-  ('Ya se puede jugar en móvil y tablet con joystick táctil, en español y en inglés, e instalar como app. Nueva pantalla de ajustes con calidad gráfica automática, y menos enemigos en pantalla pero más fuertes.',
-   'You can now play on phones and tablets with a touch joystick, in English and Spanish, and install it as an app. New settings screen with automatic graphics quality, and fewer but stronger enemies on screen.')),
- ('2026-10-08', ('Misiones, logros y enemigos con personalidad', 'Missions, achievements and enemies with personality'),
-  ('Misiones diarias y semanales, 127 logros con medallas y títulos, perfil público, objetos equipables, evoluciones de movimientos y enemigos que curan, protegen, invocan o explotan.',
-   'Daily and weekly missions, 127 achievements with medals and titles, a public profile, held items, move evolutions and enemies that heal, shield, summon or explode.')),
- ('2026-10-08', ('Grietas legendarias y clima', 'Legendary rifts and weather'),
-  ('Grietas que llevan a 18 arenas legendarias, una por tipo; clima que cambia la batalla; tabla de tipos y gacha tragaperras con tickets.',
-   'Rifts leading to 18 legendary arenas, one per type; weather that changes the fight; a type chart and a slot-machine gacha with tickets.')),
- ('2026-10-08', ('Cooperativo y ranking', 'Co-op and leaderboards'),
-  ('Cooperativo online hasta 4 con tu lista de amigos y ranking diario, semanal, mensual, anual e histórico.',
-   'Online co-op for up to 4 with your friends list, plus daily, weekly, monthly, yearly and all-time leaderboards.')),
-]
 def news(lang):
     pid = 'news'
     i = 0 if lang == 'es' else 1
-    items = ''.join(f'<article class="news"><time datetime="{d}">{d}</time><h2>{esc(t[i])}</h2><p>{esc(x[i])}</p></article>' for d, t, x in NEWS)
-    h1 = 'Novedades de PokéSurvivor' if lang == 'es' else 'PokéSurvivor news'
-    title = h1 + (' · actualizaciones del juego' if lang == 'es' else ' · game updates')
-    desc = ('Las últimas actualizaciones de PokéSurvivor: nuevas funciones, mejoras y arreglos.' if lang == 'es'
-            else 'The latest PokéSurvivor updates: new features, improvements and fixes.')
+    pool = CHANGELOG_SEO or []
+    items = ''
+    for e in pool:
+        topic = e.get('topic', ['', ''])
+        tit = topic[i] if isinstance(topic, (list, tuple)) and len(topic) > i else (topic[0] if topic else BRAND)
+        txt = e['es'] if lang == 'es' else e['en']
+        items += f'<article class="news"><time datetime="{e["d"]}">{e["d"]}</time><h2>{esc(tit)}</h2><p>{esc(txt)}</p></article>'
+    if not items:
+        items = f'<p class="lead">{"Sin entradas exportadas aún." if lang == "es" else "No changelog entries exported yet."}</p>'
+    h1 = f'Novedades de {BRAND}' if lang == 'es' else f'{BRAND} news'
+    title = h1 + (' · actualizaciones' if lang == 'es' else ' · updates')
+    desc = (f'Últimos cambios de {BRAND} (interfaz Tibia, hechizos, bestiario).' if lang == 'es'
+            else f'Latest {BRAND} changes (Tibia UI, spells, bestiary).')
     body = f'<div class="doc"><h1>{h1}</h1>{items}{cta(pid, lang, "Jugar gratis" if lang == "es" else "Play free")}</div>'
     write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, h1)]}))
 
@@ -519,11 +509,11 @@ def support(lang):
     kofi = f'https://ko-fi.com/{F["kofi"]}' if F['kofi'] else ''
     spons = f'https://github.com/sponsors/{F["sponsors"]}' if F['sponsors'] else ''
     if lang == 'es':
-        h1 = 'Apoyar PokéSurvivor'
+        h1 = f'Apoyar {BRAND}'
         btns = ''.join(x for x in [f'<a class="btn" href="{kofi}" rel="noopener">Donar en Ko-fi</a>' if kofi else '',
                                    f'<a class="btn ghost" href="{spons}" rel="noopener">GitHub Sponsors</a>' if spons else ''])
         body = f"""<article class="doc"><h1>{h1}</h1>
-<p class="lead">PokéSurvivor es y será <b>gratis</b>: sin anuncios, sin compras y sin ventajas de pago. Si te gusta y quieres ayudar a que siga en línea,
+<p class="lead">{BRAND} es y será <b>gratis</b>: sin anuncios, sin compras y sin ventajas de pago. Si te gusta y quieres ayudar a que siga en línea,
 puedes hacer una <b>donación voluntaria</b>. <b>Todo el dinero se usa para los servidores y el dominio</b>; lo que sobre se guarda para los meses siguientes.</p>
 <p>Donar no da ninguna ventaja dentro del juego: todos los jugadores juegan igual.</p>
 <h2>Qué cuesta mantenerlo</h2>
@@ -533,14 +523,14 @@ puedes hacer una <b>donación voluntaria</b>. <b>Todo el dinero se usa para los 
 <p>{btns or 'Muy pronto podrás donar desde aquí.'}</p>
 <p>También ayuda mucho, y gratis: compartir el juego con tus amigos, recomendarlo y avisar de fallos.</p>
 {cta(pid, lang, 'Volver al juego')}</article>"""
-        title, desc = 'Apoyar PokéSurvivor: donaciones para los servidores', 'PokéSurvivor es gratis y sin anuncios. Las donaciones voluntarias se usan sólo para los servidores y el dominio.'
+        title, desc = f'Apoyar {BRAND}: donaciones', f'{BRAND} es gratis. Las donaciones voluntarias pagan servidores y dominio.'
     else:
-        h1 = 'Support PokéSurvivor'
+        h1 = f'Support {BRAND}'
         btns = ''.join(x for x in [f'<a class="btn" href="{kofi}" rel="noopener">Donate on Ko-fi</a>' if kofi else '',
                                    f'<a class="btn ghost" href="{spons}" rel="noopener">GitHub Sponsors</a>' if spons else ''])
         soon_donate = "You'll be able to donate from here very soon."
         body = f"""<article class="doc"><h1>{h1}</h1>
-<p class="lead">PokéSurvivor is and will stay <b>free</b>: no ads, no purchases and no pay-to-win. If you enjoy it and want to help keep it online,
+<p class="lead">{BRAND} is and will stay <b>free</b>: no ads, no purchases and no pay-to-win. If you enjoy it and want to help keep it online,
 you can make a <b>voluntary donation</b>. <b>All the money goes to the servers and the domain</b>; anything left over is saved for the following months.</p>
 <p>Donating gives no advantage in the game: everyone plays on equal terms.</p>
 <h2>What it costs to run</h2>
@@ -550,7 +540,7 @@ you can make a <b>voluntary donation</b>. <b>All the money goes to the servers a
 <p>{btns or soon_donate}</p>
 <p>Sharing the game with your friends, recommending it and reporting bugs helps a lot too, and it's free.</p>
 {cta(pid, lang, 'Back to the game')}</article>"""
-        title, desc = 'Support PokéSurvivor: donations for the servers', 'PokéSurvivor is free and ad-free. Voluntary donations only pay for the servers and the domain.'
+        title, desc = f'Support {BRAND}: donations', f'{BRAND} is free. Voluntary donations pay for servers and the domain.'
     write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, h1)]}))
 
 # ================= el juego en inglés (/en/) =================
@@ -568,28 +558,38 @@ def game_en():
     s = src.replace('<html lang="es">', '<html lang="en">')
     s = s.replace('<head>\n<meta charset="utf-8">', '<head>\n<meta charset="utf-8">\n<base href="../">', 1)
     rep = [
-        ('<title>PokéSurvivor – Juego Pokémon gratis online estilo Survivor.io</title>', '<title>PokéSurvivor – Free online Pokémon survival game (Survivor.io style)</title>'),
-        ('content="Sobrevive a hordas de Pokémon con tu compañero en este fan game gratis para navegador y móvil: 966 Pokémon, shinies, legendarios y cooperativo con amigos. Sin descargas ni anuncios."',
-         f'content="Survive hordes of Pokémon with your partner in this free fan game for browser and mobile: {N} Pokémon, shinies, legendaries and online co-op with friends. No downloads, no ads."'),
-        ('<link rel="canonical" href="https://pokesurvivor.com/">', '<link rel="canonical" href="https://pokesurvivor.com/en/">'),
+        ('<title>TibiaSurvivor – Survivor de fantasía pixel art</title>',
+         '<title>TibiaSurvivor – Free pixel-art fantasy survivor</title>'),
+        ('content="Un survivor de fantasía pixel art donde cada partida reproduce la tensión y progresión de una hunting session de un MMORPG clásico. Gratis en navegador, sin descargas."',
+         'content="A pixel-art fantasy survivor where each run feels like a classic MMORPG hunting session. Free in your browser, no download."'),
+        ('<link rel="canonical" href="./">', f'<link rel="canonical" href="{SITE}en/">'),
         ('<meta property="og:locale" content="es_ES">', '<meta property="og:locale" content="en_US">'),
-        ('<meta property="og:url" content="https://pokesurvivor.com/">', '<meta property="og:url" content="https://pokesurvivor.com/en/">'),
-        ('<meta property="og:title" content="PokéSurvivor – Sobrevive a las hordas Pokémon">', '<meta property="og:title" content="PokéSurvivor – Survive the Pokémon hordes">'),
-        ('<meta property="og:description" content="Fan game gratis para navegador y móvil: 966 Pokémon, shinies, legendarios y cooperativo hasta 4 amigos. Sin descargas ni anuncios.">',
-         f'<meta property="og:description" content="A free fan game for browser and mobile: {N} Pokémon, shinies, legendaries and co-op with up to 4 friends. No downloads, no ads.">'),
-        ('<meta name="twitter:title" content="PokéSurvivor – Sobrevive a las hordas Pokémon">', '<meta name="twitter:title" content="PokéSurvivor – Survive the Pokémon hordes">'),
-        ('<meta name="twitter:description" content="Fan game gratis para navegador y móvil, con cooperativo hasta 4. Sin descargas ni anuncios.">',
-         '<meta name="twitter:description" content="A free fan game for browser and mobile, with co-op for up to 4. No downloads, no ads.">'),
-        ('<p>Juego de supervivencia con Pokémon, gratis en el navegador y en el móvil.</p>', '<p>A Pokémon survival game, free in your browser and on mobile.</p>'),
+        ('<meta property="og:url" content="./">', f'<meta property="og:url" content="{SITE}en/">'),
+        ('<meta property="og:title" content="TibiaSurvivor – Hunting session subterránea">',
+         '<meta property="og:title" content="TibiaSurvivor – Underground hunting session">'),
+        ('<meta property="og:description" content="Survivor de fantasía pixel art: 15 min de cacería, habilidades, jefes y progreso local.">',
+         '<meta property="og:description" content="Pixel-art fantasy survivor: 15-minute hunts, spells, bosses and local progress.">'),
+        ('<meta property="og:image:alt" content="TibiaSurvivor — fantasía pixel art subterránea">',
+         '<meta property="og:image:alt" content="TibiaSurvivor — underground pixel-art fantasy">'),
+        ('<meta name="twitter:description" content="Survivor de fantasía pixel art en el navegador.">',
+         '<meta name="twitter:description" content="Pixel-art fantasy survivor in your browser.">'),
         ('<p class="boot-ld">Cargando…</p>', '<p class="boot-ld">Loading…</p>'),
     ]
     for a, b in rep:
-        assert a in s, a[:60]
+        if a not in s:
+            raise AssertionError('game_en(): falta en dev.html tras limpiar SEO: %r' % a[:120])
         s = s.replace(a, b)
-    # Enlaces a las páginas: las de inglés.
+    # Enlaces a las páginas: las de inglés (legacy Pokémon si existen en el HTML).
     s = s.replace('href="guia/"', 'href="en/guide/"').replace('href="pokedex/"', 'href="en/pokedex/"')
-    s = s.replace('"description": "Fan game gratuito de supervivencia (bullet heaven, estilo Survivor.io) con Pokémon: elige compañero, sobrevive a hordas, sube de nivel, evoluciona tus ataques, enfréntate a legendarios en grietas y juega en cooperativo con hasta 4 amigos."',
-                  '"description": "A free Pokémon survival fan game (bullet heaven, Survivor.io style): pick a partner, survive the hordes, level up, evolve your moves, fight legendaries in rifts and play co-op with up to 4 friends."')
+    s = s.replace(
+        '"description": "Survivor de fantasía pixel art: expediciones de cacería, habilidades, jefes y progreso persistente local."',
+        '"description": "Pixel-art fantasy survivor: hunting runs, spells, bosses and persistent local progress."')
+    s = s.replace('"genre": ["Roguelike", "Bullet heaven", "Acción", "Supervivencia"]',
+                  '"genre": ["Roguelike", "Bullet heaven", "Action", "Survival"]')
+    s = s.replace('"operatingSystem": "Cualquiera con navegador web moderno"',
+                  '"operatingSystem": "Any modern web browser"')
+    s = s.replace('"gamePlatform": ["Navegador web", "PC", "Android", "iOS"]',
+                  '"gamePlatform": ["Web browser", "PC", "Android", "iOS"]')
     s = s.replace('"inLanguage": "es"', '"inLanguage": ["es", "en"]')
     os.makedirs(os.path.join(ROOT, 'en'), exist_ok=True)
     open(os.path.join(ROOT, 'en', 'index.html'), 'w', encoding='utf-8').write(s)
@@ -597,14 +597,14 @@ def game_en():
 # ================= 404, robots y sitemap =================
 def extra():
     nf = '''<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex"><title>404 · PokéSurvivor</title><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/assets/icons/icon-48.png"><link rel="stylesheet" href="/css/pages.css"></head>
-<body><header class="top"><a class="brand" href="/">PokéSurvivor</a><nav><a href="/guia/">Guía</a><a href="/en/">English</a><a class="play" href="/">Jugar gratis</a></nav></header>
+<meta name="robots" content="noindex"><title>404 · TibiaSurvivor</title><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="48x48" href="/assets/icons/icon-48.png"><link rel="stylesheet" href="/css/pages.css"></head>
+<body><header class="top"><a class="brand" href="/">TibiaSurvivor</a><nav><a href="/guia/">Guía</a><a href="/en/">English</a><a class="play" href="/">Jugar gratis</a></nav></header>
 <main><article class="doc center"><h1>404 · Te has perdido en la mazmorra</h1><p class="lead">Esta página no existe. Pero las hordas siguen esperando…</p>
 <p class="lead" lang="en">This page doesn't exist. But the hordes are still waiting…</p>
 <p class="cta"><a class="btn" href="/">Volver al juego</a> <a class="btn ghost" href="/en/">Play in English</a></p></article></main></body></html>
 '''
     open(os.path.join(ROOT, '404.html'), 'w', encoding='utf-8').write(nf)
-    open(os.path.join(ROOT, 'robots.txt'), 'w', encoding='utf-8').write(f'# PokéSurvivor\nUser-agent: *\nAllow: /\nDisallow: /tools/\nDisallow: /docs/\nDisallow: /dev.html\n\nSitemap: {SITE}sitemap.xml\n')
+    open(os.path.join(ROOT, 'robots.txt'), 'w', encoding='utf-8').write(f'# TibiaSurvivor\nUser-agent: *\nAllow: /\nDisallow: /tools/\nDisallow: /docs/\nDisallow: /dev.html\n\nSitemap: {SITE}sitemap.xml\n')
     PRI = {'home': '1.0', 'guide': '0.8', 'pokedex': '0.7', 'legends': '0.7', 'moves': '0.6', 'types': '0.6', 'shinies': '0.6', 'achievements': '0.5', 'items': '0.5', 'news': '0.5', 'support': '0.4'}
     urls = []
     for pid in PAGES:

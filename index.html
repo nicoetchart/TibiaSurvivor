@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- GENERADO desde dev.html por tools/build.js: no editar a mano (se edita dev.html). -->
-<html lang="es" data-ui="tibia">
+<html lang="en" data-ui="tibia">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -186,7 +186,7 @@
   <div class="menu-right">
     <div class="box">
       <div class="menu-list">
-        <button class="menu-item play" data-go="play">Jugar<small>Inicia una expedición (12 min)</small></button>
+        <button class="menu-item play" data-go="play">Jugar<small>Inicia una expedición (~15 min)</small></button>
         <button class="menu-item hidden" data-go="bestiary">Bestiario<small id="menu-bestiary-sub">Registro de cacería</small></button>
         <button class="menu-item hidden" data-go="outfit">Aspecto<small>Colores y addons (como Tibia)</small></button>
         <button class="menu-item" data-go="dex">Colección<small id="menu-dex-count">Legacy</small></button>
@@ -273,15 +273,8 @@
 </div>
 <script>
   (function () {
-    var s = null; try { s = localStorage.getItem('ts.lang') || localStorage.getItem('ps.lang'); } catch (e) {}
-    var n = ((navigator.languages && navigator.languages[0]) || navigator.language || 'es').toLowerCase();
-    var l = s === 'es' || s === 'en' ? s : (/\/en(\/|$)/.test(location.pathname) ? 'en' : (n.indexOf('es') === 0 ? 'es' : 'en'));
-    document.documentElement.lang = l;
-    if (l === 'en') {
-      var p = document.querySelectorAll('#boot p');
-      p[0].textContent = 'A fantasy pixel-art survivor — free in your browser and on mobile.';
-      p[1].textContent = 'Loading…';
-    }
+    try { localStorage.setItem('ts.lang', 'en'); } catch (e) {}
+    document.documentElement.lang = 'en';
   })();
 </script>
 <div id="tap-start" class="tapstart hidden">
@@ -487,6 +480,6 @@
 </section>
 
 <!-- datos generados -->
-<script defer src="js/app.min.js?v=ddd4eb68dc"></script>
+<script defer src="js/app.min.js?v=b2d8af7f53"></script>
 </body>
 </html>

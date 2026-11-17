@@ -27,6 +27,7 @@ function tryVersion(exe, args = ['--version']) {
 
 function candidates() {
   const list = [];
+  if (process.env.TIBIASURVIVOR_PYTHON) list.push(process.env.TIBIASURVIVOR_PYTHON);
   if (process.env.POKESURVIVOR_PYTHON) list.push(process.env.POKESURVIVOR_PYTHON);
   try {
     const j = JSON.parse(fs.readFileSync(LOCAL, 'utf8'));
@@ -65,7 +66,7 @@ if (!py) {
     'Opciones:',
     '  1) winget install Python.Python.3.12  (marca “Add to PATH” en el instalador)',
     '  2) Crea tools/python.local.json: { "python": "C:\\\\ruta\\\\python.exe" }',
-    '  3) Variable de entorno POKESURVIVOR_PYTHON',
+    '  3) Variable de entorno TIBIASURVIVOR_PYTHON (o POKESURVIVOR_PYTHON)',
     '',
     'Luego: node tools/export_data.js && node tools/run_make_seo.js'
   ].join('\n'));

@@ -2,6 +2,12 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-17', title: ['Idioma', 'Language'], chg: [
+    ['El juego queda solo en inglés: sin selector de idioma; traducción automática siempre activa.',
+     'English-only UI: no language picker; automatic translation always on.'],
+    ['Textos Tibia en objetos, mejoras legacy y enlaces GitHub/donaciones actualizados.',
+     'Tibia copy on items, legacy upgrades, GitHub and support links updated.'],
+  ] },
   { d: '2026-11-17', title: ['Interfaz', 'UI'], chg: [
     ['Icono moneda en toda la UI (tienda, gacha, progreso, canvas): sprite Tibia 201280.',
      'Coin icon across UI (shop, gacha, progress, canvas): Tibia sprite 201280.'],
