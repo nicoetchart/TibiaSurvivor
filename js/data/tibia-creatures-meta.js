@@ -1260,6 +1260,146 @@ G.TIBIA_CREATURES_META = {
     "idleStrip": "165-168.png",
     "walkStrip": "169-200.png"
   },
+  "lt_29": {
+    "kind": "lookType",
+    "tileW": 32,
+    "tileH": 32,
+    "pw": 4,
+    "drawMul": 1,
+    "s": 0,
+    "layout": {
+      "pw": 4,
+      "ph": 1,
+      "pd": 1,
+      "layers": 1
+    },
+    "composite": false,
+    "anchor": {
+      "ax": 17,
+      "ay": 28
+    },
+    "a": {
+      "Idle": {
+        "w": 32,
+        "h": 32,
+        "n": 1,
+        "d": [
+          10
+        ],
+        "ax": 17,
+        "ay": 28,
+        "r": 4,
+        "pw": 4,
+        "ph": 1,
+        "strip": true,
+        "stripKind": "idle"
+      },
+      "Walk": {
+        "w": 32,
+        "h": 32,
+        "n": 8,
+        "d": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "ax": 17,
+        "ay": 28,
+        "r": 4,
+        "pw": 4,
+        "ph": 8,
+        "strip": true,
+        "stripKind": "walk"
+      },
+      "Attack": {
+        "w": 32,
+        "h": 32,
+        "n": 3,
+        "d": [
+          5,
+          5,
+          5
+        ],
+        "ax": 17,
+        "ay": 28,
+        "r": 4,
+        "pw": 4,
+        "ph": 8,
+        "strip": true,
+        "stripKind": "walk"
+      },
+      "Shoot": {
+        "w": 32,
+        "h": 32,
+        "n": 3,
+        "d": [
+          5,
+          5,
+          5
+        ],
+        "ax": 17,
+        "ay": 28,
+        "r": 4,
+        "pw": 4,
+        "ph": 8,
+        "strip": true,
+        "stripKind": "walk"
+      },
+      "Charge": {
+        "w": 32,
+        "h": 32,
+        "n": 2,
+        "d": [
+          5,
+          5
+        ],
+        "ax": 17,
+        "ay": 28,
+        "r": 4,
+        "pw": 4,
+        "ph": 8,
+        "strip": true,
+        "stripKind": "walk"
+      },
+      "Hurt": {
+        "w": 32,
+        "h": 32,
+        "n": 1,
+        "d": [
+          10
+        ],
+        "ax": 17,
+        "ay": 28,
+        "r": 4,
+        "pw": 4,
+        "ph": 1,
+        "strip": true,
+        "stripKind": "idle"
+      },
+      "Faint": {
+        "w": 32,
+        "h": 32,
+        "n": 1,
+        "d": [
+          10
+        ],
+        "ax": 17,
+        "ay": 28,
+        "r": 4,
+        "pw": 4,
+        "ph": 1,
+        "strip": true,
+        "stripKind": "idle"
+      }
+    },
+    "idleStrip": "227-230.png",
+    "walkStrip": "231-262.png"
+  },
   "lt_44": {
     "kind": "lookType",
     "tileW": 32,

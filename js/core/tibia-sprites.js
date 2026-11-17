@@ -157,6 +157,47 @@ G.TibiaSprites = (() => {
     };
   }
 
+  const stripFrames = new Map();
+  const MAX_STRIP_FRAMES = 512;
+
+  /** Copia un fotograma del strip a un canvas aislado (evita costuras con columnas vecinas). */
+  function isolatedStripFrame(img, sx, w, h, cacheKey) {
+    let cv = stripFrames.get(cacheKey);
+    if (cv) return cv;
+    if (typeof document === 'undefined') return img;
+    if (stripFrames.size >= MAX_STRIP_FRAMES) {
+      const oldest = stripFrames.keys().next().value;
+      stripFrames.delete(oldest);
+    }
+    cv = document.createElement('canvas');
+    cv.width = w;
+    cv.height = h;
+    const c = cv.getContext('2d');
+    c.imageSmoothingEnabled = false;
+    c.clearRect(0, 0, w, h);
+    c.drawImage(img, sx, 0, w, h, 0, 0, w, h);
+    stripFrames.set(cacheKey, cv);
+    return cv;
+  }
+
+  function blitStripFrame(ctx, img, animM, idx, k, dx, dy, alpha) {
+    const sx = idx * animM.w;
+    const scale = Math.max(0.001, k);
+    const dw = Math.round(animM.w * scale);
+    const dh = Math.round(animM.h * scale);
+    const frameKey = img.src + '|' + sx + '|' + animM.w + 'x' + animM.h;
+    const src = isolatedStripFrame(img, sx, animM.w, animM.h, frameKey);
+    const prevA = ctx.globalAlpha;
+    const prevSm = ctx.imageSmoothingEnabled;
+    if (alpha < 1) ctx.globalAlpha = prevA * alpha;
+    ctx.imageSmoothingEnabled = false;
+    const fromX = src === img ? sx : 0;
+    const fromY = 0;
+    ctx.drawImage(src, fromX, fromY, animM.w, animM.h, Math.round(dx), Math.round(dy), dw, dh);
+    ctx.imageSmoothingEnabled = prevSm;
+    ctx.globalAlpha = prevA;
+  }
+
   function baseDrawMul(dex, animM) {
     if (animM && animM.drawMul != null) return animM.drawMul;
     const key = creatureKey(entryForDex(dex));
@@ -391,10 +432,7 @@ G.TibiaSprites = (() => {
     let idx = stripIndex(animM, colDir, fr);
     const slots = Math.max(1, Math.floor(s.img.width / animM.w));
     idx = Math.min(idx, slots - 1);
-    const prev = ctx.globalAlpha;
-    if (alpha < 1) ctx.globalAlpha = prev * alpha;
-    ctx.drawImage(s.img, idx * animM.w, 0, animM.w, animM.h, dx, dy, animM.w * k, animM.h * k);
-    ctx.globalAlpha = prev;
+    blitStripFrame(ctx, s.img, animM, idx, k, dx, dy, alpha);
     return true;
   }
 
@@ -443,12 +481,7 @@ G.TibiaSprites = (() => {
     let idx = stripIndex(animM, colDir, fr);
     const slots = Math.max(1, Math.floor(s.img.width / animM.w));
     idx = Math.min(idx, slots - 1);
-    const sx = idx * animM.w;
-    const sy = 0;
-    const prev = ctx.globalAlpha;
-    if (alpha < 1) ctx.globalAlpha = prev * alpha;
-    ctx.drawImage(s.img, sx, sy, animM.w, animM.h, dx, dy, animM.w * k, animM.h * k);
-    ctx.globalAlpha = prev;
+    blitStripFrame(ctx, s.img, animM, idx, k, dx, dy, alpha);
     return true;
   }
 
@@ -567,7 +600,7 @@ G.TibiaSprites = (() => {
       loads.push(getSheet(aid, 'idle', sub), getSheet(aid, 'walk', sub));
     }
     const itemLoads = preloadItems(
-      ['health_potion', 'heal_pickup', 'xp_pickup', 'xp_big_pickup', 'starlightVial', 'cursedCoin', 'boneFiddle', 'moonMirror', 'sunCatcher', 'frozenStarlight', 'glowingMush', 'skull', 'blueSphere', 'magicalTorch', 'gold_coin', 'coin_1', 'coin_2', 'coin_3', 'coin_4', 'coin_5', 'coin_8'],
+      ['health_potion', 'heal_pickup', 'xp_pickup', 'xp_big_pickup', 'starlightVial', 'cursedCoin', 'boneFiddle', 'moonMirror', 'sunCatcher', 'frozenStarlight', 'glowingMush', 'skull', 'blueSphere', 'magicalTorch', 'gold_coin', 'crystal_coin_menu', 'coin_1', 'coin_2', 'coin_3', 'coin_4', 'coin_5', 'coin_8', 'menu_play', 'menu_bestiary', 'menu_outfit', 'menu_goals', 'menu_settings'],
       timeout);
     return Promise.all([itemLoads, new Promise(res => {
       const t0 = performance.now();

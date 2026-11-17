@@ -197,7 +197,6 @@ G.Events = (() => {
   function rescued() {
     const L = lost;
     for (let i = 0; i < 12; i++) G.Pickups.drop('coin', L.tx + G.U.rand(-40, 40), L.ty + G.U.rand(-30, 30), 5);
-    G.Pickups.drop('ticket', L.tx, L.ty - 12, 1);
     reward(L.dex, L.grant);
     lost = null;
     end();

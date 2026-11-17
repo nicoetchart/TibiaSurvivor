@@ -21,6 +21,7 @@ G.TIBIA_SPRITE_MAP = {
     99008: { kind: 'lookType', lookType: 27 },    // Wolf
     99009: { kind: 'lookType', lookType: 6 },     // Orc Shaman
     99010: { kind: 'lookType', lookType: 25 },    // Minotaur
+    99017: { kind: 'lookType', lookType: 29 },    // Minotaur Guard (centinela élite)
     99011: { kind: 'lookType', lookType: 44 },    // Wasp
     99012: { kind: 'lookType', lookType: 40 },    // Fire Devil
     99013: { kind: 'lookType', lookType: 18 },    // Ghoul
@@ -36,6 +37,12 @@ G.TIBIA_SPRITE_MAP = {
     crystal_coin: { clientId: 3043 },
     /** Topbar (monedas de cuenta). */
     crystal_coin_menu: { spriteId: '201280' },
+  /** Iconos del menú principal (clientId Tibia → PNG en items/). */
+    menu_play: { spriteId: 201033, clientId: 2854 },
+    menu_bestiary: { spriteId: 198121, clientId: 2835 },
+    menu_outfit: { spriteId: 201879, clientId: 3463 },
+    menu_goals: { spriteId: 204175, clientId: 5805 },
+    menu_settings: { spriteId: 206970, clientId: 8775 },
     /** Pilas de oro en el suelo (pickup.value 1–5, 8). */
     coin_1: { spriteId: 201280 },
     coin_2: { spriteId: 201281 },

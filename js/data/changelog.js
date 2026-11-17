@@ -2,6 +2,34 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-17', title: ['Interfaz', 'UI'], chg: [
+    ['Icono moneda en toda la UI (tienda, gacha, progreso, canvas): sprite Tibia 201280.',
+     'Coin icon across UI (shop, gacha, progress, canvas): Tibia sprite 201280.'],
+    ['Menú principal: iconos Tibia (mochila, libro, Mirror, Golden Goblet, Gear Wheel).',
+     'Main menu: Tibia item icons (backpack, book, Mirror, Golden Goblet, Gear Wheel).'],
+  ] },
+  { d: '2026-11-17', title: ['Botín', 'Loot'], chg: [
+    ['En partida ya no caen tickets del gacha (criaturas, jefes, cofres, eventos legacy).',
+     'In-run gacha tickets no longer drop (creatures, bosses, chests, legacy events).'],
+  ] },
+  { d: '2026-11-17', title: ['HUD', 'HUD'], fix: [
+    ['Hechizos vinculados: iconos centrados dentro de la ranura (sin solapar el título).',
+     'Fused spells: icons centered inside the slot (no longer overlap the title).'],
+  ] },
+  { d: '2026-11-17', title: ['Sprites', 'Sprites'], fix: [
+    ['Meta Tibia: clave lt_25 restaurada (el insert de lt_29 había roto el objeto; sin sprites ni outfit).',
+     'Tibia meta: restored lt_25 key (lt_29 insert had broken the object; no creature or outfit sprites).'],
+    ['Minotaur Guard: import lookType 29 con meta/anclas correctas; dibujo strip sin suavizado.',
+     'Minotaur Guard: lookType 29 import with proper meta/anchors; nearest-neighbor strip draw.'],
+    ['Sprites strip Tibia: cada fotograma a canvas aislado antes de escalar (sin costura negra lateral).',
+     'Tibia strip sprites: each frame blitted to isolated canvas before scale (no black side seam).'],
+  ] },
+  { d: '2026-11-17', title: ['Centinela', 'Sentinel'], chg: [
+    ['Centinela de élite: sprite Minotaur Guard (lookType 29) en lugar del Minotaur común.',
+     'Elite sentinel: Minotaur Guard lookType 29 sprite instead of common Minotaur.'],
+    ['?dev: centinela de élite al iniciar la partida (junto a los drops de prueba).',
+     '?dev: elite sentinel at run start (with other test drops).'],
+  ] },
   { d: '2026-11-17', title: ['Pickups', 'Pickups'], new: [
     ['Orbes de XP en suelo: sprites Tibia 207453 (xp) y 210950 (xpBig).',
      'Floor XP orbs: Tibia sprites 207453 (xp) and 210950 (xpBig).'],

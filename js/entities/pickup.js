@@ -23,8 +23,8 @@ G.Pickups = (() => {
     ticket10: { color: '#c47bff', glow: '#8a3fd0', r: 8 },
     item:     { color: '#ffd23f', glow: '#c08a10', r: 9 }       // value = id del objeto
   };
-  /** Valor del pickup → PNG en assets/tibia/items/ (pilas de oro Tibia). */
-  const COIN_SPRITE_BY_VALUE = { 1: 201280, 2: 201281, 3: 201282, 4: 201283, 5: 201284, 8: 201285 };
+  /** Valor del pickup → clave en TIBIA_SPRITE_MAP.items (pilas de oro Tibia). */
+  const COIN_ITEM_BY_VALUE = { 1: 'coin_1', 2: 'coin_2', 3: 'coin_3', 4: 'coin_4', 5: 'coin_5', 8: 'coin_8' };
   /** Bomba en suelo: strip 3×32 en assets/tibia/items/203847-203849.png */
   const BOMB_PICKUP_SHEET = '203847-203849';
   const BOMB_PICKUP_FRAMES = 3;
@@ -33,11 +33,6 @@ G.Pickups = (() => {
   const MAGNET_PICKUP_SHEET = '209160-209162';
   const MAGNET_PICKUP_FRAMES = 3;
   const MAGNET_PICKUP_SEC_PER_FRAME = 0.28;
-
-  /** Probabilidad de que un Pokémon normal suelte un ticket del gacha. */
-  const BOSS_T10 = 1 / 3;               // ticket ×10 de un jefe normal
-  const LEGEND_T10 = 1 / 2;             // ticket ×10 del legendario de la grieta
-  const TICKET_RATE = 1 / 400;          // (antes 1/260; más raros desde 2026-10-10)
 
   function clear() { list = []; }
   function all() { return list; }
@@ -87,13 +82,9 @@ G.Pickups = (() => {
       if (plain) return;
       push(orb('heal', x + 24, y, 0));
       push(orb('magnet', x - 24, y, 0));
-      // Ticket ×10: siempre el legendario de la grieta; un jefe normal, 1 de cada 3 veces.
-      // (Hasta el 12-10-2026 el legendario de la grieta daba siempre 2: salían demasiados.)
-      if (Math.random() < (legend ? LEGEND_T10 : BOSS_T10)) push(orb('ticket10', x, y - 20, 1));
       return;
     }
     push(orb(value >= 20 ? 'xpBig' : 'xp', x, y, value));
-    if (Math.random() < TICKET_RATE) push(orb('ticket', x + G.U.rand(-6, 6), y, 1));
 
     // Drops ocasionales.
     const r = Math.random();
@@ -189,22 +180,13 @@ G.Pickups = (() => {
         ctx.lineTo(p.x, y + r); ctx.lineTo(p.x - r * 0.78, y);
         ctx.closePath(); ctx.fill();
       } else if (p.kind === 'coin') {
-        const sx = Math.max(0.32, Math.abs(Math.cos(p.t * 0.9)));
-        const useIcon = G.TibiaTheme && G.TibiaTheme.enabled();
-        if (useIcon) {
-          const PX = G.Sprites.PX;
-          const sz = 32 * PX * 0.8;
-          const spriteId = COIN_SPRITE_BY_VALUE[p.value] || COIN_SPRITE_BY_VALUE[1];
-          const tibiaCoin = G.TibiaSprites && G.TibiaSprites.enabled
-            && G.TibiaSprites.drawItem(ctx, spriteId, p.x, y, sz);
-          if (tibiaCoin) continue;
-          G.Icons.draw(ctx, 'goldcoin', p.x - sz / 2, y - sz / 2, sz);
-          continue;
-        } else {
-          ctx.beginPath(); ctx.ellipse(p.x, y, r * sx, r, 0, 0, 6.2832); ctx.fill();
-          ctx.fillStyle = '#b8860b';
-          ctx.beginPath(); ctx.ellipse(p.x, y, r * sx * 0.5, r * 0.5, 0, 0, 6.2832); ctx.fill();
-        }
+        const PX = G.Sprites.PX;
+        const sz = 32 * PX * 0.8;
+        const coinKey = COIN_ITEM_BY_VALUE[p.value] || 'coin_1';
+        if (G.TibiaSprites && G.TibiaSprites.enabled
+            && G.TibiaSprites.drawItem(ctx, coinKey, p.x, y, sz)) continue;
+        G.Icons.draw(ctx, 'coin', p.x - sz / 2, y - sz / 2, sz);
+        continue;
       } else if (p.kind === 'heal') {
         const PX = G.Sprites.PX;
         const sz = 32 * PX * 0.8;

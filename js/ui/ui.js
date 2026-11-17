@@ -175,6 +175,10 @@ G.UI = (() => {
     G.Icons.installCss();
     if (document.documentElement.getAttribute('data-ui') === 'tibia' && G.Tiles && G.Tiles.getItemPropSheet) {
       G.Tiles.getItemPropSheet('201280');
+      if (G.TibiaSprites && G.TibiaSprites.preloadItems) {
+        G.TibiaSprites.preloadItems(
+          ['crystal_coin_menu', 'menu_play', 'menu_bestiary', 'menu_outfit', 'menu_goals', 'menu_settings'], 5000);
+      }
     }
     if (G.Icons.preloadSpellIcons) {
       const si = G.TIBIA_SPRITE_MAP && G.TIBIA_SPRITE_MAP.spell_icons;

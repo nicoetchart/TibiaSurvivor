@@ -294,6 +294,22 @@ G.Icons = (() => {
     return cv;
   }
 
+  /** Sprite Tibia 201280 (crystal coin) para toda la UI y canvas. */
+  const COIN_UI_ITEM = 'crystal_coin_menu';
+  const COIN_UI_PNG = 'assets/tibia/items/201280.png';
+
+  function isCoinIcon(name) {
+    return name === 'coin' || name === 'goldcoin';
+  }
+
+  const MENU_PIXEL = { play: 'ball', bestiary: 'medal2', outfit: 'heart', goals: 'medal3', settings: 'gear' };
+  const MENU_TIBIA = { play: 'menu_play', bestiary: 'menu_bestiary', outfit: 'menu_outfit', goals: 'menu_goals', settings: 'menu_settings' };
+
+  function menuIcon(go) {
+    if (G.TibiaSprites && G.TibiaSprites.enabled && MENU_TIBIA[go]) return MENU_TIBIA[go];
+    return MENU_PIXEL[go] || 'star';
+  }
+
   function coinId() {
     return typeof document !== 'undefined' && document.documentElement.getAttribute('data-ui') === 'tibia'
       ? 'goldcoin' : 'coin';
@@ -396,6 +412,15 @@ G.Icons = (() => {
       }
     } else if (name.startsWith('type:')) {
       cv = emblem(name.slice(5));
+    } else if (isCoinIcon(name)) {
+      cv = tibiaItemCanvas(COIN_UI_ITEM, 32) || fromRows(UI[name] || UI.coin);
+    } else if (runItemPng(name)) {
+      cv = tibiaItemCanvas(name, 32);
+      if (cv) {
+        cache.set(name, cv);
+        return cv;
+      }
+      return fromRows(UI.star);
     } else if (runItemId(name)) {
       const tc = tibiaItemCanvas(name, 32);
       if (tc) {
@@ -491,7 +516,18 @@ G.Icons = (() => {
         return `<img class="pix ${cls}" src="${png}" width="${s}" height="${s}" alt="" draggable="false">`;
       }
     }
-    const png = runItemId(name) && runItemPng(name);
+    if (isCoinIcon(name) && G.TibiaSprites && G.TibiaSprites.enabled) {
+      const s = Math.round(size);
+      return `<img class="pix ${cls}" src="${COIN_UI_PNG}" width="${s}" height="${s}" alt="" draggable="false">`;
+    }
+    if (name.startsWith('item:')) {
+      const png = runItemPng(name.slice(5));
+      if (png) {
+        const s = Math.round(size);
+        return `<img class="pix ${cls}" src="${png}" width="${s}" height="${s}" alt="" draggable="false">`;
+      }
+    }
+    const png = runItemPng(name) || (runItemId(name) && runItemPng(name));
     if (png) {
       const s = Math.round(size);
       return `<img class="pix ${cls}" src="${png}" width="${s}" height="${s}" alt="" draggable="false">`;
@@ -505,6 +541,17 @@ G.Icons = (() => {
     name = resolveName(name);
     cache.delete(name);
     urls.delete(name);
+  }
+
+  /** HUD / rejillas: escala al tamaño pedido sin redondear hacia arriba (evita 22→32 px). */
+  function drawSpell(ctx, spellId, x, y, size) {
+    const sc = spellIconCanvas(spellId);
+    if (!sc) return false;
+    const prev = ctx.imageSmoothingEnabled;
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(sc, Math.round(x), Math.round(y), size, size);
+    ctx.imageSmoothingEnabled = prev;
+    return true;
   }
 
   function draw(ctx, name, x, y, size) {
@@ -521,6 +568,10 @@ G.Icons = (() => {
         return;
       }
     }
+    if (isCoinIcon(name) && G.TibiaSprites && G.TibiaSprites.enabled
+      && G.TibiaSprites.drawItem(ctx, COIN_UI_ITEM, x + size / 2, y + size / 2, size * 0.92)) return;
+    if (runItemPng(name) && G.TibiaSprites && G.TibiaSprites.enabled
+      && G.TibiaSprites.drawItem(ctx, name, x + size / 2, y + size / 2, size * 0.92)) return;
     if (name.startsWith('item:') && G.TibiaSprites && G.TibiaSprites.enabled
       && G.TibiaSprites.drawItem(ctx, name.slice(5), x + size / 2, y + size / 2, size * 0.92)) return;
     if (G.Items && G.Items.BY[name] && G.TibiaSprites && G.TibiaSprites.enabled
@@ -565,10 +616,11 @@ G.Icons = (() => {
   /** Publica en CSS los iconos que usan las hojas de estilo. */
   function installCss() {
     const r = document.documentElement.style;
-    r.setProperty('--ico-coin', `url("${url('coin')}")`);
+    const coinSrc = (G.TibiaSprites && G.TibiaSprites.enabled) ? COIN_UI_PNG : url('coin');
+    r.setProperty('--ico-coin', `url("${coinSrc}")`);
     r.setProperty('--ico-cursor', `url("${url('cursor')}")`);
   }
 
-  return { canvas, url, html, draw, twinkle, rarity, RARITY_BALL, installCss, coinId, bust,
+  return { canvas, url, html, draw, drawSpell, twinkle, rarity, RARITY_BALL, installCss, coinId, menuIcon, bust,
     preloadSpellIcons, UI, TYPE_GLYPH };
 })();

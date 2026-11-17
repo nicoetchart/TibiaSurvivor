@@ -416,8 +416,7 @@ html[data-ui="tibia"] .support-ask {
   border-radius: 4px;
 }
 
-html[data-ui="tibia"] .topbar .coin,
-html[data-ui="tibia"] #scr-over .coin {
+html[data-ui="tibia"] .coin {
   position: relative;
   width: 18px;
   height: 18px;
@@ -427,8 +426,7 @@ html[data-ui="tibia"] #scr-over .coin {
   overflow: visible;
 }
 
-html[data-ui="tibia"] .topbar .coin::before,
-html[data-ui="tibia"] #scr-over .coin::before {
+html[data-ui="tibia"] .coin::before {
   content: '';
   position: absolute;
   left: 50%;

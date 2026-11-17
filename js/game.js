@@ -192,6 +192,12 @@ G.Game = (() => {
       if (G.TibiaSprites && G.TibiaSprites.preloadItems) {
         G.TibiaSprites.preloadItems(devItems.map(t => t.id), 4000);
       }
+      const roster = G.Content.roster();
+      const eliteDef = roster.buildElite && roster.buildElite();
+      if (eliteDef && G.Spawner.spawnElite) {
+        G.Sprites.preload([eliteDef.dex], 4000);
+        G.Spawner.spawnElite(pl, 0, eliteDef);
+      }
     }
     G.Audio.music(G.BIOME_MUSIC[biome % G.BIOME_MUSIC.length]);
     deathT = 0;

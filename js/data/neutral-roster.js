@@ -114,6 +114,7 @@ G.NeutralRoster = (() => {
     d.xp = 85;
     d.elite = true;
     d.bestiaryCreatureId = 'minotaur_guard';
+    d.dex = 99017;
     eliteCache = d;
     return d;
   }

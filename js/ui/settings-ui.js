@@ -13,7 +13,7 @@ G.SettingsUI = (() => {
   function init() {
     document.querySelectorAll('#set-tabs .gen-tab').forEach(b => { b.onclick = () => { tab = b.dataset.t; render(); }; });
     $('set-close').onclick = close;
-    $('btn-settings').innerHTML = G.Icons.html('gear', 20);
+    $('btn-settings').innerHTML = G.Icons.html(G.Icons.menuIcon('settings'), 20);
     $('btn-settings').onclick = () => open();
     $('btn-pause-settings').onclick = () => open('sound');
     // Pantalla completa (si el navegador la permite; en iPhone, cómo conseguirla).

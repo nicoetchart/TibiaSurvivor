@@ -5,7 +5,7 @@
  *   altar     da un poder de 25 s (Furia, Rayo, Imán o Prisa) y se apaga
  *   spring    cura mientras estás encima; se agota y se recarga sola
  *   bigchest  quédate a su lado CHEST_TIME segundos (mientras te atacan) y se
- *             abre: monedas, tickets y experiencia para subir un nivel
+ *             abre: monedas y experiencia para subir un nivel
  *   trap      salta al pisarla (tú o un enemigo) y afecta a todo lo cercano:
  *             veneno, pegajosa (ralentiza) o explosiva
  *

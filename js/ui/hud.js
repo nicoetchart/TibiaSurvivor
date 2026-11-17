@@ -297,18 +297,31 @@ G.HUD = (() => {
       if (!m) continue;
 
       if (fused) {
-        // Vínculo: los movimientos en una cuadrícula de 2×2, cada uno con su recarga.
-        const C = 22, P = (S - C * 2) / 3;
+        // Vínculo: cuadrícula 2×(hasta 2) centrada en la ranura (sin solapar textos de arriba).
+        const cols = 2;
+        const rows = Math.ceil(g.length / cols);
+        const C = 22;
+        const gap = (S - cols * C) / (cols + 1);
+        const gridH = rows * C + (rows + 1) * gap;
+        const y0 = y + (S - gridH) / 2;
+        ctx.save();
+        roundRect(ctx, x, y, S, S, P.slotR);
+        ctx.clip();
         g.forEach((gm, k) => {
-          const cx = x + P + (k % 2) * (C + P), cy = y + P + Math.floor(k / 2) * (C + P);
-          G.Icons.draw(ctx, 'move:' + gm.id, cx, cy, C);
+          const col = k % cols;
+          const row = Math.floor(k / cols);
+          const cx = x + gap + col * (C + gap);
+          const cy = y0 + gap + row * (C + gap);
+          if (!(G.Icons.drawSpell && G.Icons.drawSpell(ctx, gm.id, cx, cy, C))) {
+            G.Icons.draw(ctx, 'move:' + gm.id, cx, cy, C);
+          }
           const f = cdOf(gm);
           if (f > 0) { ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(cx, cy, C, C * f); }
           if (gm.evolved) { ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 1; ctx.strokeRect(cx + 0.5, cy + 0.5, C - 1, C - 1); }
-          // Destello al lanzarse.
           const fl = 1 - (performance.now() - (gm.castAt || 0)) / 180;
           if (fl > 0) { ctx.fillStyle = 'rgba(255,255,255,' + (fl * 0.55).toFixed(2) + ')'; ctx.fillRect(cx, cy, C, C); }
         });
+        ctx.restore();
       } else {
         // recarga: se vacía de abajo a arriba
         const cdFrac = cdOf(m);
@@ -343,20 +356,24 @@ G.HUD = (() => {
         const def = m.def || G.Abilities.BY_ID[m.id];
         const elem = def && (def.element || def.type);
         const elemName = elem && G.DamageTypes && G.DamageTypes.NAME[elem];
+        const labelLift = fused ? 6 : 0;
+        const nameY = y - 7 - labelLift;
+        const elemY = nameY - 11;
+        const incY = elemY - (elemName ? 10 : 0);
         if (elemName) {
           ctx.font = F(600, 8);
           ctx.textAlign = 'center';
           ctx.fillStyle = col;
-          ctx.fillText(elemName, x + S / 2, y - 18);
+          ctx.fillText(elemName, x + S / 2, elemY);
         }
         if (def && def.incantation) {
           ctx.font = F(600, 8);
           ctx.fillStyle = P.sub;
-          ctx.fillText(def.incantation, x + S / 2, y - (elemName ? 28 : 18));
+          ctx.fillText(def.incantation, x + S / 2, incY);
         }
         ctx.font = F(700, 10);
         ctx.fillStyle = fused ? BOND : col;
-        ctx.fillText(fused ? m.name + ' +' + (g.length - 1) : m.name, x + S / 2, y - 7);
+        ctx.fillText(fused ? m.name + ' +' + (g.length - 1) : m.name, x + S / 2, nameY);
       }
     }
 
