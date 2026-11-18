@@ -70,8 +70,7 @@ G.BestiaryTips = {
   text(key) {
     const row = G.BESTIARY_TIPS && G.BESTIARY_TIPS[key];
     if (!row) return null;
-    const en = typeof G === 'object' && G.I18n && G.I18n.lang === 'en';
-    return en ? (row.en || row.es) : (row.es || row.en);
+    return row.en || row.es;
   },
   has(key) {
     return !!(G.BESTIARY_TIPS && G.BESTIARY_TIPS[key]);

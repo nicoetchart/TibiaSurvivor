@@ -103,7 +103,7 @@ G.Game = (() => {
     const startIds = G.Content.startingMoveIds(mon);
     if (!mon || !Number.isFinite(mon.hp) || !Number.isFinite(mon.spd) || !Number.isFinite(mon.atk) ||
         !startIds.length || startIds.some(id => !G.Moves.BY_ID[id])) {
-      G.UI.toast('No se pudo crear al personaje.');
+      G.UI.toast('Could not create your character.');
       return;
     }
     const perks = G.Upgrades.perks(G.DB.upgradesOf(mon.dex));
@@ -169,36 +169,6 @@ G.Game = (() => {
 
     G.Camera.x = pl.x; G.Camera.y = pl.y; G.Camera.shake = 0;
     G.Sprites.preload([mon.dex], 8000, pl.shiny);
-    // ?dev: objetos equipables en el suelo, fuera del imán (recoger caminando hasta 15px).
-    if (typeof location !== 'undefined' && /[?&]dev\b/.test(location.search)) {
-      const far = pl.magnet + 110;
-      const devItems = [
-        { id: 'starlightVial', dx: far, dy: 0 },
-        { id: 'cursedCoin', dx: -far, dy: 0 },
-        { id: 'boneFiddle', dx: 0, dy: -far },
-        { id: 'moonMirror', dx: 0, dy: far },
-        { id: 'sunCatcher', dx: far, dy: far },
-        { id: 'frozenStarlight', dx: -far, dy: far },
-        { id: 'glowingMush', dx: -far, dy: -far },
-        { id: 'skull', dx: far, dy: -far },
-        { id: 'blueSphere', dx: Math.round(far * 1.5), dy: 0 },
-        { id: 'magicalTorch', dx: -Math.round(far * 1.5), dy: 0 }
-      ];
-      for (const t of devItems) {
-        G.Pickups.drop('item', pl.x + t.dx, pl.y + t.dy, t.id);
-        const orb = G.Pickups.all().at(-1);
-        if (orb) { orb.vx = 0; orb.vy = 0; }
-      }
-      if (G.TibiaSprites && G.TibiaSprites.preloadItems) {
-        G.TibiaSprites.preloadItems(devItems.map(t => t.id), 4000);
-      }
-      const roster = G.Content.roster();
-      const eliteDef = roster.buildElite && roster.buildElite();
-      if (eliteDef && G.Spawner.spawnElite) {
-        G.Sprites.preload([eliteDef.dex], 4000);
-        G.Spawner.spawnElite(pl, 0, eliteDef);
-      }
-    }
     G.Audio.music(G.BIOME_MUSIC[biome % G.BIOME_MUSIC.length]);
     deathT = 0;
 
@@ -243,7 +213,7 @@ G.Game = (() => {
     const isNew = !G.DB.owns(dex);
     if (isNew) { G.DB.grant(dex, 'rescue'); G.DB.commit(true); }
     else pl.coins += 150;
-    G.Spawner.say(isNew ? '¡' + name + ' se une a tu equipo!' : '¡' + name + ' te da las gracias! (+150 monedas, ya lo tenías)', 4);
+    G.Spawner.say(isNew ? name + ' joins your team!' : name + ' thanks you! (+150 coins, already owned)', 4);
     G.Audio.sfx('shinyGet');
   };
 
@@ -254,7 +224,7 @@ G.Game = (() => {
     G.DB.save.stats.shinies++;
     G.DB.commit(true);
     caught.push({ dex: e.dex, isNew });
-    G.Spawner.say(isNew ? '¡Has conseguido a ' + e.name + ' shiny!' : '¡Otro ' + e.name + ' shiny! (+300 monedas)', 4);
+    G.Spawner.say(isNew ? 'You caught a shiny ' + e.name + '!' : 'Another shiny ' + e.name + '! (+300 coins)', 4);
     if (!isNew) pl.coins += 300;
     G.Audio.sfx('shinyGet');
   };
@@ -264,7 +234,7 @@ G.Game = (() => {
     if (state !== 'playing' || victoryHold > 0 || runEnding) return;
     if (!G.MvpConfig || !G.MvpConfig.VICTORY_ON_BOSS || G.Content.mode !== 'neutral') return;
     victoryHold = delay;
-    G.Spawner.say('¡Victoria! El umbral queda despejado.', 3.6);
+    G.Spawner.say('Victory! The threshold is clear.', 3.6);
     G.Projectiles.clear();
     G.Combat.clearFields();
     G.Hazards.clear();
@@ -396,7 +366,7 @@ G.Game = (() => {
     if (['scr-bond', 'scr-pause', 'scr-item', 'scr-levelup'].some(G.UI.isOpen)) return;
     const opt = pl.bondOptions();
     if (!opt) {
-      if (!quiet) G.Spawner.say('Guardas el vínculo: aprende otro movimiento para usarlo', 3, true);
+      if (!quiet) G.Spawner.say('Bond saved: learn another spell to use it', 3, true);
       return;
     }
     // Se para el juego; en grupo, para todos hasta que cada uno elige (G.Coop.holdStart).
@@ -407,7 +377,7 @@ G.Game = (() => {
       G.Audio.sfx('legend');
       G.FX.ring(pl.x, pl.y, 8, 130, '#ff8ad8', 0.8, 6);
       G.FX.burst(pl.x, pl.y - pl.bodyH * 0.5, '#ffb3e6', 40, 240);
-      G.Spawner.say('¡Vínculo! ' + group.length + ' movimientos a la vez', 2.6, true);
+      G.Spawner.say('Bond! ' + group.length + ' spells at once', 2.6, true);
       if (state === 'choice') state = 'playing';
     });
   }
@@ -445,7 +415,7 @@ G.Game = (() => {
       openItem = null;
       if (got !== pl.item) {
         pl.equip(got);
-        G.Spawner.say('¡Llevas ' + G.Items.BY[got].name + '!', 2.6, true);
+        G.Spawner.say('You hold ' + G.Items.BY[got].name + '!', 2.6, true);
         G.Progress.event('item', { id: got });
       }
       if (!mine) { afterLevelUp(); return; }
@@ -453,7 +423,7 @@ G.Game = (() => {
       afterLevelUp();
     };
     if (!pl.item) { take(id); return; }
-    if (pl.item === id) { G.Spawner.say('Ya llevas ' + G.Items.BY[id].name, 2, true); return; }
+    if (pl.item === id) { G.Spawner.say('You already hold ' + G.Items.BY[id].name, 2, true); return; }
     // Se para el juego mientras eliges; en grupo, para todos (como con las
     // fusiones). Antes en grupo seguía y te pegaban mientras elegías.
     if (state === 'playing' || state === 'held') {
@@ -486,7 +456,7 @@ G.Game = (() => {
     if (p.kind === 'ticket' || p.kind === 'ticket10') {
       if (p.kind === 'ticket') pl.t1++; else pl.t10++;
       bankTickets();
-      G.FX.dmgText(who.x, who.y - who.bodyH - 8, p.kind === 'ticket' ? '+1 ticket' : '¡Ticket ×10!', p.kind === 'ticket' ? '#ffd23f' : '#d9a6ff', true);
+      G.FX.dmgText(who.x, who.y - who.bodyH - 8, p.kind === 'ticket' ? '+1 ticket' : '×10 ticket!', p.kind === 'ticket' ? '#ffd23f' : '#d9a6ff', true);
       G.FX.ring(who.x, who.y, 6, 50, p.kind === 'ticket' ? '#ffd23f' : '#c47bff', 0.4, 3);
       return;
     }
@@ -640,19 +610,19 @@ G.Game = (() => {
 
     const mvpLimit = G.MvpConfig && G.Content.mode === 'neutral' ? G.MvpConfig.RUN_DURATION_SEC : 0;
     if (mvpLimit && !runEnding && time >= mvpLimit) {
-      if (G.EnemyMgr.bossAlive()) G.Spawner.say('Se agotó el tiempo…', 3);
-      else G.Spawner.say('La cacería termina sin despejar el umbral.', 3);
+      if (G.EnemyMgr.bossAlive()) G.Spawner.say('Time is up…', 3);
+      else G.Spawner.say('The hunt ends without clearing the threshold.', 3);
       endRun(true, false);
       return;
     }
     if (mvpLimit && !warnedFinalMin && time >= mvpLimit - 60) {
       warnedFinalMin = true;
-      G.Spawner.say('Último minuto: el umbral sigue activo.', 2.8);
+      G.Spawner.say('Final minute: the threshold is still active.', 2.8);
     }
     const bossAt = G.MvpConfig && G.MvpConfig.FINAL_BOSS_AT;
     if (G.Content.mode === 'neutral' && bossAt && !warnedBossSoon && time >= bossAt - 40 && time < bossAt) {
       warnedBossSoon = true;
-      G.Spawner.say('Presencia abrumadora en el umbral…', 2.6);
+      G.Spawner.say('Overwhelming presence at the threshold…', 2.6);
     }
 
     const rotateBiomes = !(G.MvpConfig && G.MvpConfig.BIOME_ROTATION === false);

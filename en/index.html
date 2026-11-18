@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <base href="../">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>TibiaSurvivor – Free pixel-art fantasy survivor</title>
-<meta name="description" content="A pixel-art fantasy survivor where each run feels like a classic MMORPG hunting session. Free in your browser, no download.">
+<title>TibiaSurvivor – Pixel-art fantasy survivor</title>
+<meta name="description" content="A pixel-art fantasy survivor where each run captures the tension and pacing of a classic MMORPG hunting session. Free in your browser, no download.">
 <link rel="canonical" href="https://pokesurvivor.com/en/">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#12100e">
@@ -49,7 +49,7 @@
       "@id": "./#web",
       "url": "./",
       "name": "TibiaSurvivor",
-      "inLanguage": ["es", "en"]
+      "inLanguage": "en"
     },
     {
       "@type": ["VideoGame", "WebApplication"],
@@ -58,7 +58,7 @@
       "url": "./",
       "description": "Pixel-art fantasy survivor: hunting runs, spells, bosses and persistent local progress.",
       "image": "assets/icons/icon-512.png",
-      "inLanguage": ["es", "en"],
+      "inLanguage": "en",
       "genre": ["Roguelike", "Bullet heaven", "Action", "Survival"],
       "gamePlatform": ["Web browser", "PC", "Android", "iOS"],
       "applicationCategory": "GameApplication",
@@ -78,50 +78,50 @@
 <body>
 
 <canvas id="game"></canvas>
-<!-- En móvil se juega en horizontal -->
-<div id="rotate" class="hidden"><div class="box center"><div id="rotate-ico"></div><h2>Gira el móvil</h2><p class="sub">TibiaSurvivor se juega en horizontal.</p></div></div>
+<!-- En móvil is played in landscape -->
+<div id="rotate" class="hidden"><div class="box center"><div id="rotate-ico"></div><h2>Rotate your phone</h2><p class="sub">TibiaSurvivor is played in landscape.</p></div></div>
 
 <!-- ====== Inicio: login / registro / invitado ====== -->
 <section id="scr-login" class="scr hidden">
   <div class="box" style="width:min(420px,100%)">
     <div class="logo">
       <div class="t1">TibiaSurvivor</div>
-      <div class="t2">Cacería subterránea</div>
+      <div class="t2">Underground hunt</div>
     </div>
-    <p class="login-tag">Survivor de fantasía pixel art · gratis en PC y móvil · guardado local</p>
+    <p class="login-tag">Pixel-art fantasy survivor · free on PC and mobile · local save</p>
     <div class="tabs">
-      <div class="tab on" data-tab="login">Entrar</div>
-      <div class="tab" data-tab="register">Crear cuenta</div>
+      <div class="tab on" data-tab="login">Sign in</div>
+      <div class="tab" data-tab="register">Create account</div>
     </div>
     <p id="signup-closed" class="note center hidden"></p>
     <form id="login-form" autocomplete="off">
-      <label for="f-user">Nombre</label>
+      <label for="f-user">Username</label>
       <input id="f-user" class="field" maxlength="16" spellcheck="false">
-      <label for="f-pass">Contraseña</label>
+      <label for="f-pass">Password</label>
       <input id="f-pass" class="field" type="password" maxlength="64">
       <p id="login-err" class="err"></p>
-      <p class="note"><a href="#" id="f-forgot">¿Olvidaste tu contraseña?</a></p>
+      <p class="note"><a href="#" id="f-forgot">Forgot your password?</a></p>
       <div class="row">
-        <button id="btn-auth" class="btn gold grow" type="submit">Entrar</button>
+        <button id="btn-auth" class="btn gold grow" type="submit">Sign in</button>
       </div>
     </form>
     <div class="row" style="margin-top:10px">
-      <button id="btn-guest" class="btn ghost grow" type="button">Jugar como invitado</button>
+      <button id="btn-guest" class="btn ghost grow" type="button">Play as guest</button>
     </div>
     <p class="note center" id="login-mode"></p>
-    <p class="note center"><a href="#" class="legal-link" data-legal>Aviso legal y privacidad</a></p>
+    <p class="note center"><a href="#" class="legal-link" data-legal>Legal notice and privacy</a></p>
   </div>
 </section>
 
 <!-- ====== Vocación (cuentas nuevas, Fase 3) ====== -->
 <section id="scr-vocation" class="scr dim hidden">
   <div class="box result">
-    <p class="sub">Elige tu vocación</p>
+    <p class="sub">Choose your vocation</p>
     <h3 class="gold" id="voc-name">Master Sorcerer</h3>
     <p id="voc-text"></p>
     <p id="voc-ability"></p>
     <div class="row" style="justify-content:center;margin-top:14px">
-      <button id="voc-ok" class="btn gold">Empezar con esta vocación</button>
+      <button id="voc-ok" class="btn gold">Start with this vocation</button>
     </div>
   </div>
 </section>
@@ -139,14 +139,14 @@
 <!-- ====== Resultado del test ====== -->
 <section id="scr-result" class="scr dim hidden">
   <div class="box result">
-    <p class="sub">Tu personalidad es…</p>
+    <p class="sub">Your personality is…</p>
     <div class="trait" id="res-trait"></div>
     <p id="res-text"></p>
     <canvas id="res-stage" class="stage" width="200" height="150"></canvas>
-    <h3>Tu compañero: <span class="gold" id="res-name"></span></h3>
+    <h3>Your partner: <span class="gold" id="res-name"></span></h3>
     <div class="row" style="justify-content:center;margin-top:14px">
-      <button id="res-ok" class="btn gold">¡Vamos juntos!</button>
-      <button id="res-other" class="btn">Elegir otro</button>
+      <button id="res-ok" class="btn gold">Let's go!</button>
+      <button id="res-other" class="btn">Pick another</button>
     </div>
   </div>
 </section>
@@ -154,13 +154,13 @@
 <!-- ====== Elegir compañero ====== -->
 <section id="scr-starters" class="scr dim hidden">
   <div class="box wide">
-    <h2>Elige a tu compañero</h2>
-    <p class="sub">Los iniciales de todas las regiones, y dos amigos más.</p>
+    <h2>Choose your partner</h2>
+    <p class="sub">Starters from every region, plus two more friends.</p>
     <div class="grid" id="starter-grid"></div>
     <div class="row between" style="margin-top:14px">
-      <button id="starter-back" class="btn ghost">Volver</button>
+      <button id="starter-back" class="btn ghost">Back</button>
       <span id="starter-info" class="grow" style="color:var(--muted)"></span>
-      <button id="starter-ok" class="btn gold" disabled>Elegir</button>
+      <button id="starter-ok" class="btn gold" disabled>Choose</button>
     </div>
   </div>
 </section>
@@ -170,7 +170,7 @@
   <div class="menu-left">
     <div class="logo">
       <div class="t1">TibiaSurvivor</div>
-      <div class="t2">Cacería subterránea</div>
+      <div class="t2">Underground hunt</div>
     </div>
     <div class="partner-card">
       <canvas id="menu-partner" class="stage" width="260" height="200"></canvas>
@@ -182,14 +182,14 @@
   <div class="menu-right">
     <div class="box">
       <div class="menu-list">
-        <button class="menu-item play" data-go="play">Jugar<small>Inicia una expedición (~15 min)</small></button>
-        <button class="menu-item hidden" data-go="bestiary">Bestiario<small id="menu-bestiary-sub">Registro de cacería</small></button>
-        <button class="menu-item hidden" data-go="outfit">Aspecto<small>Colores y addons (como Tibia)</small></button>
-        <button class="menu-item" data-go="dex">Colección<small id="menu-dex-count">Legacy</small></button>
-        <button class="menu-item" data-go="upgrades">Mejoras<small>Legacy</small></button>
+        <button class="menu-item play" data-go="play">Play<small>Start a hunt (~15 min)</small></button>
+        <button class="menu-item hidden" data-go="bestiary">Bestiary<small id="menu-bestiary-sub">Hunt log</small></button>
+        <button class="menu-item hidden" data-go="outfit">Outfit<small>Colors and addons</small></button>
+        <button class="menu-item" data-go="dex">Collection<small id="menu-dex-count">Legacy</small></button>
+        <button class="menu-item" data-go="upgrades">Upgrades<small>Legacy</small></button>
         <button class="menu-item" data-go="gacha">Gacha<small>Legacy</small></button>
-        <button class="menu-item" data-go="goals">Misiones<small id="menu-goals-sub">Misiones, logros y perfil</small></button>
-        <button class="menu-item" data-go="settings">Ajustes<small>Sonido, gráficos, controles y cuenta</small></button>
+        <button class="menu-item" data-go="goals">Missions<small id="menu-goals-sub">Missions, achievements and profile</small></button>
+        <button class="menu-item" data-go="settings">Settings<small>Sound, graphics, controls and account</small></button>
       </div>
     </div>
     <div class="box" style="padding:14px 18px">
@@ -200,62 +200,61 @@
 
 <div id="topbar" class="topbar hidden">
   <div class="pill"><span class="coin"></span><span id="coins">0</span></div>
-  <div class="pill" id="tickets-pill" title="Tickets del gacha"></div>
+  <div class="pill" id="tickets-pill" title="Gacha tickets"></div>
   <div class="pill" id="user-pill"></div>
-  <button id="btn-news" class="btn small ghost news-btn" title="Novedades"></button>
-  <button id="btn-sound" class="btn small ghost" title="Sonido"></button>
-  <button id="btn-full" class="btn small ghost hidden" title="Pantalla completa"></button>
-  <button id="btn-settings" class="btn small ghost" title="Ajustes"></button>
-  <button id="btn-logout" class="btn small ghost">Salir</button>
+  <button id="btn-news" class="btn small ghost news-btn" title="News"></button>
+  <button id="btn-sound" class="btn small ghost" title="Sound"></button>
+  <button id="btn-full" class="btn small ghost hidden" title="Fullscreen"></button>
+  <button id="btn-settings" class="btn small ghost" title="Settings"></button>
+  <button id="btn-logout" class="btn small ghost">Sign out</button>
 </div>
 <div id="sound-panel" class="box sound-panel hidden"></div>
-<div id="credits-line" class="credits-line hidden">TibiaSurvivor · arte procedural y código propio · <a href="#" class="legal-link" data-legal>Aviso legal</a></div>
+<div id="credits-line" class="credits-line hidden">TibiaSurvivor · fan project · MIT code · <a href="#" class="legal-link" data-legal>Legal notice</a></div>
 
-<!-- ====== Novedades (cambios del juego) ====== -->
+<!-- ====== News (cambios del juego) ====== -->
 <section id="scr-news" class="scr dim hidden">
   <div class="box news-box">
-    <div class="row between"><h2>Novedades</h2><button class="btn small ghost" id="news-close">Cerrar</button></div>
+    <div class="row between"><h2>News</h2><button class="btn small ghost" id="news-close">Close</button></div>
     <div id="news-body" class="news-body"></div>
   </div>
 </section>
 
-<!-- ====== Ajustes ====== -->
+<!-- ====== Settings ====== -->
 <section id="scr-settings" class="scr dim hidden">
   <div class="box settings">
-    <div class="row between"><h2>Ajustes</h2><button class="btn small ghost" id="set-close">Cerrar</button></div>
+    <div class="row between"><h2>Settings</h2><button class="btn small ghost" id="set-close">Close</button></div>
     <div class="tabs" id="set-tabs">
-      <button class="gen-tab" data-t="sound">Sonido</button>
-      <button class="gen-tab" data-t="gfx">Gráficos</button>
-      <button class="gen-tab" data-t="ctl">Controles</button>
-      <button class="gen-tab" data-t="acc">Cuenta</button>
-      <button class="gen-tab" data-t="about">Acerca de</button>
+      <button class="gen-tab" data-t="sound">Sound</button>
+      <button class="gen-tab" data-t="gfx">Graphics</button>
+      <button class="gen-tab" data-t="ctl">Controls</button>
+      <button class="gen-tab" data-t="acc">Account</button>
+      <button class="gen-tab" data-t="about">About</button>
     </div>
     <div id="set-body" class="set-body"></div>
   </div>
 </section>
 
-<!-- ====== Aviso legal y privacidad ====== -->
+<!-- ====== Legal notice y privacidad ====== -->
 <section id="scr-legal" class="scr dim hidden">
   <div class="box legal" style="width:min(640px,100%)">
-    <div class="row between"><h2>Aviso legal</h2><button class="btn small ghost" id="legal-close">Cerrar</button></div>
+    <div class="row between"><h2>Legal notice</h2><button class="btn small ghost" id="legal-close">Close</button></div>
     <h3>TibiaSurvivor</h3>
-    <p><b>TibiaSurvivor</b> es un juego gratuito de supervivencia en navegador con contenido
-      original. No está afiliado a ningún MMORPG ni marca comercial: evoca la sensación de una
-      hunting session clásica sin usar sus activos.</p>
-    <h3>Contenido y licencias</h3>
-    <p>Código: MIT (LICENSE). Interfaz: Crimson Pro (OFL, ver assets/fonts/CrimsonPro-OFL.txt). Música y efectos del proyecto.
-      Sprites del MVP: placeholders geométricos dibujados por código (sin PNG de terceros).</p>
-    <h3>Contacto y retirada de contenido</h3>
-    <p>Si eres titular de derechos y quieres que retiremos algo, escríbenos y lo quitaremos lo
-      antes posible: <a id="legal-mail" href="#"></a></p>
-    <p>Código fuente: <a id="legal-repo" href="#" target="_blank" rel="noopener"></a></p>
-    <h3>Privacidad</h3>
-    <p>Si creas una cuenta local, guardamos tu nombre de jugador y tu partida (monedas, misiones,
-      logros y estadísticas) en el almacenamiento de este navegador. No se envían a servidores externos.
-      Como invitado no se guarda nada fuera de la sesión.</p>
-    <p>Puedes borrar tu cuenta local cuando quieras:</p>
+    <p><b>TibiaSurvivor</b> is a free browser survival fan game. It is not affiliated with
+      Tibia, CipSoft, or any commercial MMORPG.</p>
+    <h3>Content and licenses</h3>
+    <p>Code is released under the MIT license. UI font: Crimson Pro (SIL Open Font License 1.1). Music and SFX are original to this project.
+      Creature fallback art is drawn in code. Outfits, tiles, items, and spell graphics may use PNG atlases exported from the Tibia game client for fan use only; raw client archive files are not distributed with the game.</p>
+    <h3>Contact and content removal</h3>
+    <p>If you own rights to something here and want it removed, email us and we will take it down as
+      soon as possible: <a id="legal-mail" href="#"></a></p>
+    <p>Source code: <a id="legal-repo" href="#" target="_blank" rel="noopener"></a></p>
+    <h3>Privacy</h3>
+    <p>If you create a local account, we store your player name and save (coins, missions,
+      achievements and stats) in this browser's storage. Nothing is sent to external servers.
+      As a guest, nothing is saved after you leave.</p>
+    <p>You can delete your local account at any time:</p>
     <div class="row">
-      <button class="btn small" id="legal-delete">Borrar mi cuenta y mi partida</button>
+      <button class="btn small" id="legal-delete">Delete my account and save</button>
       <span id="legal-del-msg" class="note" style="margin:0"></span>
     </div>
   </div>
@@ -263,7 +262,7 @@
 <div id="boot" class="boot">
   <div class="boot-in">
     <h1>TibiaSurvivor</h1>
-    <p>Survivor de fantasía pixel art — hunting session subterránea.</p>
+    <p>Pixel-art fantasy survivor — underground hunting session.</p>
     <p class="boot-ld">Loading…</p>
   </div>
 </div>
@@ -276,28 +275,28 @@
 <div id="tap-start" class="tapstart hidden">
   <div class="boot-in">
     <h1>TibiaSurvivor</h1>
-    <p>Entra en la cacería</p>
-    <p class="tap-blink">Pulsa para empezar</p>
+    <p>Enter the hunt</p>
+    <p class="tap-blink">Tap to start</p>
   </div>
 </div>
 <noscript>
   <div class="boot noscript">
     <div class="boot-in">
       <h1>TibiaSurvivor</h1>
-      <p>TibiaSurvivor necesita JavaScript para funcionar. Actívalo para jugar.</p>
-      <p>Survivor de fantasía pixel art: expediciones de 15 minutos, habilidades, jefes y progreso local.</p>
+      <p>TibiaSurvivor needs JavaScript to work. Enable it to play.</p>
+      <p>Pixel-art fantasy survivor: 15-minute hunts, spells, bosses and local progress.</p>
     </div>
   </div>
 </noscript>
 
-<!-- ====== Misiones, logros y perfil ====== -->
+<!-- ====== Missions, logros y perfil ====== -->
 <section id="scr-goals" class="scr dim hidden">
   <div class="box wide">
-    <div class="row between"><h2>Misiones</h2><button class="btn small ghost" data-back>Volver</button></div>
+    <div class="row between"><h2>Missions</h2><button class="btn small ghost" data-back>Back</button></div>
     <div class="tabs" id="goals-tabs">
-      <div class="tab on" data-tab="missions">Misiones</div>
-      <div class="tab" data-tab="ach">Logros</div>
-      <div class="tab" data-tab="profile">Perfil</div>
+      <div class="tab on" data-tab="missions">Missions</div>
+      <div class="tab" data-tab="ach">Achievements</div>
+      <div class="tab" data-tab="profile">Profile</div>
     </div>
     <div id="goals-body" class="goals-body"></div>
   </div>
@@ -306,34 +305,34 @@
 <!-- ====== Perfil público de un jugador ====== -->
 <section id="scr-profile" class="scr dim hidden">
   <div class="box profile-box">
-    <div class="row end"><button class="btn small ghost" id="prof-close">Cerrar</button></div>
+    <div class="row end"><button class="btn small ghost" id="prof-close">Close</button></div>
     <div id="prof-body"></div>
   </div>
 </section>
 
-<!-- ====== Aspecto (outfit Tibia) ====== -->
+<!-- ====== Outfit (outfit Tibia) ====== -->
 <section id="scr-outfit" class="scr dim hidden">
   <div class="box outfit-box">
     <div class="row between">
-      <h2>Personalizar personaje</h2>
-      <button class="btn small ghost" type="button" id="outfit-back">Volver</button>
+      <h2>Customize character</h2>
+      <button class="btn small ghost" type="button" id="outfit-back">Back</button>
     </div>
     <div id="outfit-root"></div>
   </div>
 </section>
 
-<!-- ====== Bestiario ====== -->
+<!-- ====== Bestiary ====== -->
 <section id="scr-bestiary" class="scr dim hidden">
   <div class="box wide">
     <div class="row between">
-      <h2>Bestiario</h2>
-      <button class="btn small ghost" type="button" id="bestiary-back">Volver</button>
+      <h2>Bestiary</h2>
+      <button class="btn small ghost" type="button" id="bestiary-back">Back</button>
     </div>
     <div id="bestiary-summary" class="row wrap" style="gap:16px;font-size:14px;color:var(--muted);margin:8px 0 12px"></div>
     <div class="row wrap" id="bestiary-tabs" style="gap:8px;margin-bottom:10px">
-      <button type="button" class="chip on" data-bestiary-tab="catalog">Catálogo</button>
-      <button type="button" class="chip" data-bestiary-tab="shop">Mejoras y desbloqueos</button>
-      <button type="button" class="chip" data-bestiary-tab="charms">Amuletos</button>
+      <button type="button" class="chip on" data-bestiary-tab="catalog">Catalog</button>
+      <button type="button" class="chip" data-bestiary-tab="shop">Upgrades and unlocks</button>
+      <button type="button" class="chip" data-bestiary-tab="charms">Charms</button>
     </div>
     <div id="bestiary-tab-catalog">
       <div class="split" style="margin-top:8px">
@@ -345,20 +344,20 @@
       </div>
     </div>
     <div id="bestiary-tab-shop" class="hidden">
-      <p class="sub" style="margin:0 0 10px">Gasta puntos del bestiario en mejoras suaves para todas las runs. Los efectos se aplican al iniciar cada partida.</p>
+      <p class="sub" style="margin:0 0 10px">Spend bestiary points on soft upgrades for all runs. Effects apply when you start each hunt.</p>
       <div id="bestiary-shop-list"></div>
     </div>
     <div id="bestiary-tab-charms" class="hidden">
-      <p class="sub" style="margin:0 0 10px">Desbloquea y equipa un amuleto universal (fuera de partida). Solo uno activo en el MVP.</p>
+      <p class="sub" style="margin:0 0 10px">Unlock and equip one universal charm (out of run). Only one active in the MVP.</p>
       <div id="bestiary-charms-list"></div>
     </div>
   </div>
 </section>
 
-<!-- ====== Colección ====== -->
+<!-- ====== Collection ====== -->
 <section id="scr-dex" class="scr dim hidden">
   <div class="box wide">
-    <div class="row between"><h2>Colección <span id="dex-total" class="sub" style="font-size:17px"></span></h2><button class="btn small ghost" data-back>Volver</button></div>
+    <div class="row between"><h2>Collection <span id="dex-total" class="sub" style="font-size:17px"></span></h2><button class="btn small ghost" data-back>Back</button></div>
     <div class="gen-tabs" id="dex-gens"></div>
     <div class="split" style="margin-top:8px">
       <div>
@@ -370,16 +369,16 @@
   </div>
 </section>
 
-<!-- ====== Mejoras ====== -->
+<!-- ====== Upgrades ====== -->
 <section id="scr-upgrades" class="scr dim hidden">
   <div class="box wide">
-    <div class="row between"><h2>Mejoras</h2><button class="btn small ghost" data-back>Volver</button></div>
+    <div class="row between"><h2>Upgrades</h2><button class="btn small ghost" data-back>Back</button></div>
     <div class="upg-head">
       <canvas id="upg-stage" class="stage" width="120" height="96"></canvas>
       <div class="grow">
-        <p class="sub" style="margin:0">Mejoras legacy (no disponibles en el MVP neutral).</p>
+        <p class="sub" style="margin:0">Legacy upgrades (not available in neutral MVP).</p>
         <div class="row" style="margin-top:8px">
-          <label for="upg-mon" style="margin:0">Compañero</label>
+          <label for="upg-mon" style="margin:0">Partner</label>
           <select id="upg-mon" class="field" style="width:auto;min-width:220px"></select>
         </div>
       </div>
@@ -391,7 +390,7 @@
 <!-- ====== Gacha ====== -->
 <section id="scr-gacha" class="scr dim hidden">
   <div class="box wide">
-    <div class="row between"><h2>Gacha</h2><button class="btn small ghost" data-back>Volver</button></div>
+    <div class="row between"><h2>Gacha</h2><button class="btn small ghost" data-back>Back</button></div>
     <div class="gen-tabs" id="gacha-gens"></div>
     <div class="split" style="margin-top:8px">
       <div>
@@ -402,9 +401,9 @@
           <div class="feat" id="gacha-feat"></div>
         </div>
         <div class="row" style="margin-top:14px">
-          <button id="pull-1" class="btn grow" data-sfx="none">Tirar ×1 · <span id="cost-1"></span></button>
-          <button id="pull-10" class="btn gold grow" data-sfx="none">Tirar ×10 · <span id="cost-10"></span></button>
-          <button id="pull-10b" class="btn gold grow" data-sfx="none">Tirar ×10 · <span id="cost-10b"></span></button>
+          <button id="pull-1" class="btn grow" data-sfx="none">Pull ×1 · <span id="cost-1"></span></button>
+          <button id="pull-10" class="btn gold grow" data-sfx="none">Pull ×10 · <span id="cost-10"></span></button>
+          <button id="pull-10b" class="btn gold grow" data-sfx="none">Pull ×10 · <span id="cost-10b"></span></button>
         </div>
         <p class="note tickets-line" id="gacha-tickets"></p>
         <p class="note" id="gacha-pity"></p>
@@ -415,67 +414,67 @@
 </section>
 
 <div id="pull-fx" class="hidden">
-  <canvas id="slot" width="176" height="170" title="Clic para acelerar"></canvas>
+  <canvas id="slot" width="176" height="170" title="Click to skip animation"></canvas>
   <div class="pull-results" id="pull-results"></div>
-  <button id="pull-close" class="btn gold hidden">Continuar</button>
+  <button id="pull-close" class="btn gold hidden">Continue</button>
 </div>
 
 <!-- ====== Durante la run ====== -->
 <section id="scr-levelup" class="scr dim hidden">
   <div class="box center">
-    <h2>¡Nivel <span id="lvl-num">2</span>!</h2>
-    <p class="sub">Elige una recompensa · <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></p>
+    <h2>Level <span id="lvl-num">2</span>!</h2>
+    <p class="sub">Pick a reward · <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></p>
     <div id="cards" class="cards"></div>
-    <button id="lvl-reroll" class="btn small ghost hidden" data-sfx="none" style="margin-top:10px">Cambiar opciones (<span id="lvl-rr-n">1</span>) · <kbd>R</kbd></button>
+    <button id="lvl-reroll" class="btn small ghost hidden" data-sfx="none" style="margin-top:10px">Reroll options (<span id="lvl-rr-n">1</span>) · <kbd>R</kbd></button>
     <p id="lvl-wait" class="note hidden"></p>
   </div>
 </section>
 
 <section id="scr-bond" class="scr dim hidden">
   <div class="box center">
-    <h2 class="bond-title">¡Vínculo!</h2>
-    <p class="sub bond-hint">Los movimientos unidos se lanzan a la vez y ocupan un solo hueco</p>
+    <h2 class="bond-title">Bond!</h2>
+    <p class="sub bond-hint">Bonded spells fire together and use one HUD slot</p>
     <p id="bond-sub" class="sub"></p>
     <div id="bond-cards" class="cards"></div>
-    <div class="row" style="justify-content:center"><button id="bond-back" class="btn hidden">Atrás</button></div>
+    <div class="row" style="justify-content:center"><button id="bond-back" class="btn hidden">Back</button></div>
   </div>
 </section>
 
 <section id="scr-item" class="scr dim hidden">
   <div class="box center">
-    <h2>¡Un objeto!</h2>
-    <p class="sub">Sólo puedes llevar uno · <kbd>1</kbd> <kbd>2</kbd></p>
+    <h2>An item!</h2>
+    <p class="sub">You can only carry one · <kbd>1</kbd> <kbd>2</kbd></p>
     <div id="item-cards" class="cards"></div>
   </div>
 </section>
 
 <section id="scr-pause" class="scr dim hidden">
   <div class="box center" style="width:min(460px,100%)">
-    <h2>Pausa</h2>
-    <p class="sub kbd-hint"><kbd>WASD</kbd> moverse · <kbd>1</kbd>–<kbd>4</kbd> movimiento · <kbd>Q</kbd>/<kbd>E</kbd> ciclar · <kbd>Esc</kbd> pausa</p>
-    <p class="sub touch-hint">Arrastra el dedo para moverte · toca un ataque para cambiarlo</p>
-    <p id="pause-coop" class="note hidden">Partida en grupo: el juego sigue mientras estás aquí.</p>
+    <h2>Pause</h2>
+    <p class="sub kbd-hint"><kbd>WASD</kbd> move · <kbd>1</kbd>–<kbd>4</kbd> spell · <kbd>Q</kbd>/<kbd>E</kbd> cycle · <kbd>Esc</kbd> pause</p>
+    <p class="sub touch-hint">Drag to move · tap a spell to switch</p>
+    <p id="pause-coop" class="note hidden">Co-op: the game keeps running while you are here.</p>
     <div id="pause-sound" class="sound-inline"></div>
     <div class="row" style="justify-content:center">
-      <button id="btn-resume" class="btn gold">Continuar</button>
-      <button id="btn-pause-settings" class="btn">Ajustes</button>
-      <button id="btn-quit" class="btn">Abandonar run</button>
+      <button id="btn-resume" class="btn gold">Continue</button>
+      <button id="btn-pause-settings" class="btn">Settings</button>
+      <button id="btn-quit" class="btn">Quit run</button>
     </div>
   </div>
 </section>
 
 <section id="scr-over" class="scr dim hidden">
   <div class="box center" style="width:min(480px,100%)">
-    <h2 id="over-title">Has caído…</h2>
+    <h2 id="over-title">You fell…</h2>
     <div id="over-stats" class="stats"></div>
     <div class="row" style="justify-content:center;gap:10px;margin-top:8px">
-      <button id="btn-replay" class="btn gold">Jugar de nuevo</button>
-      <button id="btn-again" class="btn">Volver al menú</button>
+      <button id="btn-replay" class="btn gold">Play again</button>
+      <button id="btn-again" class="btn">Back to menu</button>
     </div>
   </div>
 </section>
 
 <!-- datos generados -->
-<script defer src="js/app.min.js?v=b2d8af7f53"></script>
+<script defer src="js/app.min.js?v=22b38d0738"></script>
 </body>
 </html>

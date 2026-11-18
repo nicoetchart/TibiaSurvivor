@@ -221,8 +221,8 @@
         if (pl) {
           pl.bonds++;
           G.Audio.sfx('legend');
-          G.Spawner.say('¡Vínculo obtenido! Une dos hechizos para lanzarlos a la vez.', 3.2, true);
-          G.FX.dmgText(pl.x, pl.y - pl.bodyH - 10, '¡Vínculo!', '#b48aff', true);
+          G.Spawner.say('Bond earned! Fuse two spells to cast them together.', 3.2, true);
+          G.FX.dmgText(pl.x, pl.y - pl.bodyH - 10, 'Bond!', '#b48aff', true);
           G.FX.ring(pl.x, pl.y, 8, 90, '#b48aff', 0.7, 5);
           if (G.Game.offerBond) setTimeout(() => G.Game.offerBond(false), 0);
         }
@@ -494,7 +494,7 @@
     enrage() {
       this.ai.fury = true;
       this.spd *= 1.15;
-      if (!this.judge) G.Spawner.say('¡' + this.name + ' se ha enfurecido!', 2.4);
+      if (!this.judge) G.Spawner.say(this.name + ' is enraged!', 2.4);
       G.FX.ring(this.x, this.y, this.r, this.r * 5, '#ff4a4a', 0.6, 5);
       G.Camera.kick(0.5);
       G.Audio.sfx('boss');
@@ -773,7 +773,7 @@
         ctx.font = G.TibiaTheme ? G.TibiaTheme.font(700, 9) : '700 9px Pixelify, monospace';
         ctx.textAlign = 'center';
         ctx.fillStyle = '#d4b8ff';
-        ctx.fillText('ÉLITE', this.x, this.y - this.bodyH - 14);
+        ctx.fillText('ELITE', this.x, this.y - this.bodyH - 14);
         ctx.restore();
       }
 
@@ -978,7 +978,7 @@
         // El duende del tesoro se escapa si no lo atrapas a tiempo.
         if (e.behavior === 'thief' && (e.life -= dt) <= 0) {
           G.FX.burst(e.x, e.y - 10, '#ffd23f', 16, 140);
-          G.Spawner.say('¡' + e.name + ' se ha escapado!', 2.4);
+          G.Spawner.say(e.name + ' got away!', 2.4);
           list.splice(i, 1); byId.delete(e.id);
           continue;
         }

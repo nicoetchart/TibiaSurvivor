@@ -38,7 +38,7 @@ G.Bestiary = (() => {
       id: 'minotaur_guard',
       baseCreatureId: 'minotaur',
       name: 'Minotaur Guard',
-      description: 'Very Rare del bestiario: escolta blindada del laberinto; una vez por run.',
+      description: 'Very Rare bestiary entry: armored labyrinth escort; once per run.',
       nameKey: 'creature.minotaur_guard.name',
       descriptionKey: 'creature.minotaur_guard.description',
       family: 'humanoid',
@@ -74,8 +74,8 @@ G.Bestiary = (() => {
   const GLOBAL_UPGRADES = [
     {
       id: 'pickup_radius',
-      name: 'Radio de recogida',
-      unit: '+5% orbes por nivel',
+      name: 'Pickup radius',
+      unit: '+5% orbs per level',
       icon: 'frozenStarlight',
       maxLevel: 5,
       baseCost: 6,
@@ -84,8 +84,8 @@ G.Bestiary = (() => {
     },
     {
       id: 'vitality',
-      name: 'Vitalidad',
-      unit: '+4% vida máx. por nivel',
+      name: 'Vitality',
+      unit: '+4% max HP per level',
       icon: 'heart',
       maxLevel: 10,
       baseCost: 10,
@@ -94,8 +94,8 @@ G.Bestiary = (() => {
     },
     {
       id: 'haste',
-      name: 'Paso ligero',
-      unit: '+2% velocidad por nivel',
+      name: 'Light step',
+      unit: '+2% move speed per level',
       icon: 'medal2',
       maxLevel: 10,
       baseCost: 8,
@@ -104,8 +104,8 @@ G.Bestiary = (() => {
     },
     {
       id: 'scout_reroll',
-      name: 'Revisión de cartas',
-      unit: '+1 cambio de cartas por run',
+      name: 'Card review',
+      unit: '+1 level-up reroll per run',
       icon: 'up',
       maxLevel: 2,
       baseCost: 22,
@@ -118,8 +118,8 @@ G.Bestiary = (() => {
   const CONTENT_UNLOCKS = [
     {
       id: 'bestiary_field_notes',
-      name: 'Notas de campo',
-      description: 'Registra consejos extra en el detalle del bestiario (contenido pendiente).',
+      name: 'Field notes',
+      description: 'Unlock extra tips in bestiary detail (content pending).',
       icon: 'book',
       cost: 25,
       stub: true
@@ -130,8 +130,8 @@ G.Bestiary = (() => {
   const CHARMS = [
     {
       id: 'wound',
-      name: 'Herida persistente',
-      description: 'Probabilidad baja de daño extra según la vida del enemigo.',
+      name: 'Persistent wound',
+      description: 'Low chance of bonus damage based on the enemy\'s health.',
       nameKey: 'charm.wound.name',
       descriptionKey: 'charm.wound.description',
       trigger: 'onHit',
@@ -150,8 +150,8 @@ G.Bestiary = (() => {
     },
     {
       id: 'parry',
-      name: 'Parada tenaz',
-      description: 'A veces reduce el daño recibido.',
+      name: 'Steadfast parry',
+      description: 'Sometimes reduces damage taken.',
       nameKey: 'charm.parry.name',
       descriptionKey: 'charm.parry.description',
       trigger: 'onHitTaken',
@@ -164,8 +164,8 @@ G.Bestiary = (() => {
     },
     {
       id: 'stride',
-      name: 'Zancada',
-      description: 'Al recoger botín, breve impulso de velocidad.',
+      name: 'Stride',
+      description: 'Brief speed boost when you pick up loot.',
       nameKey: 'charm.stride.name',
       descriptionKey: 'charm.stride.description',
       trigger: 'onPickup',

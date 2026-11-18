@@ -21,7 +21,7 @@ G.NewsUI = (() => {
 
   function init() {
     const b = $('btn-news');
-    b.innerHTML = G.Icons.html('book', 18) + ' <span>Novedades</span><i class="dot"></i>';
+    b.innerHTML = G.Icons.html('book', 18) + ' <span>News</span><i class="dot"></i>';
     b.onclick = open;
     $('news-close').onclick = close;
     refresh();
@@ -30,11 +30,11 @@ G.NewsUI = (() => {
 
   function fmt(d) {
     const [y, m, day] = d.split('-').map(Number);
-    return new Date(y, m - 1, day).toLocaleDateString(G.I18n.lang === 'en' ? 'en-GB' : 'es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+    return new Date(y, m - 1, day).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
   function open() {
-    const en = G.I18n.lang === 'en' ? 1 : 0;
+    const en = 1;
     // Cada texto ya va en su idioma: translate="no" para que no lo toque i18n.
     const PARTS = [['new', ['Nuevo', 'New']], ['chg', ['Cambios', 'Changes']], ['fix', ['Arreglos', 'Fixes']]];
     $('news-body').innerHTML = G.CHANGELOG.map(v =>

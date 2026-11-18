@@ -126,8 +126,7 @@ G.TibiaOutfits = (() => {
   function unlockHint(type) {
     const cat = meta(type);
     if (!cat) return '';
-    const en = G.I18n && G.I18n.lang === 'en';
-    return en ? (cat.unlockHintEn || '') : (cat.unlockHintEs || 'Bloqueado.');
+    return cat.unlockHintEn || cat.unlockHintEs || 'Locked.';
   }
 
   function grant(type, save) {
@@ -212,7 +211,7 @@ G.TibiaOutfits = (() => {
       if (!cat) return null;
       const row = {
         type,
-        name: cat.nameEs || cat.name,
+        name: cat.name || cat.nameEs,
         unlock: cat.unlock,
         unlocked: isUnlocked(type),
         assets: hasAssets(type)

@@ -4,10 +4,10 @@ G.OutfitUI = (() => {
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   const PARTS = [
-    { id: 'head', label: 'Head', tab: 'Cabeza' },
-    { id: 'body', label: 'Primary', tab: 'Principal' },
-    { id: 'legs', label: 'Secondary', tab: 'Secundario' },
-    { id: 'feet', label: 'Detail', tab: 'Detalle' }
+    { id: 'head', label: 'Head' },
+    { id: 'body', label: 'Primary' },
+    { id: 'legs', label: 'Secondary' },
+    { id: 'feet', label: 'Detail' }
   ];
 
   const ADDONS = [
@@ -217,7 +217,7 @@ G.OutfitUI = (() => {
     const o = outfit();
     const cat = G.TibiaOutfits.meta(o.type);
     const el = $('outfit-type-name');
-    if (el && cat) el.textContent = cat.nameEs || cat.name;
+    if (el && cat) el.textContent = cat.name || cat.nameEs;
   }
 
   function syncPaletteSelection() {
@@ -299,33 +299,33 @@ G.OutfitUI = (() => {
              <div class="outfit-preview-wrap">
                <div class="outfit-stage">
                  <canvas id="outfit-preview" width="${PREVIEW_W}" height="${PREVIEW_H}" class="outfit-preview outfit-preview-lg"></canvas>
-                 <button type="button" class="outfit-stage-turn prev" id="outfit-dir-prev" title="Girar">◀</button>
-                 <button type="button" class="outfit-stage-turn next" id="outfit-dir-next" title="Girar">▶</button>
+                 <button type="button" class="outfit-stage-turn prev" id="outfit-dir-prev" title="Rotate">◀</button>
+                 <button type="button" class="outfit-stage-turn next" id="outfit-dir-next" title="Rotate">▶</button>
                </div>
                <div class="outfit-preview-opts row wrap center">
-                 <label class="chip-like"><input type="checkbox" id="outfit-show-floor" ${showFloor ? 'checked' : ''}> Mostrar suelo</label>
-                 <label class="chip-like"><input type="checkbox" id="outfit-preview-walk" ${previewWalk ? 'checked' : ''}> Ver al caminar</label>
+                 <label class="chip-like"><input type="checkbox" id="outfit-show-floor" ${showFloor ? 'checked' : ''}> Show floor</label>
+                 <label class="chip-like"><input type="checkbox" id="outfit-preview-walk" ${previewWalk ? 'checked' : ''}> Walk animation</label>
                </div>
              </div>
              <div class="outfit-config-block">
-               <b class="outfit-side-title">Cambiar apariencia</b>
-               <div class="outfit-kv"><span>Outfit</span><b id="outfit-type-name">${esc(cat.nameEs || cat.name)}</b></div>
+               <b class="outfit-side-title">Change appearance</b>
+               <div class="outfit-kv"><span>Outfit</span><b id="outfit-type-name">${esc(cat.name || cat.nameEs)}</b></div>
                <div id="outfit-addons" class="outfit-addons row wrap"></div>
              </div>
            </div>
            <div class="outfit-tibia-right panel">
-             <b class="outfit-side-title">Filtrar outfits</b>
-             <input type="search" class="field outfit-search" id="outfit-search" placeholder="Buscar…" value="${esc(filterQ)}">
-             <label class="chip-like" style="margin:4px 0 6px;font-size:12px"><input type="checkbox" id="outfit-only-mine" ${onlyMine ? 'checked' : ''}> Solo los míos</label>
+             <b class="outfit-side-title">Filter outfits</b>
+             <input type="search" class="field outfit-search" id="outfit-search" placeholder="Search…" value="${esc(filterQ)}">
+             <label class="chip-like" style="margin:4px 0 6px;font-size:12px"><input type="checkbox" id="outfit-only-mine" ${onlyMine ? 'checked' : ''}> Only mine</label>
              <div id="outfit-gallery" class="outfit-gallery"></div>
            </div>
          </div>
          <div class="outfit-tibia-bottom panel">
            <div class="outfit-color-head row wrap">
              ${PARTS.map(p =>
-               `<button type="button" class="chip outfit-part-tab ${p.id === activePart ? 'on' : ''}" data-part="${p.id}">${esc(p.tab)}</button>`).join('')}
+               `<button type="button" class="chip outfit-part-tab ${p.id === activePart ? 'on' : ''}" data-part="${p.id}">${esc(p.label)}</button>`).join('')}
            </div>
-           <div class="outfit-palette-wrap"><div id="outfit-palette" class="outfit-palette" aria-label="Colores 0–132"></div></div>
+           <div class="outfit-palette-wrap"><div id="outfit-palette" class="outfit-palette" aria-label="Colors 0–132"></div></div>
          </div>
        </div>`;
 
@@ -375,7 +375,7 @@ G.OutfitUI = (() => {
   function open() {
     if (!G.TibiaOutfits || !G.DB.save) return;
     if (G.Content && G.Content.mode !== 'neutral') {
-      G.UI.toast('Aspecto Tibia solo en TibiaSurvivor');
+      G.UI.toast('Outfits are only available in TibiaSurvivor mode.');
       return;
     }
     G.TibiaOutfits.initSave(G.DB.save);

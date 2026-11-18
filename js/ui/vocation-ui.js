@@ -21,7 +21,7 @@ G.VocationUI = (() => {
     $('voc-name').textContent = v.name;
     $('voc-text').textContent = v.description;
     $('voc-ability').textContent = names.length
-      ? 'Empiezas con ' + names.join(' y ') + '.'
+      ? 'You start with ' + names.join(' and ') + '.'
       : '';
     G.UI.chrome(false);
     G.UI.show('scr-vocation');
@@ -32,7 +32,7 @@ G.VocationUI = (() => {
     const save = G.DB.save;
     const id = v.legacyPartnerId;
     if (!G.Content.getCreature(id) || !G.DEX_BY[id]) {
-      G.UI.toast('No se pudo preparar la vocación.');
+      G.UI.toast('Could not set up this vocation.');
       return;
     }
     save.starter = id;
@@ -43,7 +43,7 @@ G.VocationUI = (() => {
     if (G.TibiaOutfits) G.DB.save.playerOutfit = G.TibiaOutfits.defaultLook();
     G.DB.commit();
     G.Content.syncFromSave(save);
-    G.UI.toast(v.name + ' está listo.');
+    G.UI.toast(v.name + ' is ready.');
     G.Flow.goMenu();
   }
 

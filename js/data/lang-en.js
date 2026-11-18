@@ -170,6 +170,9 @@ G.I18n.add({
   // ---------------- avisos durante la partida ----------------
   '¡{x} salvaje apareció!': 'A wild {x} appeared!', '¡{x} shiny salvaje apareció!': 'A wild shiny {x} appeared!',
   '¡Un {x} shiny anda cerca!': 'A shiny {x} is nearby!', '¡Marea de Pokémon!': 'Pokémon swarm!',
+  '¡Oleada en la caverna!': 'Cave surge!',
+  '¡Centinela de élite! Al derrotarlo ganas un vínculo entre hechizos.': 'Elite sentinel! Defeat it to earn a spell bond.',
+  'Derrotarlo cierra la cacería.': 'Defeat it to end the hunt.',
   '¡Has conseguido a {x} shiny!': 'You got a shiny {x}!', '¡Otro {x} shiny! (+300 monedas)': 'Another shiny {x}! (+300 coins)',
   '¡{x} te esperaba en la grieta!': '{x} was waiting in the rift!', '¡{x} shiny te esperaba en la grieta!': 'A shiny {x} was waiting in the rift!',
   '¡Has vencido a {x}! Recoge el premio…': 'You defeated {x}! Grab your reward…',

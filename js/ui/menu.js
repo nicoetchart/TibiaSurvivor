@@ -25,7 +25,7 @@ G.MenuUI = (() => {
     });
     document.querySelectorAll('[data-back]').forEach(b => { b.onclick = open; });
     $('btn-logout').onclick = () => {
-      if (G.DB.guest && !confirm('Eres invitado: se perderá todo el progreso. ¿Salir?')) return;
+      if (G.DB.guest && !confirm('You are a guest: all progress will be lost. Sign out?')) return;
       G.Audio.music(null);
       G.DB.logout().then(() => G.Flow.toLogin());
     };
@@ -56,7 +56,7 @@ G.MenuUI = (() => {
           const v = G.Content.getVocation('master_sorcerer');
           const bi = G.MvpConfig && G.MvpConfig.RUN_BIOME != null ? G.MvpConfig.RUN_BIOME : 3;
           const zone = (G.Tiles && G.Tiles.BIOMES[bi]) ? G.Tiles.BIOMES[bi].name : 'Plains of Havoc';
-          return (v ? v.name : 'Vocación') + ' · ' + zone;
+          return (v ? v.name : 'Vocation') + ' · ' + zone;
         })()
       : G.UI.typeChips(mon.types) + ' ' + G.UI.stars(mon.rarity);
     // Normal / shiny a mano, aquí mismo (en el móvil no se encontraba en la ficha).
@@ -80,17 +80,17 @@ G.MenuUI = (() => {
 
     const st = s.stats;
     $('menu-stats').innerHTML = neutral
-      ? `Partidas <b style="color:#fff">${st.runs}</b> · Victorias <b style="color:#fff">${st.wins || 0}</b><br>` +
-        `Mejor tiempo <b style="color:#fff">${G.U.mmss(st.bestTime)}</b> · Mejor nivel <b style="color:#fff">${st.bestLevel}</b><br>` +
-        `Derrotados (total) <b style="color:#fff">${st.totalKills.toLocaleString('es')}</b>`
-      : `Runs <b style="color:#fff">${st.runs}</b> · Mejor tiempo <b style="color:#fff">${G.U.mmss(st.bestTime)}</b><br>` +
-        `Mejor nivel <b style="color:#fff">${st.bestLevel}</b> · Derrotados <b style="color:#fff">${st.totalKills.toLocaleString('es')}</b>` +
-        (G.DB.guest ? '<br><span style="color:#ffb0b8">Modo invitado: no se guarda</span>' : '');
+      ? `Runs <b style="color:#fff">${st.runs}</b> · Wins <b style="color:#fff">${st.wins || 0}</b><br>` +
+        `Best time <b style="color:#fff">${G.U.mmss(st.bestTime)}</b> · Best level <b style="color:#fff">${st.bestLevel}</b><br>` +
+        `Total kills <b style="color:#fff">${st.totalKills.toLocaleString('en-US')}</b>`
+      : `Runs <b style="color:#fff">${st.runs}</b> · Best time <b style="color:#fff">${G.U.mmss(st.bestTime)}</b><br>` +
+        `Best level <b style="color:#fff">${st.bestLevel}</b> · Kills <b style="color:#fff">${st.totalKills.toLocaleString('en-US')}</b>` +
+        (G.DB.guest ? '<br><span style="color:#ffb0b8">Guest mode: not saved</span>' : '');
 
     // Premios de misiones por recoger.
     G.Progress.checkAch();
     const pend = G.Progress.pending();
-    $('menu-goals-sub').textContent = pend ? pend + (pend === 1 ? ' premio por recoger' : ' premios por recoger') : 'Misiones, logros y perfil';
+    $('menu-goals-sub').textContent = pend ? pend + (pend === 1 ? ' reward to claim' : ' rewards to claim') : 'Missions, achievements and profile';
     $('menu-goals-sub').classList.toggle('gold', pend > 0);
 
     const bSub = $('menu-bestiary-sub');
@@ -106,7 +106,7 @@ G.MenuUI = (() => {
         if (st !== 'unknown') disc++;
         if (st === 'completed') done++;
       }
-      bSub.textContent = `${disc}/${list.length} descubiertas · ${done} completas`;
+      bSub.textContent = `${disc}/${list.length} discovered · ${done} complete`;
     }
   }
 
@@ -282,7 +282,7 @@ G.MenuUI = (() => {
         <div class="upg-btns">
           ${u.id === 'ban' && lvl > 0 ? `<button class="btn small" data-ban>Elegir (${banList().length}/${lvl})</button>` : ''}
           <button class="btn small ${maxed ? '' : 'gold'}" data-buy data-sfx="none" ${maxed || s.coins < cost ? 'disabled' : ''}>
-          ${maxed ? 'Máx.' : `<span class="coin"></span> ${cost}`}</button></div>`;
+          ${maxed ? 'Max' : `<span class="coin"></span> ${cost}`}</button></div>`;
       if (u.id === 'ban' && lvl > 0) el.querySelector('[data-ban]').onclick = () => { banOpen = !banOpen; renderUpgrades(); };
       el.querySelector('[data-buy]').onclick = () => {
         // Se vuelve a leer todo al pulsar (la partida puede haber cambiado desde que se dibujó).

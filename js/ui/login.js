@@ -1,4 +1,4 @@
-/* ============ login.js — inicio: entrar, crear cuenta o invitado ============ */
+/* ============ login.js — sign in, register or guest ============ */
 G.LoginUI = (() => {
   const $ = G.UI.$;
   let mode = 'login';
@@ -21,20 +21,20 @@ G.LoginUI = (() => {
     $('btn-guest').onclick = () => { G.DB.playAsGuest(); G.Flow.afterLogin(); };
     $('f-forgot').onclick = e => {
       e.preventDefault();
-      $('login-err').textContent = 'Las cuentas son locales a este navegador. Si olvidaste la contraseña, crea otra cuenta o juega como invitado.';
+      $('login-err').textContent = 'Accounts are local to this browser. If you forgot your password, create another account or play as guest.';
     };
   }
 
-  function offerRecovery() { /* sin recuperación cloud en modo offline */ }
+  function offerRecovery() { /* no cloud recovery in offline mode */ }
 
   function modeNote() {
-    return 'Tu partida se guarda sólo en este navegador. Como invitado no se guarda.';
+    return 'Your save stays in this browser only. As a guest, nothing is saved.';
   }
 
   function setMode(m) {
     mode = m;
     document.querySelectorAll('#scr-login .tab').forEach(t => t.classList.toggle('on', t.dataset.tab === m));
-    $('btn-auth').textContent = m === 'login' ? 'Entrar' : 'Crear cuenta';
+    $('btn-auth').textContent = m === 'login' ? 'Sign in' : 'Create account';
     $('f-pass').autocomplete = m === 'login' ? 'current-password' : 'new-password';
     $('login-err').textContent = '';
   }
@@ -42,7 +42,7 @@ G.LoginUI = (() => {
   function open() {
     G.UI.chrome(false);
     G.UI.show('scr-login');
-    if (!G.DB.storageOk) $('login-err').textContent = 'Este navegador no deja guardar datos: juega como invitado.';
+    if (!G.DB.storageOk) $('login-err').textContent = 'This browser cannot store data: play as guest.';
     $('login-mode').textContent = modeNote();
     setTimeout(() => $('f-user').focus(), 50);
   }

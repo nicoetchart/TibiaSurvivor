@@ -2,11 +2,45 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-17', title: ['Avisos en partida', 'Run banners'], fix: [
+    ['Oleada, centinela de élite y eventos (hordas, cofres, clima): avisos en inglés; bundle de producción regenerado.',
+     'Cave surge, elite sentinel and events (hordes, traps, weather): English banners; production bundle rebuilt.'],
+  ] },
+  { d: '2026-11-17', title: ['Aspecto', 'Outfit'], fix: [
+    ['Pantalla personalizar aspecto: filtros, colores, suelo y bloqueos en inglés.',
+     'Customize character screen: filters, colors, floor and lock hints in English.'],
+  ] },
+  { d: '2026-11-17', title: ['Bestiario', 'Bestiary'], fix: [
+    ['Descripciones de criaturas, charms y tienda del bestiario en inglés; consejos usan texto EN.',
+     'Creature descriptions, charms and bestiary shop in English; tips always use EN copy.'],
+  ] },
+  { d: '2026-11-17', title: ['Ajustes', 'Settings'], chg: [
+    ['Pestaña Acerca de: créditos alineados con sprites Tibia, geo y MIT; aviso legal actualizado.',
+     'About tab: credits aligned with Tibia sprites, geo fallback and MIT; legal notice updated.'],
+    ['Créditos sin rutas a ficheros del repo (LICENSE, geo-sprites, etc.).',
+     'Credits no longer cite repo file paths (LICENSE, geo-sprites, etc.).'],
+    ['Aviso legal: sin referencias a ficheros del repositorio (LICENSE, OFL, LICENSE.md).',
+     'Legal notice: no references to repository files (LICENSE, OFL txt, LICENSE.md).'],
+  ] },
+  { d: '2026-11-17', title: ['Misiones', 'Missions'], fix: [
+    ['Pestaña Perfil: quitado «Ver mi perfil público» hasta tener cierre atrás fiable.',
+     'Profile tab: removed "View my public profile" until back/close works reliably.'],
+  ] },
+  { d: '2026-11-17', title: ['Run start', 'Run start'], fix: [
+    ['Quitados drops de objetos y centinela de élite al iniciar (?dev); Flame Strike arranca en nv. 1.',
+     'Removed test item drops and start elite sentinel (?dev); Flame Strike now starts at Lv. 1.'],
+  ] },
   { d: '2026-11-17', title: ['Idioma', 'Language'], chg: [
     ['El juego queda solo en inglés: sin selector de idioma; traducción automática siempre activa.',
      'English-only UI: no language picker; automatic translation always on.'],
     ['Textos Tibia en objetos, mejoras legacy y enlaces GitHub/donaciones actualizados.',
      'Tibia copy on items, legacy upgrades, GitHub and support links updated.'],
+    ['HUD, menús, ajustes, misiones, logros, bestiario y páginas guía en inglés (sin español visible).',
+     'HUD, menus, settings, missions, achievements, bestiary and guide pages in English (no visible Spanish).'],
+    ['Pantalla de vocación (invitado/cuenta nueva): descripción y hechizo inicial en inglés.',
+     'Vocation screen (guest/new account): description and starter spell copy in English.'],
+    ['Cartas de subida MS: título con incantation; sin subtítulo ni pie de stats.',
+     'MS level-up cards: incantation in the title; no subtitle or stats footer.'],
   ] },
   { d: '2026-11-17', title: ['Interfaz', 'UI'], chg: [
     ['Icono moneda en toda la UI (tienda, gacha, progreso, canvas): sprite Tibia 201280.',

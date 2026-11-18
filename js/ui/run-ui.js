@@ -44,17 +44,14 @@ G.RunUI = (() => {
       const el = document.createElement('div');
       el.className = 'card';
       const tag = c.type === 'new'
-        ? `<span class="tag-chip" style="background:${c.color}">Nuevo · ${c.tag}</span>`
+        ? `<span class="tag-chip" style="background:${c.color}">New · ${c.tag}</span>`
         : c.type === 'up' || c.type === 'evo'
           ? `<span class="tag-chip" style="background:${c.color}">${c.tag}</span>`
           : `<span class="tag-chip" style="background:${c.color === '#ffd23f' ? '#ffd23f' : '#9fb1c9'}">${c.tag}</span>`;
       if (c.type === 'evo') el.classList.add('evo');
-      const msSub = c.msSub ? `<div class="ms-card-sub">${c.msSub}</div>` : '';
-      const msLvl = c.msCompare ? `<div class="ms-card-lvl">${c.msCompare}</div>` : '';
-      const msCmp = c.msDetail ? `<div class="ms-card-cmp">${c.msDetail}</div>` : '';
       el.innerHTML =
         `<div class="ico" style="background:${c.color}33">${G.Icons.html(c.icon, 32)}</div>
-         <div class="txt"><div class="nm">${c.title} ${tag}</div><div class="ds">${c.desc}</div>${msSub}${msLvl}${msCmp}</div>
+         <div class="txt"><div class="nm">${c.title} ${tag}</div><div class="ds">${c.desc}</div></div>
          <div class="key">${i + 1}</div>`;
       el.dataset.sfx = 'none';             // el juego pone su propio sonido al elegir
       el.onclick = () => pick(i);
@@ -81,9 +78,9 @@ G.RunUI = (() => {
     const others = names.filter(n => n !== me);
     const list = a => a.length > 1 ? a.slice(0, -1).join(', ') + ' y ' + a[a.length - 1] : a[0];
     $('lvl-wait').textContent = !names.length ? ''
-      : !others.length ? 'Elige tu carta'
-      : names.includes(me) ? 'Faltan por elegir: ' + list([...others, 'tú'])
-      : 'Esperando a ' + list(others) + '…';
+      : !others.length ? 'Pick your card'
+      : names.includes(me) ? 'Waiting for picks: ' + list([...others, 'you'])
+      : 'Waiting for ' + list(others) + '…';
   }
 
   function closeLevelUp() {
@@ -102,36 +99,36 @@ G.RunUI = (() => {
 
   function showOver(r, actions) {
     const neutral = G.Content.mode === 'neutral';
-    $('over-title').textContent = r.victory ? '¡Victoria!' : (r.dead ? 'Derrota…' : 'Run terminada');
+    $('over-title').textContent = r.victory ? 'Victory!' : (r.dead ? 'Defeat…' : 'Run over');
     $('over-stats').innerHTML = `
-      <div><span>Resultado</span><b class="${r.victory ? 'gold' : ''}">${r.victory ? 'Victoria' : r.dead ? 'Derrota' : 'Abandonada'}</b></div>
-      <div><span>Tiempo</span><b>${G.U.mmss(r.time)}</b></div>
-      <div><span>Nivel</span><b>${r.level}</b></div>
-      <div><span>Derrotados</span><b>${r.kills}</b></div>
-      <div><span>Jefes</span><b>${r.bosses}</b></div>
-      ${r.dmgDealt ? `<div><span>Daño causado</span><b>${r.dmgDealt.toLocaleString('es')}</b></div>` : ''}
-      ${r.judge ? `<div style="grid-column:1/-1"><span>Ante el juicio</span><b class="gold">${G.U.mmss(r.judge.time)} · ${r.judge.bosses} ${r.judge.bosses === 1 ? 'guardián' : 'guardianes'}</b></div>` : ''}
-      <div style="grid-column:1/-1"><span>${neutral ? 'Monedas ganadas' : 'Pokémonedas ganadas'}</span>
+      <div><span>Result</span><b class="${r.victory ? 'gold' : ''}">${r.victory ? 'Victory' : r.dead ? 'Defeat' : 'Quit'}</b></div>
+      <div><span>Time</span><b>${G.U.mmss(r.time)}</b></div>
+      <div><span>Level</span><b>${r.level}</b></div>
+      <div><span>Kills</span><b>${r.kills}</b></div>
+      <div><span>Bosses</span><b>${r.bosses}</b></div>
+      ${r.dmgDealt ? `<div><span>Damage dealt</span><b>${r.dmgDealt.toLocaleString('en-US')}</b></div>` : ''}
+      ${r.judge ? `<div style="grid-column:1/-1"><span>Judgment phase</span><b class="gold">${G.U.mmss(r.judge.time)} · ${r.judge.bosses} ${r.judge.bosses === 1 ? 'guardian' : 'guardians'}</b></div>` : ''}
+      <div style="grid-column:1/-1"><span>${neutral ? 'Gold coins earned' : 'Coins earned'}</span>
         <b class="gold"><span class="coin"></span> +${r.coins}</b>
         <div style="font-size:14px;color:var(--muted)">${r.breakdown}</div></div>
       ${!neutral && (r.t1 || r.t10) ? `<div style="grid-column:1/-1"><span>Tickets del gacha</span><b>
         ${r.t1 ? G.Icons.html('ticket', 22) + ' +' + r.t1 + ' ' : ''}${r.t10 ? G.Icons.html('ticket10', 22) + ' +' + r.t10 + ' ×10' : ''}</b></div>` : ''}
       <div style="grid-column:1/-1"><span>${neutral ? 'Spells' : 'Moves'}</span><b style="font-size:17px">
-        ${r.moves.map(m => `${G.Icons.html('move:' + m.id, 16)} ${m.name} Nv.${m.lvl}`).join(' · ') || '—'}</b></div>
-      ${r.msSpells && r.msSpells.length ? `<div style="grid-column:1/-1" class="ms-over-spells"><span>Hechizos (run)</span>
+        ${r.moves.map(m => `${G.Icons.html('move:' + m.id, 16)} ${m.name} Lv.${m.lvl}`).join(' · ') || '—'}</b></div>
+      ${r.msSpells && r.msSpells.length ? `<div style="grid-column:1/-1" class="ms-over-spells"><span>Spells (run)</span>
         <div class="ms-over-table">${r.msSpells.slice(0, 6).map(s =>
-          `<div class="ms-over-row"><b>${s.name}</b><span>Nv.${s.finalLevel}</span>
-           <span>${s.damage.toLocaleString('es')} dmg</span><span>${s.casts} lanz.</span>
-           <span>${s.kills} bajas</span>${s.damageBoss ? `<span class="gold">${s.damageBoss} vs jefe</span>` : ''}</div>`
+          `<div class="ms-over-row"><b>${s.name}</b><span>Lv.${s.finalLevel}</span>
+           <span>${s.damage.toLocaleString('en-US')} dmg</span><span>${s.casts} casts</span>
+           <span>${s.kills} kills</span>${s.damageBoss ? `<span class="gold">${s.damageBoss} vs boss</span>` : ''}</div>`
         ).join('')}</div></div>` : ''}
-      ${r.caught && r.caught.length && !neutral ? `<div style="grid-column:1/-1" class="caught"><span>${G.Icons.html('shiny', 12)} Shinies conseguidos</span>
+      ${r.caught && r.caught.length && !neutral ? `<div style="grid-column:1/-1" class="caught"><span>${G.Icons.html('shiny', 12)} Shinies caught</span>
         <div class="caught-row" id="over-caught"></div></div>` : ''}
       ${G.BestiaryRunUI && r.bestiarySummary ? G.BestiaryRunUI.renderOverSummary(r.bestiarySummary) : ''}
-      ${r.record ? '<div style="grid-column:1/-1;text-align:center" class="gold">¡Nuevo récord!</div>' : ''}
+      ${r.record ? '<div style="grid-column:1/-1;text-align:center" class="gold">New record!</div>' : ''}
       ${askSupport(r) ? `<div class="support-ask" id="over-ask" style="grid-column:1/-1">
-        <button class="x" type="button" aria-label="Cerrar">×</button>
+        <button class="x" type="button" aria-label="Close">×</button>
         <p>Enjoying TibiaSurvivor? If you like the game, you can help keep it online with a voluntary donation.</p>
-        <a class="btn small gold" href="${G.Funding.url}" target="_blank" rel="noopener">${G.Icons.html('heart', 14)} Apoyar en Ko-fi</a>
+        <a class="btn small gold" href="${G.Funding.url}" target="_blank" rel="noopener">${G.Icons.html('heart', 14)} Support on Ko-fi</a>
       </div>` : ''}`;
     const ask = $('over-ask');
     if (ask) ask.querySelector('.x').onclick = () => ask.remove();
@@ -148,7 +145,7 @@ G.RunUI = (() => {
       for (const c of r.caught) {
         const w = document.createElement('div');
         w.appendChild(G.UI.spriteCanvas(c.dex, 90, 72, { shiny: true, lively: true, scale: 2 }));
-        w.insertAdjacentHTML('beforeend', `<small>${G.DEX_BY[c.dex].name}${c.isNew ? ' · ¡nuevo!' : ''}</small>`);
+        w.insertAdjacentHTML('beforeend', `<small>${G.DEX_BY[c.dex].name}${c.isNew ? ' · new!' : ''}</small>`);
         row.appendChild(w);
       }
     }
@@ -193,22 +190,22 @@ G.RunUI = (() => {
     const { opt, first } = bond;
     const names = ms => ms.map(m => m.name).join(' + ');
     const step2 = opt.mode === 'pair' && first;
-    $('bond-sub').textContent = opt.mode === 'add' ? 'Elige qué movimiento se une a ' + names(opt.group)
-      : step2 ? '¿Con cuál unes ' + first.name + '?' : 'Elige el primer movimiento que vas a unir';
+    $('bond-sub').textContent = opt.mode === 'add' ? 'Pick which spell bonds into ' + names(opt.group)
+      : step2 ? 'Which spell bonds with ' + first.name + '?' : 'Pick the first spell to bond';
     $('bond-back').classList.toggle('hidden', !step2);
     bond.list = step2 ? opt.loose.filter(m => m !== first) : opt.loose;
     const box = $('bond-cards');
     box.innerHTML = '';
     bond.list.forEach((m, i) => {
       const col = G.U.TYPE_COLOR[m.type];
-      const desc = opt.mode === 'add' ? 'Se lanzará a la vez que ' + names(opt.group) + '.'
-        : step2 ? 'Se lanzará a la vez que ' + first.name + '. Queda un hueco libre.'
+      const desc = opt.mode === 'add' ? 'Fires together with ' + names(opt.group) + '.'
+        : step2 ? 'Fires together with ' + first.name + '. One slot stays free.'
         : m.desc || '';
       const el = document.createElement('div');
       el.className = 'card' + (opt.mode === 'add' || step2 ? ' bond' : '');
       el.innerHTML =
         `<div class="ico" style="background:${col}33">${G.Icons.html('move:' + m.id, 32)}</div>
-         <div class="txt"><div class="nm">${m.name} <span class="tag-chip" style="background:${col}">Nv.${m.lvl}</span></div><div class="ds">${desc}</div></div>
+         <div class="txt"><div class="nm">${m.name} <span class="tag-chip" style="background:${col}">Lv.${m.lvl}</span></div><div class="ds">${desc}</div></div>
          <div class="key">${i + 1}</div>`;
       el.dataset.sfx = 'none';
       el.onclick = () => pickBond(i);
@@ -241,7 +238,7 @@ G.RunUI = (() => {
   function showPause(coop = false) {
     G.UI.soundControls($('pause-sound'));
     $('pause-coop').classList.toggle('hidden', !coop);
-    $('btn-quit').textContent = coop ? 'Salir de la partida' : 'Abandonar run';
+    $('btn-quit').textContent = coop ? 'Leave match' : 'Quit run';
     G.UI.show('scr-pause');
   }
 

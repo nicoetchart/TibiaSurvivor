@@ -16,9 +16,7 @@ G.Vocations = (() => {
       legacyPartnerId: 99001,
       startingAbility: 'flame_strike',
       startingSpellId: 'flame_strike',
-      /** Dev / pruebas: Flame Strike desde el arranque al nv. 5. */
       startingSpellIds: ['flame_strike'],
-      startingSpellLevels: { flame_strike: 5 },
       baseStats: {
         maxHp: 82,
         movementSpeedMul: 1.04,
@@ -29,7 +27,7 @@ G.Vocations = (() => {
         pickupRadiusMul: 1,
         armor: 0
       },
-      description: 'Cazador arcano: alto daño elemental, poca armadura, control del campo desde lejos.'
+      description: 'Arcane hunter: high elemental damage, light armor, battlefield control from range.'
     }
   ];
 

@@ -16,13 +16,13 @@ G.DamageTypes = (() => {
   };
 
   const NAME = {
-    physical: 'Físico',
-    fire: 'Fuego',
-    ice: 'Hielo',
-    energy: 'Energía',
-    earth: 'Tierra',
-    death: 'Muerte',
-    holy: 'Sagrado'
+    physical: 'Physical',
+    fire: 'Fire',
+    ice: 'Ice',
+    energy: 'Energy',
+    earth: 'Earth',
+    death: 'Death',
+    holy: 'Holy'
   };
 
   const WEAK_MULT = 1.25;

@@ -11,7 +11,7 @@ G.MasterSorcererSpells = [
     element: 'fire',
     kind: 'projectile',
     type: 'fire',
-    desc: 'Dispara al más cercano; quema y daña en un pequeño radio al impactar.',
+    desc: 'Hits nearest target; burn splash on impact.',
     cd: 1.4,
     dmg: 18,
     count: 1,
@@ -26,11 +26,11 @@ G.MasterSorcererSpells = [
     requirements: { minPlayerLevel: 1 },
     msTarget: 'nearest',
     levels: [
-      { level: 1, summary: 'Impacto al más cercano: Burning y onda de fuego.' },
-      { level: 2, summary: '+25% daño; +15% radio de la onda', mods: { dmg: 1.25, radius: 1.15 } },
-      { level: 3, summary: '+5% críticos con este hechizo; +15% radio', mods: { radius: 1.15 }, msUnlock: ['spell_crit:0.05'] },
-      { level: 4, summary: '-20% recarga; +10% radio', mods: { cd: 0.8, radius: 1.1 } },
-      { level: 5, summary: 'Explosión al derrotar enemigos ardiendo; +10% radio.', mods: { radius: 1.1 }, msUnlock: ['burn_kill_explosion'] }
+      { level: 1, summary: 'Nearest hit: Burning + fire splash.' },
+      { level: 2, summary: '+25% dmg; +15% splash radius', mods: { dmg: 1.25, radius: 1.15 } },
+      { level: 3, summary: '+5% crit; +15% radius', mods: { radius: 1.15 }, msUnlock: ['spell_crit:0.05'] },
+      { level: 4, summary: '-20% CD; +10% radius', mods: { cd: 0.8, radius: 1.1 } },
+      { level: 5, summary: 'Kill explosion on burning foes; +10% radius.', mods: { radius: 1.1 }, msUnlock: ['burn_kill_explosion'] }
     ]
   },
   {
@@ -41,7 +41,7 @@ G.MasterSorcererSpells = [
     element: 'energy',
     kind: 'projectile',
     type: 'energy',
-    desc: 'Proyectil hacia el más cercano; el impacto salta a otros enemigos cercanos.',
+    desc: 'Shot at nearest foe; chains to nearby enemies.',
     cd: 0.78,
     dmg: 16,
     count: 1,
@@ -54,11 +54,11 @@ G.MasterSorcererSpells = [
     requirements: { minPlayerLevel: 1 },
     msTarget: 'nearest',
     levels: [
-      { level: 1, summary: 'Al impactar, encadena a 2 criaturas más.', msUnlock: ['chain_on_hit:2'] },
-      { level: 2, summary: '+25% daño', mods: { dmg: 1.25 } },
-      { level: 3, summary: '+1 salto de cadena (3 en total)', msUnlock: ['chain_on_hit:3'] },
-      { level: 4, summary: '-20% recarga', mods: { cd: 0.8 } },
-      { level: 5, summary: '+2 saltos de cadena (5 en total); Electrified 2 s.', msUnlock: ['chain_on_hit:5', 'electrified:2'] }
+      { level: 1, summary: 'Chains to 2 more targets on hit.', msUnlock: ['chain_on_hit:2'] },
+      { level: 2, summary: '+25% damage', mods: { dmg: 1.25 } },
+      { level: 3, summary: '+1 chain hop (3 total)', msUnlock: ['chain_on_hit:3'] },
+      { level: 4, summary: '-20% CD', mods: { cd: 0.8 } },
+      { level: 5, summary: '+2 chain hops (5 total); Electrified 2s.', msUnlock: ['chain_on_hit:5', 'electrified:2'] }
     ]
   },
   {
@@ -69,7 +69,7 @@ G.MasterSorcererSpells = [
     element: 'death',
     kind: 'projectile',
     type: 'death',
-    desc: 'Golpe de muerte concentrado al enemigo más cercano.',
+    desc: 'Focused death strike on the nearest foe.',
     cd: 1.35,
     dmg: 30,
     count: 1,
@@ -82,11 +82,11 @@ G.MasterSorcererSpells = [
     requirements: { minPlayerLevel: 1 },
     msTarget: 'nearest',
     levels: [
-      { level: 1, summary: 'Ataca al enemigo válido más cercano.' },
-      { level: 2, summary: '+30% daño', mods: { dmg: 1.3 } },
-      { level: 3, summary: 'Aplica Curse 3 s', msUnlock: ['curse:3'] },
-      { level: 4, summary: '-20% recarga', mods: { cd: 0.8 } },
-      { level: 5, summary: 'Ejecuta normales ≤30% vida; bonus limitado vs jefes.', msUnlock: ['execute:0.30', 'boss_execute_bonus'] }
+      { level: 1, summary: 'Hits nearest valid foe.' },
+      { level: 2, summary: '+30% damage', mods: { dmg: 1.3 } },
+      { level: 3, summary: 'Curse 3s on hit', msUnlock: ['curse:3'] },
+      { level: 4, summary: '-20% CD', mods: { cd: 0.8 } },
+      { level: 5, summary: 'Execute normals ≤30% HP; capped vs bosses.', msUnlock: ['execute:0.30', 'boss_execute_bonus'] }
     ]
   },
   {
@@ -97,7 +97,7 @@ G.MasterSorcererSpells = [
     element: 'fire',
     kind: 'melee',
     type: 'fire',
-    desc: 'Onda de fuego en rejilla Tibia (1·3·3·5; nv.5 añade otra fila de 5).',
+    desc: 'Tibia cone wave 1·3·3·5 (Lv.5 adds a row of 5).',
     cd: 0.95,
     dmg: 17,
     radius: 50,
@@ -107,11 +107,11 @@ G.MasterSorcererSpells = [
     weight: 8,
     requirements: { minPlayerLevel: 1 },
     levels: [
-      { level: 1, summary: 'Emite una wave frontal corta.' },
-      { level: 2, summary: '+25% daño', mods: { dmg: 1.25 } },
-      { level: 3, summary: '-20% recarga', mods: { cd: 0.8 } },
-      { level: 4, summary: '+25% daño; aplica Burning', mods: { dmg: 1.25, burn: 1 } },
-      { level: 5, summary: '-20% recarga; fila extra del cono (1·3·3·5·5)', mods: { cd: 0.8 }, msUnlock: ['fire_wave_row5'] }
+      { level: 1, summary: 'Short frontal wave.' },
+      { level: 2, summary: '+25% damage', mods: { dmg: 1.25 } },
+      { level: 3, summary: '-20% CD', mods: { cd: 0.8 } },
+      { level: 4, summary: '+25% dmg; applies Burning', mods: { dmg: 1.25, burn: 1 } },
+      { level: 5, summary: '-20% CD; extra cone row (1·3·3·5·5)', mods: { cd: 0.8 }, msUnlock: ['fire_wave_row5'] }
     ]
   },
   {
@@ -122,7 +122,7 @@ G.MasterSorcererSpells = [
     element: 'energy',
     kind: 'beam',
     type: 'energy',
-    desc: 'Rayo hacia el más cercano; atraviesa enemigos. Nv.4 Electrified; nv.5 forma en T.',
+    desc: 'Piercing beam at nearest; Lv.4 Electrified, Lv.5 T-shape.',
     cd: 1.3,
     dmg: 20,
     radius: 50,
@@ -132,11 +132,11 @@ G.MasterSorcererSpells = [
     requirements: { minPlayerLevel: 1 },
     msTarget: 'nearest',
     levels: [
-      { level: 1, summary: 'Rayo 1×5 sqm (sprite Tibia) hacia el más cercano.' },
-      { level: 2, summary: '+25% daño', mods: { dmg: 1.25 } },
-      { level: 3, summary: 'Alcance 1×7 sqm (dos sqm extra; mismo ancho).', msUnlock: ['energy_beam_len7'] },
-      { level: 4, summary: 'Electrified 2 s al golpear; −20% recarga', mods: { cd: 0.8 }, msUnlock: ['electrified:2'] },
-      { level: 5, summary: '+25% daño; punta 1×3 y cuerpo 3×3 (6 sqm).', mods: { dmg: 1.25 }, msUnlock: ['energy_beam_wide'] }
+      { level: 1, summary: '1×5 beam at nearest.' },
+      { level: 2, summary: '+25% damage', mods: { dmg: 1.25 } },
+      { level: 3, summary: 'Reach 1×7 (longer beam).', msUnlock: ['energy_beam_len7'] },
+      { level: 4, summary: 'Electrified 2s; -20% CD', mods: { cd: 0.8 }, msUnlock: ['electrified:2'] },
+      { level: 5, summary: '+25% dmg; T-shape (6 sqm).', mods: { dmg: 1.25 }, msUnlock: ['energy_beam_wide'] }
     ]
   },
   {
@@ -147,7 +147,7 @@ G.MasterSorcererSpells = [
     element: 'death',
     kind: 'beam',
     type: 'death',
-    desc: 'Rayo death al más cercano (1×7 en nv.3); nv.4 Curse; nv.5 +40% daño.',
+    desc: 'Death beam at nearest; Lv.3 longer, Lv.4 Curse, Lv.5 +40% dmg.',
     cd: 1.3,
     dmg: 28,
     radius: 50,
@@ -157,11 +157,11 @@ G.MasterSorcererSpells = [
     requirements: { minPlayerLevel: 6 },
     msTarget: 'nearest',
     levels: [
-      { level: 1, summary: 'Rayo 1×5 sqm (sprite Tibia) hacia el más cercano.' },
-      { level: 2, summary: '+25% daño', mods: { dmg: 1.25 } },
-      { level: 3, summary: 'Alcance 1×7 sqm (dos sqm extra; mismo ancho).', msUnlock: ['great_death_beam_len7'] },
-      { level: 4, summary: 'Curse 3 s al golpear; −20% recarga', mods: { cd: 0.8 }, msUnlock: ['curse:3'] },
-      { level: 5, summary: '+40% daño; mantiene rayo 1×7.', mods: { dmg: 1.4 } }
+      { level: 1, summary: '1×5 death beam at nearest.' },
+      { level: 2, summary: '+25% damage', mods: { dmg: 1.25 } },
+      { level: 3, summary: 'Reach 1×7.', msUnlock: ['great_death_beam_len7'] },
+      { level: 4, summary: 'Curse 3s; -20% CD', mods: { cd: 0.8 }, msUnlock: ['curse:3'] },
+      { level: 5, summary: '+40% dmg; keeps 1×7 beam.', mods: { dmg: 1.4 } }
     ]
   },
   {
@@ -172,7 +172,7 @@ G.MasterSorcererSpells = [
     element: 'fire',
     kind: 'nova',
     type: 'fire',
-    desc: 'Gran explosión radial alrededor tuyo.',
+    desc: 'Large radial blast around you.',
     cd: 2.3,
     dmg: 140,
     radius: 200,
@@ -185,11 +185,11 @@ G.MasterSorcererSpells = [
     weight: 4,
     requirements: { minPlayerLevel: 10, minOffensiveSpells: 2, requiresElement: 'fire' },
     levels: [
-      { level: 1, summary: 'Explosión radial; recarga alta.' },
-      { level: 2, summary: '+30% daño', mods: { dmg: 1.3 } },
-      { level: 3, summary: '+25% radio', mods: { radius: 1.25 } },
-      { level: 4, summary: '-20% recarga', mods: { cd: 0.8 } },
-      { level: 5, summary: 'Segunda detonación tras 1 s.', msUnlock: ['delayed_detonation:1'] }
+      { level: 1, summary: 'Radial blast; long CD.' },
+      { level: 2, summary: '+30% damage', mods: { dmg: 1.3 } },
+      { level: 3, summary: '+25% radius', mods: { radius: 1.25 } },
+      { level: 4, summary: '-20% CD', mods: { cd: 0.8 } },
+      { level: 5, summary: 'Second blast after 1s.', msUnlock: ['delayed_detonation:1'] }
     ]
   },
   {
@@ -200,7 +200,7 @@ G.MasterSorcererSpells = [
     element: 'energy',
     kind: 'meteor',
     type: 'energy',
-    desc: 'Rayos sobre enemigos repartidos por la pantalla.',
+    desc: 'Lightning strikes scattered across enemies.',
     cd: 2.4,
     dmg: 110,
     count: 5,
@@ -209,11 +209,11 @@ G.MasterSorcererSpells = [
     weight: 4,
     requirements: { minPlayerLevel: 10, minOffensiveSpells: 2, requiresElement: 'energy' },
     levels: [
-      { level: 1, summary: 'Varios rayos sobre enemigos válidos.' },
-      { level: 2, summary: '+30% daño', mods: { dmg: 1.3 } },
-      { level: 3, summary: '+3 rayos', mods: { count: 3 } },
-      { level: 4, summary: '-20% recarga', mods: { cd: 0.8 } },
-      { level: 5, summary: 'Tormenta 3 s (prioriza elites y jefes).', msUnlock: ['lightning_storm:3'] }
+      { level: 1, summary: 'Multiple strikes on valid foes.' },
+      { level: 2, summary: '+30% damage', mods: { dmg: 1.3 } },
+      { level: 3, summary: '+3 bolts', mods: { count: 3 } },
+      { level: 4, summary: '-20% CD', mods: { cd: 0.8 } },
+      { level: 5, summary: '3s storm (prefers elite/boss).', msUnlock: ['lightning_storm:3'] }
     ]
   },
   {
@@ -224,7 +224,7 @@ G.MasterSorcererSpells = [
     element: 'death',
     kind: 'death_echo',
     type: 'death',
-    desc: 'Área 5×5 sqm de muerte sobre la criatura más cercana (sprite Tibia).',
+    desc: '5×5 death field on the nearest creature.',
     cd: 2.35,
     dmg: 120,
     radius: 50,
@@ -233,11 +233,11 @@ G.MasterSorcererSpells = [
     requirements: { minPlayerLevel: 10, minSpellsOfElement: { death: 2 } },
     msTarget: 'nearest',
     levels: [
-      { level: 1, summary: '5×5 sqm centrado en el objetivo más cercano.' },
-      { level: 2, summary: '+30% daño', mods: { dmg: 1.3 } },
-      { level: 3, summary: 'Aplica Curse 3 s', msUnlock: ['curse:3'] },
-      { level: 4, summary: '-20% recarga', mods: { cd: 0.8 } },
-      { level: 5, summary: 'Segundo eco 1 s después (50% daño).', msUnlock: ['death_echo_repeat:1'] }
+      { level: 1, summary: '5×5 field on nearest target.' },
+      { level: 2, summary: '+30% damage', mods: { dmg: 1.3 } },
+      { level: 3, summary: 'Curse 3s', msUnlock: ['curse:3'] },
+      { level: 4, summary: '-20% CD', mods: { cd: 0.8 } },
+      { level: 5, summary: 'Second echo after 1s (50% dmg).', msUnlock: ['death_echo_repeat:1'] }
     ]
   }
 ];

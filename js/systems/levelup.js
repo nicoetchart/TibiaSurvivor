@@ -23,54 +23,11 @@ G.LevelUp = (() => {
     return (G.DamageTypes && G.DamageTypes.NAME[el]) || G.U.TYPE_NAME[el] || el;
   }
 
-  /** Línea numérica actual → siguiente (hechizos MS). */
-  function msSpellStatLine(id, fromLvl, toLvl) {
-    if (!G.Abilities || toLvl > 5 || fromLvl >= toLvl) return '';
-    const a = G.Abilities.instance(id, fromLvl);
-    const b = G.Abilities.instance(id, toLvl);
-    if (!a || !b) return '';
-    const parts = [];
-    if (a.dmg != null && b.dmg != null && Math.abs(a.dmg - b.dmg) > 0.01) {
-      parts.push('Daño ' + Math.round(a.dmg * 10) / 10 + ' → ' + Math.round(b.dmg * 10) / 10);
-    }
-    if (a.cd != null && b.cd != null && Math.abs(a.cd - b.cd) > 0.005) {
-      parts.push('CD ' + a.cd.toFixed(2) + 's → ' + b.cd.toFixed(2) + 's');
-    }
-    if ((a.count | 0) !== (b.count | 0)) parts.push('Impactos ' + (a.count | 0) + ' → ' + (b.count | 0));
-    if (a.radius != null && b.radius != null && Math.abs(a.radius - b.radius) > 0.5) {
-      parts.push('Radio ' + Math.round(a.radius) + ' → ' + Math.round(b.radius));
-    }
-    return parts.join(' · ');
-  }
-
   function attachMsCardMeta(c, def, pl, mode) {
     if (!def) return;
-    const el = msElementName(def);
-    const inc = def.incantation ? '«' + def.incantation + '»' : '';
-    c.msSub = inc ? el + ' · ' + inc : el;
-    if (mode === 'newpass') {
-      c.msCompare = 'Pasiva · Nv. 1 (nuevo)';
-      c.msDetail = def.desc;
-      return;
-    }
-    if (mode === 'uppass') {
-      const p = pl.passiveInst[def.id];
-      if (!p) return;
-      c.msCompare = 'Pasiva · Nv. ' + p.lvl + ' → ' + (p.lvl + 1);
-      c.msDetail = G.Abilities.nextUpText(p) || def.desc;
-      return;
-    }
-    if (mode === 'new') {
-      c.msCompare = 'Hechizo · Nv. 1 → 2';
-      c.msDetail = msSpellStatLine(def.id, 1, 2) || def.desc;
-      return;
-    }
-    if (mode === 'up') {
-      const m = pl.moves.find(x => x.id === def.id);
-      if (!m) return;
-      c.msCompare = 'Hechizo · Nv. ' + m.lvl + ' → ' + (m.lvl + 1);
-      c.msDetail = msSpellStatLine(def.id, m.lvl, m.lvl + 1) || c.desc;
-    }
+    const base = c.title || def.name;
+    c.title = def.incantation ? base + ' · ' + def.incantation : base;
+    c.msSub = c.msCompare = c.msDetail = '';
   }
 
   const STATS = [
@@ -144,7 +101,7 @@ G.LevelUp = (() => {
         const pcard = {
           w: d.weight || 6, type: 'new', key: 'newpass:' + id,
           icon: 'move:' + id, color: typeColor(d.type),
-          tag: 'Pasiva',
+          tag: 'Passive',
           title: d.name, desc: d.desc,
           apply: p => p.addPassive(id)
         };
@@ -183,7 +140,7 @@ G.LevelUp = (() => {
       const ucard = {
         w: ms && ab ? msCardWeight(ab, pl, 'up') : 8, type: 'up', key: 'up:' + m.id,
         icon: 'move:' + m.id, color: typeColor(m.type),
-        tag: 'Nv.' + m.lvl + ' > ' + (m.lvl + 1),
+        tag: 'Lv.' + m.lvl + ' → ' + (m.lvl + 1),
         title: m.name, desc: txt,
         apply: () => G.Moves.levelUp(m)
       };
@@ -201,7 +158,7 @@ G.LevelUp = (() => {
         const upp = {
           w: msCardWeight(p.def, pl, 'up'), type: 'up', key: 'uppass:' + id,
           icon: 'move:' + id, color: typeColor(p.type),
-          tag: 'Pasiva Nv.' + p.lvl + ' > ' + (p.lvl + 1),
+          tag: 'Passive Lv.' + p.lvl + ' → ' + (p.lvl + 1),
           title: p.name, desc: txt,
           apply: () => pl.levelPassive(id)
         };

@@ -151,7 +151,7 @@ G.Spawner = (() => {
     if (G.Events.golden) e.makeGolden();
     G.EnemyMgr.add(e);
     if (shiny) {
-      say('¡Un ' + e.name + ' shiny anda cerca!', 3.4);
+      say('A shiny ' + e.name + ' is nearby!', 3.4);
       G.Audio.sfx('shiny');
     }
     return e;
@@ -163,8 +163,8 @@ G.Spawner = (() => {
     if (rollShiny(b.dex)) e.makeShiny();
     G.EnemyMgr.add(e);
     const intro = G.Content.mode === 'neutral'
-      ? '¡' + e.name + ' bloquea el umbral!'
-      : '¡' + e.name + (e.shiny ? ' shiny' : '') + ' salvaje apareció!';
+      ? e.name + ' blocks the threshold!'
+      : 'A wild ' + e.name + (e.shiny ? ' shiny' : '') + ' appeared!';
     say(intro, 3.4);
     G.Camera.kick(1.1);
     G.Audio.sfx('boss');
@@ -186,7 +186,7 @@ G.Spawner = (() => {
     e.dmg *= 1.2;
     e.xp = Math.round(e.xp * 1.5);
     G.EnemyMgr.add(e);
-    say('¡Centinela de élite! Al derrotarlo ganas un vínculo entre hechizos.', 3.4);
+    say('Elite sentinel! Defeat it to earn a spell bond.', 3.4);
     G.Camera.kick(0.65);
     G.Audio.sfx('boss');
     G.FX.ring(e.x, e.y, e.r, e.r * 4, '#b48aff', 0.55, 4);
@@ -220,7 +220,7 @@ G.Spawner = (() => {
     if (b && t >= b.at) {
       spawnBoss(anchor(), t, b);
       bossIdx++;
-      if (G.Content.mode === 'neutral') say('Derrotarlo cierra la cacería.', 2.8);
+      if (G.Content.mode === 'neutral') say('Defeat it to end the hunt.', 2.8);
     }
 
     // Combate de jefe: las oleadas bajan al 25% y no hay mareas, para que el
@@ -247,7 +247,7 @@ G.Spawner = (() => {
       if (G.Content.mode === 'neutral' && t < 200) surgeN *= 0.42 + 0.58 * (t / 200);
       const n = Math.min(scfg.cap - G.EnemyMgr.count, Math.round(surgeN));
       for (let i = 0; i < n; i++) spawnOne(target, t, base + G.U.rand(-0.55, 0.55));
-      say(G.Content.mode === 'neutral' ? '¡Oleada en la caverna!' : '¡Marea de Pokémon!', 2.2);
+      say(G.Content.mode === 'neutral' ? 'Cave surge!' : 'Pokémon swarm!', 2.2);
       G.Audio.sfx('surge');
     }
   }

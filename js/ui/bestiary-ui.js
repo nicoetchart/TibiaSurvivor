@@ -8,25 +8,25 @@ G.BestiaryUI = (() => {
   let tab = 'catalog';
 
   const STATE_LABEL = {
-    unknown: 'Desconocida',
-    discovered: 'Descubierta',
-    stage_1: 'Etapa I',
-    stage_2: 'Etapa II',
-    completed: 'Dominio'
+    unknown: 'Unknown',
+    discovered: 'Discovered',
+    stage_1: 'Stage I',
+    stage_2: 'Stage II',
+    completed: 'Complete'
   };
 
   const DIFF_LABEL = {
-    harmless: 'Inofensiva',
+    harmless: 'Harmless',
     trivial: 'Trivial',
-    easy: 'Fácil',
-    medium: 'Media',
-    hard: 'Difícil',
-    challenging: 'Desafiante',
-    elite: 'Élite',
-    boss: 'Jefe'
+    easy: 'Easy',
+    medium: 'Medium',
+    hard: 'Hard',
+    challenging: 'Challenging',
+    elite: 'Elite',
+    boss: 'Boss'
   };
 
-  const TYPE_LABEL = { normal: 'Normal', elite: 'Élite', boss: 'Jefe' };
+  const TYPE_LABEL = { normal: 'Normal', elite: 'Elite', boss: 'Boss' };
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
@@ -91,9 +91,9 @@ G.BestiaryUI = (() => {
   function renderSummary() {
     const s = summaryStats();
     $('bestiary-summary').innerHTML =
-      `<span>Descubiertas <b>${s.discovered}</b> / ${s.total}</span>` +
-      `<span>Completadas <b>${s.completed}</b></span>` +
-      `<span>Puntos <b class="gold">${s.points.toLocaleString('es')}</b></span>`;
+      `<span>Discovered <b>${s.discovered}</b> / ${s.total}</span>` +
+      `<span>Completed <b>${s.completed}</b></span>` +
+      `<span>Points <b class="gold">${s.points.toLocaleString('en-US')}</b></span>`;
   }
 
   function renderFilters() {
@@ -112,17 +112,17 @@ G.BestiaryUI = (() => {
       };
       fb.appendChild(c);
     };
-    mk('Estado: todos', 'state', 'all');
-    mk('Desconocidas', 'state', 'unknown');
-    mk('Descubiertas', 'state', 'discovered');
-    mk('En progreso', 'state', 'progress');
-    mk('Completas', 'state', 'completed');
-    mk('Dificultad: todas', 'diff', 'all');
+    mk('Status: all', 'state', 'all');
+    mk('Unknown', 'state', 'unknown');
+    mk('Discovered', 'state', 'discovered');
+    mk('In progress', 'state', 'progress');
+    mk('Complete', 'state', 'completed');
+    mk('Difficulty: all', 'diff', 'all');
     for (const d of G.Bestiary.DIFFICULTIES) mk(DIFF_LABEL[d] || d, 'diff', d);
-    mk('Tipo: todos', 'type', 'all');
+    mk('Type: all', 'type', 'all');
     mk('Normal', 'type', 'normal');
-    mk('Élite', 'type', 'elite');
-    mk('Jefe', 'type', 'boss');
+    mk('Elite', 'type', 'elite');
+    mk('Boss', 'type', 'boss');
   }
 
   function renderGrid() {
@@ -140,8 +140,8 @@ G.BestiaryUI = (() => {
       const cell = document.createElement('div');
       cell.className = 'cell' + (known ? '' : ' locked') + (row.creatureId === selId ? ' on' : '');
       cell.tabIndex = 0;
-      if (row.entryType === 'boss') cell.insertAdjacentHTML('beforeend', `<span class="badge-r" title="Jefe">${G.Icons.html('crown', 12)}</span>`);
-      else if (row.entryType === 'elite') cell.insertAdjacentHTML('beforeend', `<span class="badge-r" title="Élite">★</span>`);
+      if (row.entryType === 'boss') cell.insertAdjacentHTML('beforeend', `<span class="badge-r" title="Boss">${G.Icons.html('crown', 12)}</span>`);
+      else if (row.entryType === 'elite') cell.insertAdjacentHTML('beforeend', `<span class="badge-r" title="Elite">★</span>`);
       if (legacy != null && G.GeoSprites) {
         cell.appendChild(G.UI.spriteCanvas(legacy, 92, 80, { scale: 2, silhouette: !known, shadow: known }));
       } else {
@@ -156,7 +156,7 @@ G.BestiaryUI = (() => {
       cell.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(row.creatureId); } };
       grid.appendChild(cell);
     }
-    if (!rows.length) grid.innerHTML = '<p class="sub" style="grid-column:1/-1">Ninguna entrada con este filtro.</p>';
+    if (!rows.length) grid.innerHTML = '<p class="sub" style="grid-column:1/-1">No entries match this filter.</p>';
   }
 
   function select(creatureId) {
@@ -180,7 +180,7 @@ G.BestiaryUI = (() => {
     const box = $('bestiary-detail');
     const catalog = G.Bestiary.getCatalogEntry(creatureId);
     if (!catalog) {
-      box.innerHTML = '<p class="sub">Selecciona una entrada.</p>';
+      box.innerHTML = '<p class="sub">Select an entry.</p>';
       return;
     }
     const prog = progressRow(creatureId);
@@ -200,11 +200,11 @@ G.BestiaryUI = (() => {
       head.className = 'center';
       head.innerHTML = `<h3>${esc(catalog.displayName || creatureId)}</h3>` +
         `<div class="sub">${TYPE_LABEL[catalog.entryType] || catalog.entryType} · ${DIFF_LABEL[catalog.difficulty] || catalog.difficulty}</div>` +
-        `<div class="sub">${STATE_LABEL[st]} · ${prog.kills} muertes` +
-        (catalog.thresholds ? ` · objetivo ${catalog.thresholds.final}` : '') + '</div>';
+        `<div class="sub">${STATE_LABEL[st]} · ${prog.kills} kills` +
+        (catalog.thresholds ? ` · goal ${catalog.thresholds.final}` : '') + '</div>';
       box.appendChild(head);
     } else {
-      box.innerHTML = '<div class="center"><h3>???</h3><p class="sub">Criatura aún no identificada.</p></div>';
+      box.innerHTML = '<div class="center"><h3>???</h3><p class="sub">Creature not identified yet.</p></div>';
       return;
     }
 
@@ -220,53 +220,53 @@ G.BestiaryUI = (() => {
     const s1 = [];
     if (stageUnlocked(st, 'stage_1')) {
       if (canReveal('stage1', 'description', catalog) && catalog.description) {
-        s1.push(['Descripción', esc(catalog.description)]);
+        s1.push(['Description', esc(catalog.description)]);
       }
-      if (canReveal('stage1', 'hp', catalog) && cr) s1.push(['Vida base', cr.hp]);
-      if (canReveal('stage1', 'xp', catalog)) s1.push(['Experiencia', 'Según tier en run']);
-      if (canReveal('stage1', 'behavior', catalog) && cr && cr.behavior) s1.push(['Comportamiento', cr.behavior]);
+      if (canReveal('stage1', 'hp', catalog) && cr) s1.push(['Base HP', cr.hp]);
+      if (canReveal('stage1', 'xp', catalog)) s1.push(['Experience', 'Based on tier in run']);
+      if (canReveal('stage1', 'behavior', catalog) && cr && cr.behavior) s1.push(['Behavior', cr.behavior]);
     }
-    addSection('Identificación', s1);
+    addSection('Identification', s1);
 
     const s2 = [];
     if (stageUnlocked(st, 'stage_2')) {
-      if (canReveal('stage2', 'damage', catalog) && cr) s2.push(['Amenaza', '×' + (cr.attack || 1).toFixed(2)]);
-      if (canReveal('stage2', 'speed', catalog) && cr) s2.push(['Velocidad', cr.speed]);
-      if (canReveal('stage2', 'abilities', catalog) && cr && cr.behavior) s2.push(['Patrón', cr.behavior]);
+      if (canReveal('stage2', 'damage', catalog) && cr) s2.push(['Threat', '×' + (cr.attack || 1).toFixed(2)]);
+      if (canReveal('stage2', 'speed', catalog) && cr) s2.push(['Speed', cr.speed]);
+      if (canReveal('stage2', 'abilities', catalog) && cr && cr.behavior) s2.push(['Pattern', cr.behavior]);
       if (canReveal('stage2', 'resistances', catalog)) {
         const DT = G.DamageTypes;
         const dmg = cr && cr.damageTypes && cr.damageTypes.length
           ? (DT && DT.names ? DT.names(cr.damageTypes) : cr.damageTypes.join(', ')) : null;
-        if (dmg) s2.push(['Daño usado', dmg]);
+        if (dmg) s2.push(['Damage used', dmg]);
         const fmt = (label, list) => {
           if (!list || !list.length) return null;
           return [label, DT && DT.names ? DT.names(list) : list.join(', ')];
         };
-        const w = fmt('Debilidades', cr && cr.weaknesses);
-        const r = fmt('Fortalezas', cr && cr.resistances);
-        const i = fmt('Inmunidades', cr && cr.immunities);
+        const w = fmt('Weaknesses', cr && cr.weaknesses);
+        const r = fmt('Resistances', cr && cr.resistances);
+        const i = fmt('Immunities', cr && cr.immunities);
         if (w) s2.push(w);
         if (r) s2.push(r);
         if (i) s2.push(i);
       }
     }
-    addSection('Análisis', s2);
+    addSection('Analysis', s2);
 
     const s3 = [];
     if (stageUnlocked(st, 'completed')) {
-      if (canReveal('stage3', 'drops', catalog)) s3.push(['Botín en run', 'Experiencia (orbe al morir)']);
+      if (canReveal('stage3', 'drops', catalog)) s3.push(['Run loot', 'Experience (orb on death)']);
       if (canReveal('stage3', 'tips', catalog) && catalog.tipKeys && catalog.tipKeys.length) {
         const tipLines = catalog.tipKeys.map(k =>
           (G.BestiaryTips && G.BestiaryTips.text(k)) || null).filter(Boolean);
-        if (tipLines.length) s3.push(['Consejo', tipLines.map(t => esc(t)).join(' ')]);
+        if (tipLines.length) s3.push(['Tip', tipLines.map(t => esc(t)).join(' ')]);
       }
       if (canReveal('stage3', 'statistics', catalog)) {
-        s3.push(['Muertes totales', prog.kills]);
-        if (prog.firstSeenAt) s3.push(['Primera baja', new Date(prog.firstSeenAt).toLocaleDateString('es')]);
+        s3.push(['Total kills', prog.kills]);
+        if (prog.firstSeenAt) s3.push(['First kill', new Date(prog.firstSeenAt).toLocaleDateString('en-US')]);
       }
-      if (prog.rewarded) s3.push(['Puntos obtenidos', catalog.rewardPoints]);
+      if (prog.rewarded) s3.push(['Points earned', catalog.rewardPoints]);
     }
-    addSection('Dominio', s3);
+    addSection('Mastery', s3);
   }
 
   function setTab(next) {
@@ -289,10 +289,10 @@ G.BestiaryUI = (() => {
   }
 
   function purchaseFail(reason) {
-    if (reason === 'funds') G.UI.toast('No tienes puntos suficientes');
-    else if (reason === 'max' || reason === 'owned') G.UI.toast('Ya está al máximo o desbloqueado');
-    else if (reason === 'persist') G.UI.toast('No se pudo guardar la compra');
-    else G.UI.toast('Compra no disponible');
+    if (reason === 'funds') G.UI.toast('Not enough points');
+    else if (reason === 'max' || reason === 'owned') G.UI.toast('Already maxed or unlocked');
+    else if (reason === 'persist') G.UI.toast('Could not save purchase');
+    else G.UI.toast('Purchase unavailable');
   }
 
   function renderShop() {
@@ -303,7 +303,7 @@ G.BestiaryUI = (() => {
     const hdr = document.createElement('p');
     hdr.className = 'sub';
     hdr.style.margin = '0 0 12px';
-    hdr.innerHTML = 'Saldo: <b class="gold">' + pts.toLocaleString('es') + '</b> puntos';
+    hdr.innerHTML = 'Balance: <b class="gold">' + pts.toLocaleString('en-US') + '</b> points';
     box.appendChild(hdr);
 
     const mkRow = (icon, title, sub, cost, maxed, onBuy) => {
@@ -313,7 +313,7 @@ G.BestiaryUI = (() => {
         `<div class="ic">${G.Icons.html(icon, 32)}</div>` +
         `<div><b>${esc(title)}</b> <span style="color:var(--muted);font-size:15px">${esc(sub)}</span></div>` +
         `<div class="upg-btns"><button type="button" class="btn small ${maxed ? '' : 'gold'}" data-buy ${maxed ? 'disabled' : ''}>` +
-        (maxed ? 'Completado' : '<span class="gold">' + cost + ' pts</span>') + '</button></div>';
+        (maxed ? 'Complete' : '<span class="gold">' + cost + ' pts</span>') + '</button></div>';
       const btn = el.querySelector('[data-buy]');
       if (!maxed && btn) btn.onclick = onBuy;
       box.appendChild(el);
@@ -331,17 +331,17 @@ G.BestiaryUI = (() => {
         `<div><b>${esc(u.name)}</b> <span style="color:var(--muted);font-size:15px">${esc(u.unit)}</span>` +
         `<div class="pips">${pips}</div></div>` +
         `<div class="upg-btns"><button type="button" class="btn small ${maxed ? '' : 'gold'}" data-buy ${maxed || pts < cost ? 'disabled' : ''}>` +
-        (maxed ? 'Máx.' : cost + ' pts') + '</button></div>';
+        (maxed ? 'Max' : cost + ' pts') + '</button></div>';
       const btn = el.querySelector('[data-buy]');
       if (btn && !maxed) {
         btn.onclick = () => {
           const nowLv = G.Bestiary.getUpgradeLevel(u.id);
           const price = G.Bestiary.upgradeCost(u, nowLv);
-          if (!confirm('¿Gastar ' + price + ' puntos en «' + u.name + '» (nivel ' + (nowLv + 1) + ')?')) return;
+          if (!confirm('Spend ' + price + ' points on «' + u.name + '» (level ' + (nowLv + 1) + ')?')) return;
           const res = G.Bestiary.purchaseUpgrade(u.id);
           if (res.ok) {
             G.Audio.sfx('buy');
-            G.UI.toast(u.name + ' · nivel ' + res.level);
+            G.UI.toast(u.name + ' · level ' + res.level);
             renderSummary();
             renderShop();
           } else purchaseFail(res.reason);
@@ -352,7 +352,7 @@ G.BestiaryUI = (() => {
 
     if (G.Bestiary.CONTENT_UNLOCKS && G.Bestiary.CONTENT_UNLOCKS.length) {
       const sep = document.createElement('h4');
-      sep.textContent = 'Desbloqueos';
+      sep.textContent = 'Unlocks';
       sep.style.margin = '16px 0 8px';
       box.appendChild(sep);
     }
@@ -360,11 +360,11 @@ G.BestiaryUI = (() => {
       const owned = G.Bestiary.hasUnlock(u.id);
       mkRow(u.icon, u.name, u.description, u.cost, owned, () => {
         if (G.Bestiary.hasUnlock(u.id)) return;
-        if (!confirm('¿Gastar ' + u.cost + ' puntos en «' + u.name + '»?')) return;
+        if (!confirm('Spend ' + u.cost + ' points on «' + u.name + '»?')) return;
         const res = G.Bestiary.purchaseUnlock(u.id);
         if (res.ok) {
           G.Audio.sfx('buy');
-          G.UI.toast(u.name + ' desbloqueado');
+          G.UI.toast(u.name + ' unlocked');
           renderSummary();
           renderShop();
         } else purchaseFail(res.reason);
@@ -381,8 +381,8 @@ G.BestiaryUI = (() => {
     const hdr = document.createElement('p');
     hdr.className = 'sub';
     hdr.style.margin = '0 0 12px';
-    hdr.innerHTML = 'Saldo: <b class="gold">' + pts.toLocaleString('es') + '</b> puntos · Equipado: <b>' +
-      (equipped.size ? [...equipped].map(id => (G.Bestiary.charmById(id) || {}).name || id).join(', ') : 'ninguno') + '</b>';
+    hdr.innerHTML = 'Balance: <b class="gold">' + pts.toLocaleString('en-US') + '</b> points · Equipped: <b>' +
+      (equipped.size ? [...equipped].map(id => (G.Bestiary.charmById(id) || {}).name || id).join(', ') : 'none') + '</b>';
     box.appendChild(hdr);
 
     for (const c of G.Bestiary.charmCatalog()) {
@@ -405,11 +405,11 @@ G.BestiaryUI = (() => {
         buy.textContent = c.cost + ' pts';
         buy.disabled = pts < c.cost;
         buy.onclick = () => {
-          if (!confirm('¿Desbloquear «' + (c.name || c.id) + '» por ' + c.cost + ' puntos?')) return;
+          if (!confirm('Unlock «' + (c.name || c.id) + '» for ' + c.cost + ' points?')) return;
           const res = G.Bestiary.unlockCharm(c.id);
           if (res.ok) {
             G.Audio.sfx('buy');
-            G.UI.toast((c.name || c.id) + ' desbloqueado');
+            G.UI.toast((c.name || c.id) + ' unlocked');
             renderSummary();
             renderCharms();
           } else purchaseFail(res.reason === 'owned' ? 'owned' : res.reason);
@@ -419,10 +419,10 @@ G.BestiaryUI = (() => {
         const off = document.createElement('button');
         off.type = 'button';
         off.className = 'btn small ghost';
-        off.textContent = 'Quitar';
+        off.textContent = 'Remove';
         off.onclick = () => {
           G.Bestiary.unequipCharm(c.id);
-          G.UI.toast('Amuleto retirado');
+          G.UI.toast('Charm removed');
           renderCharms();
         };
         btns.appendChild(off);
@@ -430,12 +430,12 @@ G.BestiaryUI = (() => {
         const eq = document.createElement('button');
         eq.type = 'button';
         eq.className = 'btn small gold';
-        eq.textContent = 'Equipar';
+        eq.textContent = 'Equip';
         eq.onclick = () => {
           const res = G.Bestiary.equipCharm(c.id, 0);
           if (res.ok) {
             G.Audio.sfx('select');
-            G.UI.toast((c.name || c.id) + ' equipado');
+            G.UI.toast((c.name || c.id) + ' equipped');
             renderCharms();
           }
         };
@@ -460,7 +460,7 @@ G.BestiaryUI = (() => {
     setTab(tab);
     if (tab === 'catalog') {
       if (selId) renderDetail(selId);
-      else $('bestiary-detail').innerHTML = '<p class="sub">Selecciona una entrada del catálogo.</p>';
+      else $('bestiary-detail').innerHTML = '<p class="sub">Select a catalog entry.</p>';
     }
   }
 

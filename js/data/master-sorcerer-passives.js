@@ -10,17 +10,17 @@ G.MasterSorcererPassives = [
     element: 'energy',
     kind: 'passive',
     type: 'energy',
-    desc: '+8% daño fire, energy y death por nivel (máx. +40% cada uno).',
+    desc: '+8% fire, energy and death damage per level (max +40% each).',
     tags: ['passive', 'offensive'],
     weight: 8,
     passiveKey: 'master_of_elements',
     effectPerLevel: { fireDamageMul: 0.08, energyDamageMul: 0.08, deathDamageMul: 0.08 },
     levels: [
-      { level: 1, summary: '+8% daño en los tres elementos.' },
-      { level: 2, summary: '+8% por elemento (total +16%).' },
-      { level: 3, summary: '+8% por elemento (total +24%).' },
-      { level: 4, summary: '+8% por elemento (total +32%).' },
-      { level: 5, summary: '+8% por elemento (total +40%).' }
+      { level: 1, summary: '+8% damage in all three elements.' },
+      { level: 2, summary: '+8% per element (total +16%).' },
+      { level: 3, summary: '+8% per element (total +24%).' },
+      { level: 4, summary: '+8% per element (total +32%).' },
+      { level: 5, summary: '+8% per element (total +40%).' }
     ]
   },
   {
@@ -31,7 +31,7 @@ G.MasterSorcererPassives = [
     element: 'energy',
     kind: 'passive',
     type: 'energy',
-    desc: '+4% velocidad de movimiento por nivel (máx. +20%).',
+    desc: '+4% move speed per level (max +20%).',
     tags: ['passive', 'utility'],
     weight: 6,
     passiveKey: 'strong_haste',
@@ -52,7 +52,7 @@ G.MasterSorcererPassives = [
     element: 'energy',
     kind: 'passive',
     type: 'energy',
-    desc: '+5% attack speed por nivel (máx. +25%).',
+    desc: '+5% attack speed per level (max +25%).',
     tags: ['passive', 'utility'],
     weight: 6,
     passiveKey: 'avatar_of_storm',
@@ -73,17 +73,17 @@ G.MasterSorcererPassives = [
     element: 'holy',
     kind: 'passive',
     type: 'holy',
-    desc: '+8% vida máx. y +0,2 HP/s por nivel; al subir, cura al máximo.',
+    desc: '+8% max HP and +0.2 HP/s per level; full heal on rank-up.',
     tags: ['passive', 'defensive'],
     weight: 6,
     passiveKey: 'ultimate_healing',
     effectPerLevel: { maxHealthMul: 0.08, regenFlat: 0.2 },
     levels: [
-      { level: 1, summary: '+8% vida máx.; +0,2 HP/s; curación completa.' },
-      { level: 2, summary: '+8% HP y +0,2 HP/s por nivel; curación completa al subir.' },
-      { level: 3, summary: 'Total +24% vida y +0,6 HP/s; curación completa al subir.' },
-      { level: 4, summary: 'Total +32% vida y +0,8 HP/s; curación completa al subir.' },
-      { level: 5, summary: 'Total +40% vida y +1 HP/s; curación completa al subir.' }
+      { level: 1, summary: '+8% max HP; +0.2 HP/s; full heal.' },
+      { level: 2, summary: '+8% HP, +0.2 HP/s; full heal on rank-up.' },
+      { level: 3, summary: 'Total +24% HP, +0.6 HP/s; full heal on rank-up.' },
+      { level: 4, summary: 'Total +32% HP, +0.8 HP/s; full heal on rank-up.' },
+      { level: 5, summary: 'Total +40% HP, +1 HP/s; full heal on rank-up.' }
     ]
   },
   {
@@ -94,7 +94,7 @@ G.MasterSorcererPassives = [
     element: 'death',
     kind: 'passive',
     type: 'death',
-    desc: '+3% penetración elemental por nivel (máx. +15%).',
+    desc: '+3% elemental penetration per level (max +15%).',
     tags: ['passive', 'offensive'],
     weight: 6,
     passiveKey: 'aura_of_exposed_weakness',

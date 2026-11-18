@@ -227,9 +227,9 @@ G.BestiaryRunUI = (() => {
       return `<div class="bestiary-over-row"><b>${r.name}</b><span>${parts.join(' · ') || '—'}</span></div>`;
     }).join('');
     const pts = summary.pointsEarned > 0
-      ? `<div class="bestiary-over-pts">Puntos del bestiario: <b class="gold">+${summary.pointsEarned.toLocaleString('es')}</b></div>`
+      ? `<div class="bestiary-over-pts">Bestiary points: <b class="gold">+${summary.pointsEarned.toLocaleString('en-US')}</b></div>`
       : '';
-    return `<div style="grid-column:1/-1" class="bestiary-over"><span>Bestiario</span>${rows}${pts}</div>`;
+    return `<div style="grid-column:1/-1" class="bestiary-over"><span>Bestiary</span>${rows}${pts}</div>`;
   }
 
   wire();

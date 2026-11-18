@@ -17,10 +17,10 @@ G.Interact = (() => {
   const CHEST_TIME = 3.5;
   const POWER_TIME = 25;
   const POWERS = [
-    { id: 'dmg', name: 'Furia', desc: 'daño ×2', color: '#ff5f6d', on: p => { p.atkMul *= 2; }, off: p => { p.atkMul /= 2; } },
-    { id: 'spd', name: 'Rayo', desc: '+45% velocidad', color: '#5fd4ff', on: p => { p.spdMul *= 1.45; }, off: p => { p.spdMul /= 1.45; } },
-    { id: 'mag', name: 'Imán', desc: 'atraes todo desde lejos', color: '#ff8ad8', on: p => { p.magnet *= 4; }, off: p => { p.magnet /= 4; } },
-    { id: 'cd', name: 'Prisa', desc: '-40% recarga', color: '#ffd23f', on: p => { p.cdMul *= 0.6; }, off: p => { p.cdMul /= 0.6; } }
+    { id: 'dmg', name: 'Fury', desc: 'damage ×2', color: '#ff5f6d', on: p => { p.atkMul *= 2; }, off: p => { p.atkMul /= 2; } },
+    { id: 'spd', name: 'Bolt', desc: '+45% speed', color: '#5fd4ff', on: p => { p.spdMul *= 1.45; }, off: p => { p.spdMul /= 1.45; } },
+    { id: 'mag', name: 'Magnet', desc: 'pull everything from afar', color: '#ff8ad8', on: p => { p.magnet *= 4; }, off: p => { p.magnet /= 4; } },
+    { id: 'cd', name: 'Haste', desc: '-40% cooldown', color: '#ffd23f', on: p => { p.cdMul *= 0.6; }, off: p => { p.cdMul /= 0.6; } }
   ];
   const TRAP_R = 74;
   const POISON_TRAP_PLAYER_FRAC = 0.35;
@@ -28,7 +28,7 @@ G.Interact = (() => {
   const STICKY_TRAP_PLAYER_SEC = 5;
   const STICKY_TRAP_PLAYER_SPD_MUL = 0.25;
   const STICKY_TRAP_ENEMY_ELECTRIFIED_SEC = 5;
-  const STICKY_TRAP_PLAYER_MSG = '¡Paralized!';
+  const STICKY_TRAP_PLAYER_MSG = 'Paralyzed!';
   const STICKY_TRAP_PLAYER_MSG_COLOR = '#b48aff';
   const authority = () => true;
   let healShown = 0, healAcc = 0;
@@ -96,7 +96,7 @@ G.Interact = (() => {
       healAcc = 0;
       G.Audio.sfx('xp');
     }
-    if (p.charge <= 0.02) G.Spawner.say('El manantial se ha secado (se recarga solo)', 2.2, true);
+    if (p.charge <= 0.02) G.Spawner.say('The spring ran dry (it refills on its own)', 2.2, true);
   }
 
   function usePower(pl, p) {
@@ -106,7 +106,7 @@ G.Interact = (() => {
     G.FX.ring(p.x, p.y - 20, 8, 90, pw.color, 0.6, 5);
     G.FX.burst(pl.x, pl.y - pl.bodyH * 0.5, pw.color, 24, 200);
     G.Audio.sfx('legend');
-    G.Spawner.say('¡Poder ' + pw.name + '! ' + pw.desc + ' durante ' + POWER_TIME + ' s', 3, true);
+    G.Spawner.say(pw.name + ' power! ' + pw.desc + ' for ' + POWER_TIME + ' s', 3, true);
   }
 
   /**
