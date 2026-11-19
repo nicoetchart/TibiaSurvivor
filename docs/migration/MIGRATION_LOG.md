@@ -807,6 +807,33 @@ PSR-5 — completed (UI neutral; legacy HTML/boot retirado)
 
 ---
 
+## 2026-11-18 — PSR-6
+
+### Fase
+PSR-6 — completed (export/SEO Tibia; sprites legacy gated; dominio centralizado)
+
+### Cambios
+
+| Archivo | Cambio |
+|---------|--------|
+| `tools/site-config.json` | URL canónica (`siteUrl`); override `TIBIASURVIVOR_SITE_URL` |
+| `tools/export_data.js` | Boot Tibia: sin `pokedex`, `moves`, `types`, `sprites-meta`; hechizos y `damageTypes` |
+| `tools/make_seo_pages.py` | Lee `site-config`; sin `sprites-meta` ni sprites Pokémon en HTML |
+| `tools/validate-psr6.js` | Comprueba export, dev.html y gating neutral |
+| `js/core/sprites.js` | `hasShiny` false en modo neutral |
+
+### Dominio (DEC-035)
+- Canónico: `https://www.tibiasurvivor.com/` · `CNAME` → `www.tibiasurvivor.com`
+
+### No hecho (PSR-7)
+- Borrar `assets/pokemon/` del repo (DEC-030; miles de PNG legacy).
+
+### Próximo paso
+
+**PSR-7** — purge `ps.*`, dominio y certificación final.
+
+---
+
 <!-- Plantilla para entradas futuras
 
 ## YYYY-MM-DD — FASE N

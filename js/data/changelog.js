@@ -2,6 +2,12 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-18', title: ['SEO y assets', 'SEO & assets'], chg: [
+    ['PSR-6: export_data y páginas SEO sin pokedex/sprites-meta; dominio canónico en tools/site-config.json.',
+     'PSR-6: export_data and SEO pages without pokédex/sprites-meta; canonical URL in tools/site-config.json.'],
+    ['Sprites legacy (assets/pokemon, shiny) desactivados en modo neutral.',
+     'Legacy sprites (assets/pokemon, shiny) disabled in neutral mode.'],
+  ] },
   { d: '2026-11-18', title: ['Misiones', 'Missions'], chg: [
     ['PSR-5: sin Collection/Upgrades/test en boot; perfil con favoritos del Bestiary y Cyclopedia.',
      'PSR-5: no Collection/Upgrades/test in boot; profile favorites from Bestiary and Cyclopedia.'],

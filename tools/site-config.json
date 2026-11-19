@@ -1,0 +1,4 @@
+{
+  "siteUrl": "https://www.tibiasurvivor.com/",
+  "_comment": "Canonical base URL for sitemap, Open Graph and SEO pages (trailing slash). Override: env TIBIASURVIVOR_SITE_URL. Must match CNAME (GitHub Pages)."
+}

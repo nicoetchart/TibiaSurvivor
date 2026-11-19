@@ -13,7 +13,7 @@ G.Funding = {
   sponsors: 'nicoetchart',
   costs: [
     ['Hosting (domain & static site)', 'Low for MVP beta'],
-    ['Domain pokesurvivor.com', '≈12 €/year']
+    ['Domain www.tibiasurvivor.com', '≈12 €/year']
   ],
   get url() { return this.kofi ? 'https://ko-fi.com/' + this.kofi : ''; }
 };

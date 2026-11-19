@@ -40,8 +40,12 @@ G.Sprites = (() => {
     return c;
   }
 
-  /** ¿Tiene versión shiny? (assets/pokemon/{dex}/s/) */
-  function hasShiny(dex) { const m = meta(dex); return !!(m && m.sh); }
+  /** ¿Tiene versión shiny? (legacy PNG; desactivado en modo neutral / Tibia MVP). */
+  function hasShiny(dex) {
+    if (G.Content && G.Content.mode === 'neutral') return false;
+    const m = meta(dex);
+    return !!(m && m.sh);
+  }
 
   /** Animaciones disponibles para esa variante. */
   function has(m, anim, shiny) {

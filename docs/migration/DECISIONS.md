@@ -36,7 +36,7 @@
 | DEC-032 | 2026-11-18 | Colección meta = **solo bestiary + bosstiary**; **sin** pantalla “dex” renombrada ni Pokédex | Cierre PSR-0 **D-06** | Unificar dex→bestiary en copy | Eliminar `scr-dex` y menú Collection en PSR-5 | **accepted** |
 | DEC-033 | 2026-11-18 | **Reescribir** misiones, logros y pantalla goals/profile para stack neutral (sin `G.DEX_BY`, sin leyendas Pokémon) | Cierre PSR-0 **D-07** | Ocultar goals legacy | PSR-4–5 `missions.js`, `achievements.js`, `goals-ui.js` | **accepted** |
 | DEC-034 | 2026-11-18 | **Rift reimaginado Tibia**: encuentros tipo grieta para **jefes/bosses** propios; **no** Judgment/Arceus ni leyendas Pokémon | Cierre PSR-0 **D-08**; sustituye uso legendario en DEC-022 | Eliminar rift del juego | PSR-3 `rift.js` + contenido boss; Judgment **eliminar** | **accepted** |
-| DEC-035 | 2026-11-18 | Publicación en **dominio nuevo** (no `pokesurvivor.com`): actualizar CNAME, canonical, sitemap, Open Graph | Cierre PSR-0 **D-09** | Mantener dominio PS | PSR-7 cuando exista URL definitiva | **accepted** (dominio TBD) |
+| DEC-035 | 2026-11-18 | Publicación en **`https://www.tibiasurvivor.com/`** (CNAME + `tools/site-config.json`, canonical/sitemap/OG) | Cierre PSR-0 **D-09** | Mantener dominio PS | PSR-6 | **accepted** |
 | DEC-036 | 2026-11-18 | **Borrar claves `ps.*`** en dispositivo al migrar/boot TS (no solo ignorar `ps.save.*`); sin reimportación de partida PS | Cierre PSR-0 **D-10**; endurece DEC-014/015 | Conservar `ps.*` indefinidamente | `db.js`/boot: purge documentado; jugadores PS pierden progreso local PS | **accepted** |
 | DEC-037 | 2026-11-18 | Tras **PSR-2**: runtime **solo modo neutral**; sin `content=legacy` ni camino partner dex Pokémon | Cierre PSR-0 **D-11** | Dual stack permanente | **Supersedes** salida indefinida de DEC-019; hasta PSR-2 puede coexistir adaptador | **accepted** |
 | DEC-038 | 2026-11-18 | MVP: **vocación única**; metaprogresión = bestiario + charms + upgrades + achievements + misiones (**no** `pupg` por especie Pokémon) | Cierre PSR-0 **D-12** | Mejoras por criatura coleccionada | PSR-4 retirar `pupg`/`owned` colección; enlazar upgrades a vocación/bestiario | **accepted** |
@@ -50,7 +50,7 @@ Glosario y contratos publicados: `docs/TIBIA_GLOSSARY.md`, `docs/migration/PSR-1
 - **DEC-022** queda acotado: gacha fuera (DEC-027); rift pasa a bosses Tibia (DEC-034), no legendarios dex.
 - **DEC-019**: vigente hasta fin PSR-2; después solo neutral (DEC-037).
 - **DEC-015**: prefs `ps.*` one-shot puede mantenerse **solo** en transición corta; objetivo final = purge (DEC-036).
-- Dominio concreto: pendiente de anotar en DEC-035 cuando el propietario lo confirme.
+- Dominio canónico: **https://www.tibiasurvivor.com/** (DEC-035).
 
 ---
 

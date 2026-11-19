@@ -5,7 +5,7 @@
  *   programar y depurar cómodamente). SE EDITA dev.html, no index.html.
  * - index.html se genera a partir de dev.html, cambiando el bloque de scripts
  *   por js/app.min.js (con la huella en la URL para que no se quede en caché).
- * - node tools/build.js --sin-seo  ->  sin lo de SEO (hasta tener pokesurvivor.com).
+ * - node tools/build.js --sin-seo  ->  sin bloque SEO (sin canonical absoluto).
  * - Después: node tools/run_make_seo.js (en/index.html, sitemap, etc.)
  */
 const fs = require('fs'), path = require('path'), crypto = require('crypto');
@@ -60,6 +60,16 @@ html = html.replace(/<meta name="robots" content="noindex">\s*/, '');
 // (para publicar antes de tener el dominio pokesurvivor.com).
 const SIN_SEO = process.argv.includes('--sin-seo');
 html = SIN_SEO ? html.replace(/<!-- seo:begin -->[\s\S]*?<!-- seo:end -->\n?/g, '') : html.replace(/<!-- seo:(begin|end) -->\n?/g, '');
+if (!SIN_SEO) {
+  let siteUrl = 'https://www.tibiasurvivor.com/';
+  try {
+    const cfg = JSON.parse(fs.readFileSync(path.join(__dirname, 'site-config.json'), 'utf8'));
+    siteUrl = (process.env.TIBIASURVIVOR_SITE_URL || cfg.siteUrl || siteUrl).replace(/\/?$/, '/');
+  } catch { /* ignore */ }
+  html = html
+    .replace('<link rel="canonical" href="./">', `<link rel="canonical" href="${siteUrl}">`)
+    .replace('<meta property="og:url" content="./">', `<meta property="og:url" content="${siteUrl}">`);
+}
 html = html.replace(/<!-- dev.html: página fuente[^>]*-->/, '<!-- GENERADO desde dev.html por tools/build.js: no editar a mano (se edita dev.html). -->');
 fs.writeFileSync(OUT, html);
 // Versión publicada: los jugadores la miran cada 5 min y, si cambia, el juego se

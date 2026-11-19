@@ -8,28 +8,23 @@
 import json, os, re, datetime, html
 
 ROOT = os.path.join(os.path.dirname(__file__), '..')
-SITE = 'https://pokesurvivor.com/'
+_CFG = json.load(open(os.path.join(ROOT, 'tools', 'site-config.json'), encoding='utf-8'))
+SITE = (os.environ.get('TIBIASURVIVOR_SITE_URL') or _CFG.get('siteUrl') or 'https://www.tibiasurvivor.com/').rstrip('/') + '/'
 TODAY = datetime.date.today().isoformat()
 D = json.load(open(os.path.join(ROOT, 'tools', 'cache', 'gamedata.json'), encoding='utf-8'))
-DEX = D['dex']; BY = {p['dex']: p for p in DEX}
-META = {}
-for m in re.finditer(r'^\s*(\d+): (\{.*\}),?\s*$', open(os.path.join(ROOT, 'js/data/sprites-meta.js'), encoding='utf-8').read(), re.M):
-    try: META[int(m.group(1))] = json.loads(m.group(2))
-    except Exception: pass
 esc = html.escape
-N = len(DEX)
 BRAND = D.get('brand') or 'TibiaSurvivor'
 REPO = 'https://github.com/nicoetchart/TibiaSurvivor'
 CREATURES = D.get('creatures') or []
 SPELLS = D.get('spells') or D.get('moves', [])
 RUN_MIN = int(D.get('runDurationMin', 15))
-N_CRE = len(CREATURES) if CREATURES else N
+N_CRE = len(CREATURES)
 N_SPELL = len(SPELLS)
 NA = len(D.get('achievements') or [])
 DT = D.get('damageTypes') or {}
-DTYPES = DT.get('all') or D['typeOrder']
-DTN = DT.get('name') or D['typeName']
-DTC = DT.get('color') or D['typeColor']
+DTYPES = DT.get('all') or D.get('typeOrder') or []
+DTN = DT.get('name') or D.get('typeName') or {}
+DTC = DT.get('color') or D.get('typeColor') or {}
 CHANGELOG_SEO = D.get('changelog') or []
 
 # ---------------- traducción con el diccionario del juego ----------------
@@ -51,16 +46,10 @@ def L(lang, es, eng=None):
     """Sitewide English copy (route lang is only for URL paths)."""
     return eng if eng is not None else en(es)
 
-GEN = {1: 'Kanto', 2: 'Johto', 3: 'Hoenn', 4: 'Sinnoh', 5: ('Teselia', 'Unova'), 6: 'Kalos', 7: 'Alola', 8: 'Galar', 9: 'Paldea'}
-def gen_name(g, lang): v = GEN[g]; return v if isinstance(v, str) else (v[0] if lang == 'es' else v[1])
-TN = D['typeName']; TC = D['typeColor']; TYPES = D['typeOrder']
-def tname(t, lang): return L(lang, TN.get(t, t))
-def tbadge(t, lang): return f'<i class="ty" style="background:{TC.get(t, "#888")}">{esc(tname(t, lang))}</i>'
 DT_EN = {'physical': 'Physical', 'fire': 'Fire', 'ice': 'Ice', 'energy': 'Energy', 'earth': 'Earth', 'death': 'Death', 'holy': 'Holy'}
 def dtname(t, lang):
     return esc(DT_EN.get(t, t.replace('_', ' ').title()))
-def dtbadge(t, lang): return f'<i class="ty" style="background:{DTC.get(t, TC.get(t, "#888"))}">{dtname(t, lang)}</i>'
-LEG = set(D['legends'])
+def dtbadge(t, lang): return f'<i class="ty" style="background:{DTC.get(t, "#888")}">{dtname(t, lang)}</i>'
 
 # ---------------- rutas ----------------
 PAGES = ['home', 'guide', 'pokedex', 'legends', 'shinies', 'types', 'moves', 'items', 'achievements', 'news', 'support']
@@ -147,14 +136,6 @@ def crumbs(pid, lang, name):
         {'@type': 'ListItem', 'position': 1, 'name': BRAND, 'item': SITE + PATH[lang]['home']},
         {'@type': 'ListItem', 'position': 2, 'name': name, 'item': SITE + PATH[lang][pid]}]}
 
-def sprite(d, shiny=False, up='../', anim='Idle'):
-    m = META.get(d, {}).get('a', {}).get(anim)
-    if not m: return ''
-    k = 2 if max(m['w'], m['h']) <= 48 else 1
-    src = f'{up}assets/pokemon/{d}/{"s/" if shiny else ""}{anim}.png'
-    return (f'<span class="spr" style="width:{m["w"] * k}px;height:{m["h"] * k}px"><img loading="lazy" decoding="async" src="{src}" '
-            f'width="{m["w"]}" height="{m["h"]}" style="transform:scale({k})" alt="{esc(BY[d]["name"])}{" shiny" if shiny else ""}"></span>')
-
 def upof(pid, lang): return '../' * PATH[lang][pid].count('/')
 def cta(pid, lang, text):
     return f'<p class="cta"><a class="btn" href="{rel(PATH[lang][pid], PATH[lang]["home"])}">{esc(text)}</a></p>'
@@ -168,7 +149,7 @@ FAQ = {
   ('¿Cuánto dura una partida?', f'Cada run dura unos <b>{RUN_MIN} minutos</b>: hordas de criaturas, un centinela de élite y un jefe final si aguantas.'),
   (f'¿Cuántas criaturas hay?', f'En el bestiario del MVP hay <b>{N_CRE} criaturas</b> (orcos, no muertos, demonios…), cada una con debilidades de daño distintas.'),
   ('¿Qué son los tipos de daño?', 'Físico, fuego, hielo, energía, tierra, muerte y sagrado. Tus hechizos y los ataques enemigos usan estos tipos; las criaturas resisten o son débiles a algunos (ver la tabla de daño).'),
-  ('¿Caen tickets del gacha en partida?', 'No en el modo Tibia actual: el botín de suelo son monedas, experiencia y mejoras; la colección gacha legacy puede seguir en menú según tu guardado.'),
+  ('¿Hay gacha o tickets en partida?', 'No en el MVP Tibia: el botín son monedas, experiencia y mejoras; sin gacha ni tickets en el menú neutral.'),
   ('¿Se guarda mi progreso?', 'Sí: monedas, mejoras permanentes, bestiario y misiones se guardan en el navegador (y en la nube si tienes cuenta). Una partida en curso no se interrumpe por actualizaciones.'),
   (f'¿Es un juego oficial de Tibia?', 'No. Es un fan game inspirado en la sensación de cazar en mazmorras; no está afiliado a CipSoft.')],
  'en': [
@@ -178,7 +159,7 @@ FAQ = {
   ('How long is a run?', f'Each run lasts about <b>{RUN_MIN} minutes</b>: creature hordes, an elite sentinel and a final boss if you last long enough.'),
   (f'How many creatures are there?', f'The MVP bestiary lists <b>{N_CRE} creatures</b> (orcs, undead, demons…), each with different damage weaknesses.'),
   ('What are damage types?', 'Physical, fire, ice, energy, earth, death and holy. Your spells and enemy attacks use these; creatures resist or are weak to some (see the damage chart).'),
-  ('Do gacha tickets drop in a run?', 'Not in the current Tibia mode: floor loot is coins, XP and upgrades; legacy gacha collection may still appear in the menu depending on your save.'),
+  ('Is there gacha or tickets in a run?', 'Not in the Tibia MVP: floor loot is coins, XP and upgrades; neutral menu has no gacha or tickets.'),
   ('Is my progress saved?', 'Yes: coins, permanent upgrades, bestiary and missions are saved in the browser (and in the cloud with an account). A run in progress is not interrupted by updates.'),
   (f'Is this an official Tibia game?', 'No. It is a fan game inspired by dungeon hunting; it is not affiliated with CipSoft.')]}
 
@@ -312,8 +293,7 @@ def types_page(lang):
     intro = ('<p class="lead">In the Tibia MVP, combat uses <b>elemental damage types</b> (physical, fire, ice, energy, earth, death, holy). '
              'Each creature lists weaknesses and resistances in the <b>bestiary</b>. Typical in-run values: '
              '<b>weak ×1.25</b>, <b>resist ×0.70</b>, <b>immune ×0</b> (no damage).</p>')
-    legacy = ('<h2>Legacy type chart</h2><p>If you play legacy content, the full 18-type matrix remains in game data; '
-              'the current Master Sorcerer mode uses the Tibia damage table above.</p>')
+    legacy = '<p class="note">Legacy Pokémon type charts are not exported for SEO; only Tibia damage types apply in the MVP.</p>'
     title, desc, c = f'{BRAND} damage types (Tibia MVP)', f'Damage types in {BRAND}: weakness, resistance and immunity for spells and creatures.', 'Use the right element'
     crumb = 'Damage types'
     body = f'<article class="doc wide"><h1>{h1}</h1>{intro}{table}{legacy}{cta(pid, lang, c)}</article>'
