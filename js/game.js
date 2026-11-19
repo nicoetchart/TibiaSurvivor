@@ -99,7 +99,7 @@ G.Game = (() => {
   function startRun() {
     const save = G.DB.save;
     G.Content.syncFromSave(save);
-    const mon = G.DEX_BY[save.partner];
+    const mon = G.Content.runtimeByLegacyId(save.partner);
     const startIds = G.Content.startingMoveIds(mon);
     if (!mon || !Number.isFinite(mon.hp) || !Number.isFinite(mon.spd) || !Number.isFinite(mon.atk) ||
         !startIds.length || startIds.some(id => !G.Moves.BY_ID[id])) {

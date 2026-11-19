@@ -145,7 +145,8 @@ G.RunUI = (() => {
       for (const c of r.caught) {
         const w = document.createElement('div');
         w.appendChild(G.UI.spriteCanvas(c.dex, 90, 72, { shiny: true, lively: true, scale: 2 }));
-        w.insertAdjacentHTML('beforeend', `<small>${G.DEX_BY[c.dex].name}${c.isNew ? ' · new!' : ''}</small>`);
+        const nm = G.Content.creatureName(c.dex) || 'Creature';
+        w.insertAdjacentHTML('beforeend', `<small>${nm}${c.isNew ? ' · new!' : ''}</small>`);
         row.appendChild(w);
       }
     }

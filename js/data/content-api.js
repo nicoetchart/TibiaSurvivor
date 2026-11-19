@@ -1,5 +1,7 @@
-/* ============ content-api.js — API neutral TibiaSurvivor (Fase 3A) ============
- * Fuente de verdad de contenido jugable neutral. Modo legacy hasta Subfase 3D.
+/* ============ content-api.js — API de contenido TibiaSurvivor (PSR-1 canónico) ============
+ * Fuente de verdad: G.CREATURES, G.Abilities, G.DamageTypes, G.Vocations.
+ * Modo objetivo: neutral único (DEC-037, fin PSR-2). Legacy solo transición.
+ * Glosario: docs/TIBIA_GLOSSARY.md
  */
 G.Content = (() => {
   const ID_MIN = 99001;
@@ -22,6 +24,39 @@ G.Content = (() => {
     const n = +key;
     if (Number.isFinite(n) && G.CREATURE_BY_LEGACY[n]) return G.CREATURE_BY_LEGACY[n];
     return null;
+  }
+
+  /** Perfil de combate/HUD derivado de G.CREATURES (PSR-2: reemplaza G.DEX_BY). */
+  function toRuntimeMon(creature) {
+    if (!creature) return null;
+    if (typeof creature === 'number' || (typeof creature === 'string' && !G.CREATURE_BY_ID[creature])) {
+      creature = getCreature(creature);
+      if (!creature) return null;
+    }
+    return {
+      dex: creature.legacyId,
+      legacyId: creature.legacyId,
+      creatureId: creature.id,
+      name: creature.name,
+      types: (creature.defenseTypes || creature.damageTypes || ['physical']).slice(),
+      atkTypes: (creature.damageTypes || ['physical']).slice(),
+      weaknesses: (creature.weaknesses || []).slice(),
+      resistances: (creature.resistances || []).slice(),
+      immunities: (creature.immunities || []).slice(),
+      hp: creature.hp,
+      spd: creature.speed,
+      atk: creature.attack,
+      startAbility: creature.startAbility || null
+    };
+  }
+
+  function runtimeByLegacyId(legacyId) {
+    return toRuntimeMon(getCreature(legacyId));
+  }
+
+  function creatureName(legacyIdOrCreatureId) {
+    const c = getCreature(legacyIdOrCreatureId);
+    return c ? c.name : '';
   }
 
   function getAbility(id) {
@@ -59,16 +94,16 @@ G.Content = (() => {
     mode = next === 'neutral' ? 'neutral' : 'legacy';
   }
 
-  /** DEC-019: compañero Pokémon → legacy. Sin compañero o id 99001–99099 → neutral. */
+  /** PSR-2 / DEC-037: runtime solo neutral. (Legacy deliberado: `?content=legacy` en desarrollo.) */
   function syncFromSave(save) {
-    if (save && save.partner != null && !isNeutralLegacyId(save.partner)) setMode('legacy');
+    if (typeof location !== 'undefined' && /[?&]content=legacy\b/.test(location.search)) setMode('legacy');
     else setMode('neutral');
     return mode;
   }
 
   function startingMoveIds(mon) {
     if (mode === 'neutral') {
-      const c = mon && getCreature(mon.creatureId || mon.legacyId || mon.dex);
+      const c = mon && getCreature((mon && (mon.creatureId || mon.legacyId || mon.dex)) || null);
       if (c && c.startAbilities && c.startAbilities.length) return c.startAbilities.slice();
       const v = getVocation('master_sorcerer');
       if (v && v.startingSpellIds && v.startingSpellIds.length) return v.startingSpellIds.slice();
@@ -77,9 +112,7 @@ G.Content = (() => {
       if (v && v.startingAbility) return [v.startingAbility];
       return [];
     }
-    if (!mon) return [];
-    const id = G.startMoveOf(mon.dex);
-    return id ? [id] : [];
+    return [];
   }
 
   function startingMoveId(mon) {
@@ -88,8 +121,8 @@ G.Content = (() => {
   }
 
   function learnPool(mon) {
-    if (mode !== 'neutral') return G.Moves.poolFor(mon);
-    const c = getCreature((mon && (mon.creatureId || mon.dex)) || null);
+    if (mode !== 'neutral' && G.Moves && G.Moves.poolFor) return G.Moves.poolFor(mon);
+    const c = getCreature((mon && (mon.creatureId || mon.legacyId || mon.dex)) || null);
     return G.Abilities.poolFor(c);
   }
 
@@ -98,9 +131,9 @@ G.Content = (() => {
     return v ? v.legacyPartnerId : ID_MIN;
   }
 
-  /** Elenco de la run. Legacy conserva G.Enemies; neutral no lee el dex. */
+  /** Elenco de la run (PSR-3: G.NeutralRoster; G.Enemies solo ?content=legacy + boot legacy). */
   function roster() {
-    if (mode === 'neutral' && G.NeutralRoster) return G.NeutralRoster;
+    if (G.NeutralRoster && (mode === 'neutral' || !G.Enemies)) return G.NeutralRoster;
     return G.Enemies;
   }
 
@@ -153,6 +186,9 @@ G.Content = (() => {
     learnPool,
     isNeutralLegacyId,
     getCreature,
+    toRuntimeMon,
+    runtimeByLegacyId,
+    creatureName,
     getAbility,
     getVocation,
     shouldUseNeutralSave,

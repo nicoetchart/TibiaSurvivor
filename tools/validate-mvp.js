@@ -21,9 +21,14 @@ load('js/data/creatures.js');
 load('js/data/bestiary.js');
 load('js/data/bestiary-tips.js');
 load('js/data/abilities.js');
+load('js/data/master-sorcerer-spells.js');
+load('js/data/master-sorcerer-passives.js');
+load('js/data/master-sorcerer-register.js');
 load('js/data/vocations.js');
-load('js/data/content-bridge.js');
 load('js/data/neutral-roster.js');
+load('js/data/spell-runtime.js');
+load('js/data/content-api.js');
+load('js/data/dex-minimal.js');
 const G = sandbox.G;
 
 const SLICE_TYPES = ['physical', 'fire', 'energy'];
@@ -60,10 +65,13 @@ if (G.Bestiary) {
   if (!v.ok) v.issues.forEach(msg => err(`Bestiary: ${msg}`));
   const catalog = G.Bestiary.listEntries();
   if (catalog.length < 14) err(`Bestiary catalog ${catalog.length} (expect >= 14 incl. elite extra)`);
-  const types = new Set(catalog.map(e => e.entryType));
-  if (!types.has('boss') || !types.has('elite') || !types.has('normal')) {
-    err('Bestiary catalog missing normal, elite or boss entryType');
+  const sections = new Set(catalog.map(e => e.section));
+  if (!sections.has('bestiary') || !sections.has('bosstiary')) {
+    err('Cyclopedia catalog missing bestiary or bosstiary section');
   }
+  const bossCats = catalog.filter(e => e.section === 'bosstiary').map(e => e.bossCategory);
+  if (bossCats.includes('archfoe') && bossCats.includes('nemesis')) { /* MVP: minotaur_guard + demon */ }
+  else if (bossCats.length < 2) err('Expected two bosstiary bosses in MVP catalog');
   const playable = new Set(
     G.CREATURES.filter(c => c.role === 'enemy' && c.bestiary && c.bestiary.enabled).map(c => c.id)
   );
@@ -97,17 +105,19 @@ for (const c of G.CREATURES) {
 }
 
 const abIds = new Set();
+const isMvpAbility = a => !a.vocationId && a.kind !== 'passive' && String(a.id).startsWith('ts-');
 for (const a of G.Abilities.ALL) {
   if (abIds.has(a.id)) err(`duplicate ability ${a.id}`);
   abIds.add(a.id);
   if (!a.name) err(`ability ${a.id} missing name`);
+  if (!isMvpAbility(a)) continue;
   okNum(a.cd, `${a.id}.cd`);
   if (a.cd <= 0) err(`${a.id}.cd must be > 0`);
   okNum(a.dmg, `${a.id}.dmg`);
   if (!SLICE_TYPES.includes(a.type)) err(`${a.id} type ${a.type} outside slice set`);
 }
 
-const usedTypes = new Set(G.Abilities.ALL.map(a => a.type));
+const usedTypes = new Set(G.Abilities.ALL.filter(isMvpAbility).map(a => a.type));
 for (const t of SLICE_TYPES) {
   if (!usedTypes.has(t)) err(`slice damage type unused in abilities: ${t}`);
 }
@@ -116,6 +126,12 @@ const elite = G.NeutralRoster.buildElite();
 if (!elite || !elite.elite) err('buildElite failed');
 const bossDef = G.NeutralRoster.BOSSES[0];
 if (!bossDef) err('no final boss in roster');
+
+if (G.DEX_BY && Object.keys(G.DEX_BY).length) err('PSR-3: G.DEX_BY must stay empty (no pokedex boot)');
+if (!G.Moves || G.Moves.BY_ID !== G.Abilities.BY_ID) err('PSR-3: G.Moves must alias G.Abilities.BY_ID');
+if (G.Content.roster() !== G.NeutralRoster) err('PSR-3: Content.roster must be NeutralRoster');
+const msId = G.MasterSorcerer && G.MasterSorcerer.spellPoolIds && G.MasterSorcerer.spellPoolIds()[0];
+if (!msId || !G.Moves.BY_ID[msId]) err('PSR-3: MS spells missing from G.Moves.BY_ID');
 
 if (errors.length) {
   console.error('validate-mvp FAIL:\n' + errors.map(e => '  - ' + e).join('\n'));

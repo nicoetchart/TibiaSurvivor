@@ -35,7 +35,7 @@ const normalWeights = G.CREATURES
   .filter(c => c.role === 'enemy' && !c.boss && c.bestiary && c.bestiary.enabled);
 const weightSum = normalWeights.reduce((a, c) => a + (c.spawnWeight || 1), 0);
 
-const elite = G.Bestiary.getCatalogEntry('minotaur_guard');
+const bosstiarySentinel = G.Bestiary.getCatalogEntry('minotaur_guard');
 const boss = G.Bestiary.getCatalogEntry('demon');
 
 for (const row of catalog) {
@@ -44,10 +44,10 @@ for (const row of catalog) {
   if (!th) { err(`${row.creatureId}: no thresholds`); continue; }
 
   let estKillsPerRun = 0;
-  if (row.entryType === 'boss') {
-    estKillsPerRun = 1;
-  } else if (row.entryType === 'elite') {
-    estKillsPerRun = Math.max(0.6, runSec / ((cfg.ELITE && cfg.ELITE.intervalSec) || 150));
+  if (row.section === 'bosstiary') {
+    if (row.bossCategory === 'nemesis') estKillsPerRun = 1;
+    else if (row.bossCategory === 'archfoe') estKillsPerRun = Math.max(0.5, runSec / ((cfg.ELITE && cfg.ELITE.intervalSec) || 150));
+    else estKillsPerRun = 0.25;
   } else {
     const cr = G.CREATURE_BY_ID[row.creatureId];
     const w = cr ? (cr.spawnWeight || 1) : 0.5;
@@ -56,14 +56,11 @@ for (const row of catalog) {
 
   const runsToFinal = estKillsPerRun > 0 ? th.final / estKillsPerRun : Infinity;
 
-  if (row.entryType === 'normal' && runsToFinal < 2.5) {
+  if (row.section === 'bestiary' && runsToFinal < 2.5) {
     note(`${row.creatureId}: ~${runsToFinal.toFixed(1)} runs to final (may be fast)`);
   }
-  if (row.entryType === 'boss' && th.final > 5) {
-    err(`boss ${row.creatureId}: final ${th.final} > 5 (Nemesis-style cap)`);
-  }
-  if (row.entryType === 'elite' && th.final > 5) {
-    note(`elite ${row.creatureId}: Tibia very rare final ${th.final}`);
+  if (row.section === 'bosstiary' && row.bossCategory === 'nemesis' && th.final > 5) {
+    err(`bosstiary nemesis ${row.creatureId}: final ${th.final} > 5`);
   }
   if (runsToFinal > 90) {
     note(`${row.creatureId}: ~${runsToFinal.toFixed(0)} runs to final (heavy grind risk)`);
@@ -73,7 +70,7 @@ for (const row of catalog) {
   }
 }
 
-if (!elite || !boss) err('missing elite or boss catalog entry');
+if (!bosstiarySentinel || !boss) err('missing bosstiary sentinel (minotaur_guard) or final boss (demon) catalog entry');
 
 const ptsPerHourAtBoss = boss.rewardPoints * (3600 / runSec);
 if (ptsPerHourAtBoss > 120) note(`boss points/hour heuristic ${ptsPerHourAtBoss.toFixed(1)} (watch economy)`);

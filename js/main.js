@@ -2,8 +2,8 @@
 (() => {
   // Si un archivo no llega a cargarse (conexión móvil que se corta), mejor
   // avisar que arrancar a medias.
-  const NEED = ['U', 'I18n', 'Settings', 'DB', 'Audio', 'Input', 'Touch', 'Sprites', 'GeoSprites', 'Camera', 'DamageTypes', 'MvpConfig', 'Bestiary', 'Content', 'ContentBridge',
-                'Moves', 'Abilities', 'Vocations', 'Enemies', 'NeutralRoster', 'Upgrades', 'Items',
+  const NEED = ['U', 'I18n', 'Settings', 'DB', 'Audio', 'Input', 'Touch', 'Sprites', 'GeoSprites', 'Camera', 'DamageTypes', 'MvpConfig', 'Bestiary', 'Content',
+                'Moves', 'Abilities', 'Vocations', 'NeutralRoster', 'Upgrades', 'Items',
                 'World', 'FX', 'Projectiles', 'EnemyMgr', 'Pickups', 'Player', 'Combat', 'Spawner', 'LevelUp', 'Gacha',
                 'Rift', 'Weather', 'Progress', 'Hazards', 'Icons', 'UI', 'HUD',
                 'MenuUI', 'BestiaryUI', 'BestiaryRunUI', 'BestiaryCharms', 'BestiaryTelemetry', 'VocationUI', 'RunUI', 'SettingsUI', 'Game', 'Flow'];

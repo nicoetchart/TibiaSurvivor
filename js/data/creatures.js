@@ -5,7 +5,8 @@
  */
 const TS_BESTIARY_STD = {
   enabled: true,
-  entryType: 'normal',
+  /** Cyclopedia: criaturas ordinarias (no bosses). Ver docs/CYCLOPEDIA_REFERENCE.md */
+  section: 'bestiary',
   thresholds: null,
   rewardPoints: null,
   reveal: {
@@ -268,7 +269,8 @@ G.CREATURES = [
     role: 'elite',
     tier: 1,
     spawnWeight: 0,
-    bestiary: bestiaryMeta('minotaur_guard')
+    /** Progreso en catálogo: entrada Bosstiary (EXTRA_ENTRIES), no bestiario normal. */
+    bestiary: { enabled: false }
   },
   {
     id: 'wasp',
@@ -417,7 +419,7 @@ G.CREATURES = [
     tier: 3,
     spawnWeight: 0,
     boss: true,
-    bestiary: bestiaryMeta('demon', { entryType: 'boss' })
+    bestiary: bestiaryMeta('demon', { section: 'bosstiary', bossCategory: 'nemesis', rewardPoints: 100 })
   }
 ];
 

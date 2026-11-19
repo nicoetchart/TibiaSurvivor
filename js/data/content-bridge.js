@@ -1,37 +1,8 @@
-/* ============ content-bridge.js — adaptadores legacy (@ts-adapter-f3) ============
- * Dirección: criatura/habilidad neutral → forma que espera el motor Pokémon.
- * Subfase 3B: las habilidades ts-* entran en G.Moves.BY_ID para que combat las resuelva.
- * Subfase 3C: copia de criaturas en G.DEX_BY (solo ids 99001–99099, no se añaden a G.DEX).
- * La fuente de verdad sigue siendo G.CREATURES. Eliminar en Fase 4.
+/* ============ content-bridge.js — adaptador TEMPORAL habilidades (PSR-3) ============
+ * PSR-2: criaturas vía G.Content.toRuntimeMon (sin rellenar G.DEX_BY).
+ * Queda alias G.Moves ← G.Abilities hasta PSR-3.
  */
 G.ContentBridge = (() => {
-  /**
-   * Entrada compatible con G.Player / G.DEX_BY (campos usados hoy).
-   * @param {object} creature fila G.CREATURES
-   */
-  function toLegacyMon(creature) {
-    if (!creature) return null;
-    return {
-      dex: creature.legacyId,
-      creatureId: creature.id,
-      name: creature.name,
-      types: (creature.defenseTypes || creature.damageTypes || ['physical']).slice(),
-      atkTypes: (creature.damageTypes || ['physical']).slice(),
-      weaknesses: (creature.weaknesses || []).slice(),
-      resistances: (creature.resistances || []).slice(),
-      immunities: (creature.immunities || []).slice(),
-      hp: creature.hp,
-      spd: creature.speed,
-      atk: creature.attack,
-      rarity: 1,
-      bst: 300,
-      starter: creature.role === 'player',
-      gen: 0,
-      leg: false,
-      startAbility: creature.startAbility || null
-    };
-  }
-
   /** La vocación activa deja su habilidad inicial en la criatura del jugador. */
   function stampPlayerAbility() {
     const v = G.Vocations && G.Vocations.defaultVocation && G.Vocations.defaultVocation();
@@ -40,16 +11,7 @@ G.ContentBridge = (() => {
     if (c && v.startingAbility) c.startAbility = v.startingAbility;
   }
 
-  /** @ts-adapter-f3 — criaturas en G.DEX_BY. No modifica el array G.DEX. */
-  function installLegacyAliases() {
-    if (!G.CREATURES || !G.DEX_BY) return;
-    for (const c of G.CREATURES) {
-      const leg = toLegacyMon(c);
-      if (leg && !G.DEX_BY[c.legacyId]) G.DEX_BY[c.legacyId] = leg;
-    }
-  }
-
-  /** @ts-adapter-f3 — G.Moves.instance lee el mismo objeto BY_ID. Retirar en Fase 4. */
+  /** @ts-adapter-f3 — G.Moves.instance lee el mismo objeto BY_ID. Retirar en PSR-3. */
   function installAbilityAliases() {
     if (!G.Moves || !G.Abilities) return;
     for (const a of G.Abilities.ALL) {
@@ -60,7 +22,6 @@ G.ContentBridge = (() => {
 
   installAbilityAliases();
   stampPlayerAbility();
-  installLegacyAliases();
 
-  return { toLegacyMon, installLegacyAliases, installAbilityAliases, stampPlayerAbility };
+  return { installAbilityAliases, stampPlayerAbility };
 })();

@@ -86,12 +86,38 @@ G.Rift = (() => {
   /** Quien manda: elige legendario y lugar, y avisa a todos. */
   let nextType = null;          // pruebas/vídeos: tipo de la próxima arena
 
+  function neutralBosstiaryPool() {
+    if (!G.CREATURES) return [];
+    return G.CREATURES.filter(c => c.role === 'enemy' && (c.boss ||
+      (c.bestiary && c.bestiary.section === 'bosstiary')));
+  }
+
   function start(forceType) {
     if (arena) return;
     forceType = forceType || nextType; nextType = null;
+    if (G.Content && G.Content.mode === 'neutral') {
+      let pool = neutralBosstiaryPool();
+      if (!pool.length) return;
+      if (forceType) pool = pool.filter(c => (c.damageTypes || []).includes(forceType));
+      if (!pool.length) pool = neutralBosstiaryPool();
+      const beaten = (G.DB.save && G.DB.save.legends) || {};
+      const ws = pool.map(c => (beaten[c.legacyId] ? 1 : 4));
+      let r = Math.random() * ws.reduce((a, b) => a + b, 0), mi = 0;
+      while (mi < pool.length - 1 && (r -= ws[mi]) > 0) mi++;
+      const c = pool[mi];
+      const types = c.damageTypes || ['physical'];
+      const cfg = {
+        tx: 5000 + Math.floor(Math.random() * 3000), ty: 5000 + Math.floor(Math.random() * 3000), r: ARENA_R,
+        dex: c.legacyId, shiny: false,
+        type: forceType || G.U.pick(types)
+      };
+      begin(cfg);
+      spawnLegend();
+      return;
+    }
+    if (!G.DEX || !G.DEX.length) return;
     let pool = G.DEX.filter(p => p.leg && G.SPRITE_META[p.dex]);
     if (forceType && pool.some(p => p.types.includes(forceType))) pool = pool.filter(p => p.types.includes(forceType));
-    // Los legendarios que aún no has vencido salen 4 veces más (menos repetidos).
     const beaten = (G.DB.save && G.DB.save.legends) || {};
     const ws = pool.map(p => (beaten[p.dex] ? 1 : 4));
     let r = Math.random() * ws.reduce((a, b) => a + b, 0), mi = 0;
@@ -100,7 +126,6 @@ G.Rift = (() => {
     const cfg = {
       tx: 5000 + Math.floor(Math.random() * 3000), ty: 5000 + Math.floor(Math.random() * 3000), r: ARENA_R,
       dex: mon.dex, shiny: G.Sprites.hasShiny(mon.dex) && Math.random() < 1 / 512,
-      // La arena es la de uno de sus tipos, al azar.
       type: forceType || G.U.pick(mon.types)
     };
     begin(cfg);
@@ -135,24 +160,41 @@ G.Rift = (() => {
   }
 
   function spawnLegend() {
-    const mon = G.DEX_BY[arena.dex];
     const t = G.Game.st.time;
     const n = G.Game.everyone().length;
     const ts = TS();
-    const def = {
-      dex: mon.dex, name: mon.name,
-      hp: Math.round((3200 + t * 9) * 1 * (n > 1 ? 1.4 : 1)),
-      spd: Math.round(G.U.clamp(48 + (mon.spd - 78) * 0.6, 48, 105)),
-      dmg: Math.round(36 + t / 20), xp: Math.round(500 + t * 1.2),
-      behavior: mon.types.some(x => ['psychic', 'electric', 'ghost', 'fairy', 'fire', 'water', 'ice', 'dragon'].includes(x)) ? 'ranged' : 'charger',
-      shotDmg: Math.round(18 + t / 40), shotCd: 0.9, range: 300
-    };
+    let def;
+    if (G.Content && G.Content.mode === 'neutral') {
+      const cr = G.Content.getCreature(arena.dex);
+      const mon = G.Content.toRuntimeMon(cr);
+      if (!mon) return;
+      const ranged = (mon.atkTypes || mon.types || []).some(x => x === 'energy' || x === 'fire');
+      def = {
+        dex: mon.dex, name: mon.name,
+        hp: Math.round((cr.hp || 800) * (2.8 + t / 120) * (n > 1 ? 1.4 : 1)),
+        spd: Math.round(G.U.clamp((mon.spd || 80) * 0.85, 48, 105)),
+        dmg: Math.round((mon.atk || 40) + t / 18), xp: Math.round(500 + t * 1.2),
+        behavior: ranged ? 'ranged' : 'charger',
+        shotDmg: Math.round(18 + t / 40), shotCd: 0.9, range: 300
+      };
+    } else {
+      const mon = G.DEX_BY[arena.dex];
+      if (!mon) return;
+      def = {
+        dex: mon.dex, name: mon.name,
+        hp: Math.round((3200 + t * 9) * 1 * (n > 1 ? 1.4 : 1)),
+        spd: Math.round(G.U.clamp(48 + (mon.spd - 78) * 0.6, 48, 105)),
+        dmg: Math.round(36 + t / 20), xp: Math.round(500 + t * 1.2),
+        behavior: mon.types.some(x => ['psychic', 'electric', 'ghost', 'fairy', 'fire', 'water', 'ice', 'dragon'].includes(x)) ? 'ranged' : 'charger',
+        shotDmg: Math.round(18 + t / 40), shotCd: 0.9, range: 300
+      };
+    }
     const e = new G.Enemy(def, arena.x, arena.y - ts * 3.5, { hp: 1, spd: 1, dmg: 1 }, true);
     e.legend = true;
     // Choca con las paredes y columnas como tú: si volara por encima de las
     // rocas, tus disparos no podrían alcanzarle (bug de Celebi).
     e.flying = false;
-    if (arena.shiny) e.makeShiny();
+    if (arena.shiny && e.makeShiny) e.makeShiny();
     G.EnemyMgr.add(e);
     arena.bossId = e.id;
     G.Spawner.say(G.Content.mode === 'neutral'

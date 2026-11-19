@@ -42,7 +42,7 @@ G.MenuUI = (() => {
     document.querySelectorAll('#scr-menu [data-go="bestiary"], #scr-menu [data-go="outfit"]').forEach(b => {
       b.classList.toggle('hidden', !neutral);
     });
-    const mon = G.DEX_BY[s.partner];
+    const mon = G.Content.runtimeByLegacyId(s.partner);
     if (!mon) return;
     const shiny = !!s.partnerShiny && G.DB.ownsShiny(mon.dex);
     G.UI.chrome(true);
@@ -74,9 +74,13 @@ G.MenuUI = (() => {
       };
     });
 
-    const owned = Object.keys(s.owned).filter(d => G.DEX_BY[d]).length;
     const shinies = Object.keys(s.shiny || {}).length;
-    $('menu-dex-count').textContent = `${owned} / ${G.DEX.length}` + (shinies ? ` · ${shinies} shiny` : '');
+    if (neutral) {
+      $('menu-dex-count').textContent = '';
+    } else {
+      const owned = Object.keys(s.owned).filter(d => G.DEX_BY[d]).length;
+      $('menu-dex-count').textContent = `${owned} / ${G.DEX.length}` + (shinies ? ` · ${shinies} shiny` : '');
+    }
 
     const st = s.stats;
     $('menu-stats').innerHTML = neutral

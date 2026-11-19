@@ -1,11 +1,14 @@
-/* ============ bestiary.js — contrato de datos del Bestiario (BST-1) ============
- * Configuración, umbrales provisionales, charms stub y validación pura.
- * Sin progreso de jugador, DOM ni persistencia (BST-2+).
+/* ============ bestiary.js — Cyclopedia: Bestiary + Bosstiary (BST-1) ============
+ * Contrato de datos alineado a la estructura Cyclopedia (wiki Tibia).
+ * Ver docs/CYCLOPEDIA_REFERENCE.md
  */
 G.Bestiary = (() => {
   const VERSION = 1;
 
-  /** Alineado con TibiaWiki Bestiary/Difficulties (ordinarias + very rare élite/boss MVP). */
+  const SECTIONS = ['bestiary', 'bosstiary'];
+  const BOSS_CATEGORIES = ['bane', 'archfoe', 'nemesis'];
+
+  /** Alineado con TibiaWiki Bestiary/Difficulties (criaturas ordinarias + very rare elite). */
   const DIFFICULTIES = ['harmless', 'trivial', 'easy', 'medium', 'hard', 'challenging', 'elite', 'boss'];
 
   /** stage1/2/final = primer / segundo / tercer detalle; points = charm points al completar (ordinario). */
@@ -18,8 +21,15 @@ G.Bestiary = (() => {
     challenging: { stage1: 200, stage2: 2000, final: 5000, points: 100 },
     /** Very Rare (dificultad Medium): 2 / 3 / 5 muertes, charm points ×2. */
     elite: { stage1: 2, stage2: 3, final: 5, points: 50 },
-    /** Nemesis (Bosstiary): 1 / 3 / 5; recompensa alineada a tier Challenging. */
+    /** Reservado: dificultad legacy en filas; bosstiary usa BOSSTIARY_THRESHOLDS. */
     boss: { stage1: 1, stage2: 3, final: 5, points: 100 }
+  };
+
+  /** Bosstiary — categorías Bane / Archfoe / Nemesis (wiki Cyclopedia). */
+  const BOSSTIARY_THRESHOLDS = {
+    bane: { stage1: 25, stage2: 100, final: 300, points: 30 },
+    archfoe: { stage1: 5, stage2: 20, final: 60, points: 60 },
+    nemesis: { stage1: 1, stage2: 3, final: 5, points: 60 }
   };
 
   const REVEAL_FIELDS = {
@@ -28,27 +38,32 @@ G.Bestiary = (() => {
     stage3: new Set(['drops', 'tips', 'statistics'])
   };
 
-  const ENTRY_TYPES = new Set(['normal', 'elite', 'boss']);
+  const CATEGORY_ORDER = ['bestiary', 'bosstiary'];
 
-  const CATEGORY_ORDER = ['normal', 'elite', 'boss'];
+  /** Bestiary creature difficulties (excl. keys solo legacy en filas). */
+  const BESTIARY_CREATURE_DIFFICULTIES = DIFFICULTIES.filter(d => d !== 'boss');
 
-  /** Entradas de catálogo sin fila propia en G.CREATURES (spawn usa otra plantilla). */
+  /**
+   * Boss con catálogo separado de la criatura base (variante de run).
+   * Datos de combate auxiliares en G.CREATURES (bestiary deshabilitado allí).
+   */
   const EXTRA_ENTRIES = [
     {
       id: 'minotaur_guard',
       baseCreatureId: 'minotaur',
       name: 'Minotaur Guard',
-      description: 'Very Rare bestiary entry: armored labyrinth escort; once per run.',
+      description: 'Armored labyrinth sentinel; run elite (Bosstiary entry).',
       nameKey: 'creature.minotaur_guard.name',
       descriptionKey: 'creature.minotaur_guard.description',
       family: 'humanoid',
-      difficulty: 'elite', // Very Rare (Tibia)
+      difficulty: 'medium',
       tags: ['melee', 'ground'],
       weaknesses: ['ice', 'death'],
       resistances: ['fire', 'holy', 'physical'],
       bestiary: {
         enabled: true,
-        entryType: 'elite',
+        section: 'bosstiary',
+        bossCategory: 'archfoe',
         thresholds: null,
         rewardPoints: null,
         reveal: {
@@ -205,11 +220,37 @@ G.Bestiary = (() => {
     return t ? t.points : 0;
   }
 
+  function thresholdsForBossCategory(category) {
+    const t = BOSSTIARY_THRESHOLDS[category];
+    if (!t) return null;
+    return { stage1: t.stage1, stage2: t.stage2, final: t.final };
+  }
+
+  function rewardPointsForBossCategory(category) {
+    const t = BOSSTIARY_THRESHOLDS[category];
+    return t ? t.points : 0;
+  }
+
+  /** Cyclopedia section desde datos (alias legacy entryType boss → bosstiary). */
+  function resolveSection(meta) {
+    if (!meta) return 'bestiary';
+    if (meta.section === 'bestiary' || meta.section === 'bosstiary') return meta.section;
+    if (meta.entryType === 'boss') return 'bosstiary';
+    return 'bestiary';
+  }
+
   /** Umbrales efectivos de una fila de catálogo (criatura o extra). */
   function resolveThresholds(row) {
-    const diff = row.difficulty;
-    const custom = row.bestiary && row.bestiary.thresholds;
-    const base = thresholdsForDifficulty(diff);
+    const b = row.bestiary;
+    const custom = b && b.thresholds;
+  const section = resolveSection(b);
+    let base = null;
+    if (section === 'bosstiary') {
+      const cat = (b && b.bossCategory) || 'nemesis';
+      base = thresholdsForBossCategory(cat);
+    } else {
+      base = thresholdsForDifficulty(row.difficulty);
+    }
     if (!base) return null;
     if (!custom) return base;
     return {
@@ -221,12 +262,19 @@ G.Bestiary = (() => {
 
   function resolveRewardPoints(row) {
     if (row.bestiary && Number.isFinite(row.bestiary.rewardPoints)) return row.bestiary.rewardPoints;
+    if (resolveSection(row.bestiary) === 'bosstiary') {
+      const cat = (row.bestiary && row.bestiary.bossCategory) || 'nemesis';
+      return rewardPointsForBossCategory(cat);
+    }
     return rewardPointsForDifficulty(row.difficulty);
   }
 
   function creatureRow(id) {
-    if (G.CREATURE_BY_ID && G.CREATURE_BY_ID[id]) return G.CREATURE_BY_ID[id];
-    return EXTRA_ENTRIES.find(e => e.id === id) || null;
+    const extra = EXTRA_ENTRIES.find(e => e.id === id);
+    if (extra && extra.bestiary && extra.bestiary.enabled) return extra;
+    const base = G.CREATURE_BY_ID && G.CREATURE_BY_ID[id];
+    if (base) return base;
+    return extra || null;
   }
 
   function combatCreature(row) {
@@ -250,21 +298,31 @@ G.Bestiary = (() => {
   }
 
   function listEntries(filters = {}) {
-    let list = catalogRows().map(row => ({
-      creatureId: row.id,
-      entryType: row.bestiary.entryType || 'normal',
-      difficulty: row.difficulty,
-      family: row.family || null,
-      thresholds: resolveThresholds(row),
-      rewardPoints: resolveRewardPoints(row),
-      nameKey: row.nameKey || null,
-      displayName: row.name || null
-    }));
-    if (filters.entryType) list = list.filter(e => e.entryType === filters.entryType);
+    let list = catalogRows().map(row => {
+      const section = resolveSection(row.bestiary);
+      return {
+        creatureId: row.id,
+        section,
+        /** @deprecated use section */
+        entryType: section === 'bosstiary' ? 'boss' : 'normal',
+        bossCategory: section === 'bosstiary' ? (row.bestiary.bossCategory || 'nemesis') : null,
+        difficulty: row.difficulty,
+        family: row.family || null,
+        thresholds: resolveThresholds(row),
+        rewardPoints: resolveRewardPoints(row),
+        nameKey: row.nameKey || null,
+        displayName: row.name || null
+      };
+    });
+    if (filters.section) list = list.filter(e => e.section === filters.section);
+    if (filters.entryType) {
+      const wantBoss = filters.entryType === 'boss';
+      list = list.filter(e => (e.section === 'bosstiary') === wantBoss);
+    }
     if (filters.difficulty) list = list.filter(e => e.difficulty === filters.difficulty);
     list.sort((a, b) => {
-      const oa = CATEGORY_ORDER.indexOf(a.entryType);
-      const ob = CATEGORY_ORDER.indexOf(b.entryType);
+      const oa = CATEGORY_ORDER.indexOf(a.section);
+      const ob = CATEGORY_ORDER.indexOf(b.section);
       if (oa !== ob) return oa - ob;
       return String(a.creatureId).localeCompare(String(b.creatureId));
     });
@@ -275,9 +333,12 @@ G.Bestiary = (() => {
     const row = creatureRow(creatureId);
     if (!row || !row.bestiary || !row.bestiary.enabled) return null;
     const combat = combatCreature(row);
+    const section = resolveSection(row.bestiary);
     return {
       creatureId: row.id,
-      entryType: row.bestiary.entryType,
+      section,
+      entryType: section === 'bosstiary' ? 'boss' : 'normal',
+      bossCategory: section === 'bosstiary' ? (row.bestiary.bossCategory || 'nemesis') : null,
       difficulty: row.difficulty,
       family: row.family || null,
       tags: row.tags || [],
@@ -323,8 +384,13 @@ G.Bestiary = (() => {
     seenIds.add(id);
     const b = row.bestiary;
     if (!b || !b.enabled) return;
-    if (!ENTRY_TYPES.has(b.entryType)) issues.push(`${id}: invalid entryType ${b.entryType}`);
-    if (!DIFFICULTIES.includes(row.difficulty)) issues.push(`${id}: invalid difficulty ${row.difficulty}`);
+    const section = resolveSection(b);
+    if (!SECTIONS.includes(section)) issues.push(`${id}: invalid section ${b.section}`);
+    if (section === 'bosstiary') {
+      if (!BOSS_CATEGORIES.includes(b.bossCategory)) issues.push(`${id}: bosstiary requires bossCategory bane|archfoe|nemesis`);
+    } else if (!BESTIARY_CREATURE_DIFFICULTIES.includes(row.difficulty)) {
+      issues.push(`${id}: invalid bestiary creature difficulty ${row.difficulty}`);
+    }
     if (row.baseCreatureId && (!G.CREATURE_BY_ID || !G.CREATURE_BY_ID[row.baseCreatureId])) {
       issues.push(`${id}: baseCreatureId ${row.baseCreatureId} not found`);
     }
@@ -337,9 +403,11 @@ G.Bestiary = (() => {
     if (typeof k !== 'string' || !k) issues.push(`${id}: invalid tipKey`);
     else if (G.BESTIARY_TIPS && !G.BESTIARY_TIPS[k]) issues.push(`${id}: missing tip text for ${k}`);
   }
-    if (b.entryType === 'boss' && !row.boss && !row.baseCreatureId) {
+    if (section === 'bosstiary' && !row.boss && !row.baseCreatureId) {
       const base = G.CREATURE_BY_ID && G.CREATURE_BY_ID[id];
-      if (!base || !base.boss) issues.push(`${id}: boss entryType without boss flag`);
+      if (!base || !base.boss) {
+        if (!row.baseCreatureId) issues.push(`${id}: bosstiary entry should set baseCreatureId or boss creature row`);
+      }
     }
   }
 
@@ -441,10 +509,14 @@ G.Bestiary = (() => {
 
   return {
     VERSION,
+    SECTIONS,
+    BOSS_CATEGORIES,
+    BOSSTIARY_THRESHOLDS,
     DIFFICULTIES,
     THRESHOLDS_BY_DIFFICULTY,
     REVEAL_FIELDS,
     EXTRA_ENTRIES,
+    resolveSection,
     GLOBAL_UPGRADE_CAPS,
     GLOBAL_UPGRADES,
     CONTENT_UNLOCKS,

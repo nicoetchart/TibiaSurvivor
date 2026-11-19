@@ -16,13 +16,14 @@ function load(rel) {
 load('js/core/util.js');
 load('js/data/damage-types.js');
 load('js/data/mvp-config.js');
-load('js/data/moves.js');
 load('js/data/abilities.js');
 load('js/data/master-sorcerer-spells.js');
 load('js/data/master-sorcerer-passives.js');
 load('js/data/master-sorcerer-register.js');
+load('js/data/spell-runtime.js');
 load('js/data/vocations.js');
-load('js/data/content-bridge.js');
+load('js/data/creatures.js');
+load('js/data/content-api.js');
 
 const errors = [];
 function fail(msg) { errors.push(msg); }

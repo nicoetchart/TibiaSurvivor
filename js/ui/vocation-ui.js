@@ -31,7 +31,7 @@ G.VocationUI = (() => {
     const v = G.Vocations.defaultVocation();
     const save = G.DB.save;
     const id = v.legacyPartnerId;
-    if (!G.Content.getCreature(id) || !G.DEX_BY[id]) {
+    if (!G.Content.getCreature(id)) {
       G.UI.toast('Could not set up this vocation.');
       return;
     }

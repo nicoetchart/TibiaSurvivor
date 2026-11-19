@@ -2,6 +2,27 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-18', title: ['Boot Tibia', 'Tibia boot'], chg: [
+    ['PSR-3: sin moves.js, types.js, enemies.js, starters ni Judgment en dev.html; hechizos vía spell-runtime.',
+     'PSR-3: dev.html drops moves.js, types.js, enemies.js, starters, Judgment; spells via spell-runtime.'],
+    ['Spawns solo NeutralRoster; rift preparado para bosstiary Tibia (sigue desactivado en MVP).',
+     'Spawns use NeutralRoster only; rift wired for Tibia bosstiary bosses (still off in MVP).'],
+  ] },
+  { d: '2026-11-18', title: ['Motor neutral', 'Neutral runtime'], chg: [
+    ['PSR-2: partidas y menú usan G.CREATURES vía G.Content (sin rellenar G.DEX_BY).',
+     'PSR-2: runs and menu use G.CREATURES via G.Content (no G.DEX_BY population).'],
+    ['syncFromSave fuerza modo neutral (legacy solo con ?content=legacy en dev).',
+     'syncFromSave locks neutral mode (legacy only with ?content=legacy in dev).'],
+  ] },
+  { d: '2026-11-18', title: ['Cyclopedia', 'Cyclopedia'], chg: [
+    ['Bestiary vs Bosstiary: sección `bestiary`/`bosstiary`, categorías Bane/Archfoe/Nemesis (wiki Tibia).',
+     'Bestiary vs Bosstiary: `bestiary`/`bosstiary` sections, Bane/Archfoe/Nemesis boss categories (Tibia wiki).'],
+    ['Minotaur Guard → Bosstiary Archfoe; Demon → Bosstiary Nemesis; Minotaur → Bestiary normal.',
+     'Minotaur Guard → Bosstiary Archfoe; Demon → Bosstiary Nemesis; Minotaur → normal Bestiary.'],
+  ], fix: [
+    ['Duplicado de catálogo Minotaur Guard corregido.',
+     'Fixed duplicate Minotaur Guard catalog entry.'],
+  ] },
   { d: '2026-11-17', title: ['Avisos en partida', 'Run banners'], fix: [
     ['Oleada, centinela de élite y eventos (hordas, cofres, clima): avisos en inglés; bundle de producción regenerado.',
      'Cave surge, elite sentinel and events (hordes, traps, weather): English banners; production bundle rebuilt.'],

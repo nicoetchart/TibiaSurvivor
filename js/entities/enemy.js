@@ -26,8 +26,8 @@
       this.id = nextId++;
       this.def = def;
       this.dex = def.dex;
-      const foreign = G.Content && G.Content.mode === 'neutral' && !G.Content.isNeutralLegacyId(def.dex);
-      this.name = foreign ? 'Guardián' : ((G.DEX_BY[def.dex] && G.DEX_BY[def.dex].name) || def.name);
+      const rt = G.Content && G.Content.toRuntimeMon(def.creatureId || def.dex);
+      this.name = def.name || (rt && rt.name) || (G.Content && G.Content.creatureName(def.dex)) || 'Creature';
       this.x = x; this.y = y;
       this.boss = boss;
       this.scale = boss ? bossScale(def.dex) : 1;
@@ -42,7 +42,7 @@
       this.xp = def.xp;
       this.behavior = def.behavior;
 
-      const dexRow = G.DEX_BY[def.dex];
+      const dexRow = rt || (G.Content && G.Content.toRuntimeMon(def.dex));
       const types = (dexRow && dexRow.types) || [];
       this.types = types.length ? types : ['physical'];
       this.weaknesses = (dexRow && dexRow.weaknesses) || [];
@@ -667,8 +667,8 @@
       // Con el tope general de enemigos (menos Pokémon en pantalla), con un pequeño margen.
       if (this.minions.length >= 4 || G.EnemyMgr.count > G.Spawner.CAP + 15) return;
       const dex = this.def.minion || this.dex;
-      const mon = G.DEX_BY[dex];
-      const def = { dex, name: mon ? mon.name : '', hp: Math.round(this.def.hp * 0.35), spd: Math.round(this.def.spd * 1.1),
+      const monName = G.Content.creatureName(dex);
+      const def = { dex, name: monName, hp: Math.round(this.def.hp * 0.35), spd: Math.round(this.def.spd * 1.1),
                     dmg: Math.round(this.def.dmg * 0.6), xp: Math.max(1, Math.round(this.def.xp * 0.25)), behavior: 'chase' };
       for (let i = 0; i < 2; i++) {
         const a = Math.random() * 6.2832;

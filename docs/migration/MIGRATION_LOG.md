@@ -572,6 +572,180 @@ Commit autorizado cuando el dueño lo pida: `feat(mvp): complete first playable 
 
 ---
 
+## 2026-11-18 — PSR-0 — Cierre decisiones pendientes (D-01–D-12)
+
+### Fase
+
+PSR-0 — **completed** (auditoría + decisiones de producto para PSR-1+)
+
+### Decisiones tomadas
+
+**DEC-027** a **DEC-038** en `docs/migration/DECISIONS.md` (resolución auditoría PSR-0 §H).
+
+Resumen propietario:
+
+| ID | Resolución |
+|----|------------|
+| D-01 / DEC-027 | Gacha eliminado por completo |
+| D-02 / DEC-028 | `coins` + copy **gold coin** (tienda/mejoras futuras) |
+| D-03 / DEC-029 | Sin tienda MVP; market futuro (ítems coleccionables) |
+| D-04 / DEC-030 | Sin shiny; rareza bestiary/bosstiary |
+| D-05 / DEC-031 | Sin companions MVP |
+| D-06 / DEC-032 | Solo bestiary + bosstiary |
+| D-07 / DEC-033 | Reescribir goals/misiones/logros |
+| D-08 / DEC-034 | Rift Tibia (bosses); sin Arceus/Judgment Pokémon |
+| D-09 / DEC-035 | Dominio nuevo (URL TBD) |
+| D-10 / DEC-036 | Borrar `ps.*` local |
+| D-11 / DEC-037 | Solo neutral tras PSR-2 |
+| D-12 / DEC-038 | Vocación única; meta = bestiario/charms/upgrades/logros/misiones |
+
+### Archivos modificados (esta entrada)
+
+- `docs/migration/DECISIONS.md` — nuevas filas DEC-027–038
+- `docs/migration/MIGRATION_LOG.md` — esta entrada
+
+### Próximo paso recomendado
+
+**Autorizar PSR-1** (glosario + contratos: `creatureId`, gold coin, fin de `G.getPokemon`; sin cambios de runtime masivos hasta acordar alcance PSR-1).
+
+---
+
+## 2026-11-18 — PSR-1 — Vocabulario y contratos canónicos
+
+### Fase
+
+PSR-1 — **completed** (documentación + alias API; smoke operador pendiente)
+
+### Archivos creados / modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `docs/TIBIA_GLOSSARY.md` | Glosario canónico DEC-027–038 |
+| `docs/migration/PSR-1_CONTRACTS.md` | Mapa símbolos, consumidores, aceptación |
+| `docs/migration/SAVE_SCHEMA.md` | Sección PSR-1 moneda/meta |
+| `docs/migration/TEST_CHECKLIST.md` | Bloque pruebas PSR-1 |
+| `js/data/dex-minimal.js` | `G.getCreatureByLegacyId`; deprecación `G.DEX` / `getPokemon` |
+| `js/data/content-bridge.js` | Cabecera PSR-1 (no ampliar adaptador) |
+| `js/data/content-api.js` | Cabecera API canónica |
+| `js/core/db.js` | Comentario `coins` = gold coin |
+| `js/data/lang-en.js` | Claves i18n PSR-1 moneda |
+
+### Decisiones aplicadas
+
+DEC-028 (gold coin), DEC-037 (objetivo neutral), contratos bestiario/bosstiary referenciados en glosario.
+
+### Pruebas ejecutadas
+
+| Prueba | Resultado |
+|--------|-----------|
+| `node --check` archivos JS tocados | **OK** |
+| `node tools/validate-mvp.js` | **FAIL** — duplicado `bestiary id minotaur_guard` (pre-existente; no causado por PSR-1) |
+| Boot manual `dev.html?dev` | Pendiente operador |
+| `rg G.getPokemon` en `js/*.js` | **OK** — solo `dex-minimal.js` + `pokedex.js` (no cargado en dev) |
+
+### Deuda
+
+Inventario consumidores `G.DEX_BY` en `PSR-1_CONTRACTS.md` §4.
+
+### Condición para PSR-2
+
+Smoke PSR-1 OK + autorización propietario para refactor enemy/player/game (sin ampliar legacy).
+
+### Próximo paso recomendado
+
+**PSR-2** — sustituir lecturas `G.DEX_BY` por `G.Content.getCreature` / `CREATURE_BY_LEGACY`; retirar `content-bridge`.
+
+---
+
+## 2026-11-18 — PSR-2
+
+### Fase
+PSR-2 — in_progress (núcleo runtime; gacha/goals/menu-dex legacy pendiente PSR-4/5)
+
+### Archivos modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `js/data/content-api.js` | `toRuntimeMon`, `runtimeByLegacyId`, `creatureName`; `syncFromSave` → neutral |
+| `js/data/content-bridge.js` | Sin `installLegacyAliases` / `toLegacyMon` |
+| `js/data/dex-minimal.js` | `getCreatureByLegacyId` → Content |
+| `js/game.js` | Partner vía `runtimeByLegacyId` |
+| `js/entities/enemy.js` | Nombre/tipos vía Content |
+| `js/core/db.js` | `sanitize` solo `Content.getCreature` |
+| `js/ui/menu.js` | Menú principal partner vía Content |
+| `js/ui/vocation-ui.js` | Confirm sin `G.DEX_BY` |
+| `js/ui/run-ui.js` | Nombres capturas vía `creatureName` |
+| `js/data/changelog.js` | Entrada PSR-2 |
+
+### Símbolos
+
+- **Añadidos:** `G.Content.toRuntimeMon`, `runtimeByLegacyId`, `creatureName`
+- **Retirados del boot:** población `G.DEX_BY` desde bridge
+- **Deprecados:** consumo directo de `G.DEX_BY` en camino MVP (quedan gacha/goals/menu-dex legacy)
+
+### Decisiones aplicadas
+
+DEC-037 (runtime neutral por defecto).
+
+### Pruebas ejecutadas
+
+| Prueba | Resultado |
+|--------|-----------|
+| `node tools/validate-mvp.js` | **OK** |
+| `node tools/validate-bestiary-balance.js` | **OK** |
+| Boot `dev.html?dev` | Pendiente operador |
+
+### Deuda PSR-2 restante
+
+`goals-ui.js`, `menu.js` (dex/upgrades), `events/rift/judgment` (legacy), `gacha*`, `starters.js`, `enemies.js` (no boot neutral), renombrar `.dex` en entidades (PSR-3).
+
+### Próximo paso recomendado
+
+**PSR-3** — roster/spawner sin `G.Enemies`; eliminar `G.Moves` Pokémon del boot; endurecer validación anti-`DEX_BY` en `validate-mvp.js`.
+
+---
+
+## 2026-11-18 — PSR-3
+
+### Fase
+PSR-3 — completed (boot neutral; legacy datos en repo sin cargar en `dev.html`)
+
+### Archivos nuevos / modificados
+
+| Archivo | Cambio |
+|---------|--------|
+| `js/data/spell-runtime.js` | `G.Moves` = fachada de `G.Abilities` (+ stamp vocación) |
+| `js/systems/judgment-stub.js` | Sustituye `judgment.js` en boot (DEC-034) |
+| `dev.html` | Quita `moves`, `types`, `enemies`, `starters`, `content-bridge`, `judgment.js` |
+| `js/main.js` | NEED sin `ContentBridge` ni `Enemies` |
+| `js/data/content-api.js` | `roster()` → `NeutralRoster` si no hay `G.Enemies` |
+| `js/systems/rift.js` | Pool bosstiary desde `G.CREATURES` en neutral |
+| `tools/validate-mvp.js` | Checks PSR-3 (`DEX_BY` vacío, `Moves` alias, roster) |
+| `tools/ms9-smoke.js` | Boot MS con `spell-runtime` |
+
+### Decisiones
+
+DEC-034 (sin Judgment/Arceus), DEC-037 (neutral), grietas desactivadas MVP (`DISABLE_RIFTS`).
+
+### Pruebas
+
+| Prueba | Resultado |
+|--------|-----------|
+| `validate-mvp.js` | **OK** |
+| `validate-bestiary-balance.js` | **OK** |
+| `ms9-smoke.js` | **OK** |
+| Boot `dev.html?dev` | Pendiente operador |
+
+### Deuda
+
+`moves.js` / `enemies.js` / `pokedex.js` siguen en repo para export legacy o `?content=legacy` manual; gacha/goals/menu-dex aún referencian `G.DEX` si se cargan.
+
+### Próximo paso
+
+**PSR-4** — quitar gacha del menú y save; metaprogresión bestiario/charms sin `owned` dex.
+
+---
+
 <!-- Plantilla para entradas futuras
 
 ## YYYY-MM-DD — FASE N

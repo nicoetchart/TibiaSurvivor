@@ -56,17 +56,32 @@ Migración one-shot desde `ps.lang`, `ps.settings`, `ps.audio`, `ps.news.seen` s
 5. **Fase 3 (DEC-018, DEC-024):** ids **99001–99099** = criaturas neutrales TibiaSurvivor; válidos en `owned`/`partner` si existen en `G.CREATURE_BY_ID` (aunque no estén en `G.DEX_BY` Pokémon). Id **99001** reservado para el avatar por defecto de vocación **Master Sorcerer** (`master_sorcerer`, DEC-020).
 6. **DEC-019:** cuentas con `partner` dex Pokémon (1–966…) conservan ese id; el flujo neutral aplica a cuentas nuevas o `partner == null` tras sanitize.
 
-## Forma mínima futura (referencia, no implementada en F2)
+## PSR-1 — Moneda y metaprogresión (DEC-028, DEC-038)
+
+| Decisión | Contrato |
+|----------|----------|
+| Moneda meta | Campo **`coins`** (no renombrar en JSON). Copy UI: **gold coin** / «moneda de oro». |
+| Gacha / tickets | **Eliminar** (DEC-027); no nuevos campos. |
+| Colección dex | **Eliminar** `owned` / `shiny`; sustituir por progreso **bestiario + bosstiary**. |
+| Partner | Sustituir por `selectedVocation` + criatura jugador 99001 (PSR-2+). |
+| Mejoras | Por **vocación** + bestiary/charms; no `pupg[dex]` (DEC-038). |
+
+## Forma objetivo post-PSR-4 (referencia)
 
 ```json
 {
   "schemaVersion": 2,
   "product": "tibiasurvivor",
-  "profile": {},
-  "selectedVocation": null,
-  "gold": 0,
+  "selectedVocation": "master_sorcerer",
+  "coins": 0,
+  "bestiary": {},
+  "bosstiary": {},
+  "charms": {},
   "upgrades": {},
-  "statistics": {},
-  "settings": {}
+  "ach": {},
+  "missions": {},
+  "stats": {}
 }
 ```
+
+*(Nombre de campo `coins` mantenido; no usar `gold` en JSON para evitar migración dual.)*

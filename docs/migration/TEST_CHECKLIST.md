@@ -219,6 +219,19 @@ Requiere servidor estático en `http://127.0.0.1:8765` y Playwright (Edge/Chromi
 
 ---
 
+## PSR-1 — Vocabulario y contratos (2026-11-18)
+
+Documentación: `docs/TIBIA_GLOSSARY.md`, `docs/migration/PSR-1_CONTRACTS.md`.
+
+- [ ] `node --check js/data/dex-minimal.js js/data/content-api.js js/data/content-bridge.js js/core/db.js`
+- [ ] `node tools/validate-mvp.js` → OK
+- [ ] Boot `dev.html?dev`: consola sin ReferenceError
+- [ ] Consola: `G.getCreatureByLegacyId(99001)` devuelve criatura MS tras bridge
+- [ ] `G.getPokemon === G.getCreatureByLegacyId` (alias temporal)
+- [ ] `rg "G\\.getPokemon"` en `js/` (excl. `app.min.js`) — solo `dex-minimal.js`
+
+---
+
 ## Comandos útiles (no destructivos)
 
 ```text

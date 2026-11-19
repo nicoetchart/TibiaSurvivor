@@ -28,6 +28,29 @@
 | DEC-024 | 2026-10-31 | Ampliar `sanitize` en `db.js` para ids banda TS **sin** subir `schemaVersion` | DEC-018 + save F2 | schemaVersion 2 con `selectedVocation` | Validación `owned`/`partner`/`pbind`/`pban` contra criaturas y abilities neutrales | **accepted** |
 | DEC-025 | 2026-10-31 | F3: validación **solo `dev.html`**; **no** build `index.html` / `app.min.js` en cierre F3 | Alcance acotado; bundle sigue pre-F3 | Build obligatorio en F3 | Producción desactualizada hasta fase posterior con build autorizado | **accepted** |
 | DEC-026 | 2026-10-31 | Clima F3: **cosmético**; multiplicadores de daño **= 1** (sin ventaja elemental) | DEC-004; evitar tabla Pokémon en weather | Desactivar weather | `weather.js` mantiene tinte/partículas; `mult()` efectivo 1 en modo neutral o global F3 | **accepted** |
+| DEC-027 | 2026-11-18 | **Eliminar gacha por completo** (PSR-4): sin banners, pulls, pity, tickets, slots, `G.Gacha`, UI ni datos | Cierre PSR-0 **D-01**; confirma espíritu DEC-022 | Rediseñar monetización azar | Retirar de `dev.html`, boot `NEED`, save fields relacionados | **accepted** |
+| DEC-028 | 2026-11-18 | Moneda persistente: mantener campo técnico `coins` en save; **UI/copy “gold coin”** (estilo Tibia) para tienda/mejoras futuras | Cierre PSR-0 **D-02** | Otras monedas; sin meta currency | PSR-1 glosario; PSR-4 i18n/HUD | **accepted** |
+| DEC-029 | 2026-11-18 | **Sin tienda en MVP**; sin pulls. **Market** futuro: compra/venta de **ítems coleccionables** del juego (no gacha) | Cierre PSR-0 **D-03** | Tienda MVP | No implementar shop hasta fase post-MVP definida | **accepted** |
+| DEC-030 | 2026-11-18 | **Eliminar shiny** (wild, save, UI, sprites `/s/`, odds). Rareza vía **bestiary/bosstiary** (dificultad y categorías Tibia) | Cierre PSR-0 **D-04** | Variantes raras propias | PSR-2–3 spawner/enemy; PSR-6 assets | **accepted** |
+| DEC-031 | 2026-11-18 | **Sin companions/summons en MVP** | Cierre PSR-0 **D-05** | Pets en slice | Fuera de alcance F6+ hasta decisión nueva | **accepted** |
+| DEC-032 | 2026-11-18 | Colección meta = **solo bestiary + bosstiary**; **sin** pantalla “dex” renombrada ni Pokédex | Cierre PSR-0 **D-06** | Unificar dex→bestiary en copy | Eliminar `scr-dex` y menú Collection en PSR-5 | **accepted** |
+| DEC-033 | 2026-11-18 | **Reescribir** misiones, logros y pantalla goals/profile para stack neutral (sin `G.DEX_BY`, sin leyendas Pokémon) | Cierre PSR-0 **D-07** | Ocultar goals legacy | PSR-4–5 `missions.js`, `achievements.js`, `goals-ui.js` | **accepted** |
+| DEC-034 | 2026-11-18 | **Rift reimaginado Tibia**: encuentros tipo grieta para **jefes/bosses** propios; **no** Judgment/Arceus ni leyendas Pokémon | Cierre PSR-0 **D-08**; sustituye uso legendario en DEC-022 | Eliminar rift del juego | PSR-3 `rift.js` + contenido boss; Judgment **eliminar** | **accepted** |
+| DEC-035 | 2026-11-18 | Publicación en **dominio nuevo** (no `pokesurvivor.com`): actualizar CNAME, canonical, sitemap, Open Graph | Cierre PSR-0 **D-09** | Mantener dominio PS | PSR-7 cuando exista URL definitiva | **accepted** (dominio TBD) |
+| DEC-036 | 2026-11-18 | **Borrar claves `ps.*`** en dispositivo al migrar/boot TS (no solo ignorar `ps.save.*`); sin reimportación de partida PS | Cierre PSR-0 **D-10**; endurece DEC-014/015 | Conservar `ps.*` indefinidamente | `db.js`/boot: purge documentado; jugadores PS pierden progreso local PS | **accepted** |
+| DEC-037 | 2026-11-18 | Tras **PSR-2**: runtime **solo modo neutral**; sin `content=legacy` ni camino partner dex Pokémon | Cierre PSR-0 **D-11** | Dual stack permanente | **Supersedes** salida indefinida de DEC-019; hasta PSR-2 puede coexistir adaptador | **accepted** |
+| DEC-038 | 2026-11-18 | MVP: **vocación única**; metaprogresión = bestiario + charms + upgrades + achievements + misiones (**no** `pupg` por especie Pokémon) | Cierre PSR-0 **D-12** | Mejoras por criatura coleccionada | PSR-4 retirar `pupg`/`owned` colección; enlazar upgrades a vocación/bestiario | **accepted** |
+
+### PSR-1 (2026-11-18)
+
+Glosario y contratos publicados: `docs/TIBIA_GLOSSARY.md`, `docs/migration/PSR-1_CONTRACTS.md`. API `G.getCreatureByLegacyId` sustituye en documentación a `G.getPokemon` (alias temporal en `dex-minimal.js`).
+
+### Notas PSR-0 → PSR-1 (2026-11-18)
+
+- **DEC-022** queda acotado: gacha fuera (DEC-027); rift pasa a bosses Tibia (DEC-034), no legendarios dex.
+- **DEC-019**: vigente hasta fin PSR-2; después solo neutral (DEC-037).
+- **DEC-015**: prefs `ps.*` one-shot puede mantenerse **solo** en transición corta; objetivo final = purge (DEC-036).
+- Dominio concreto: pendiente de anotar en DEC-035 cuando el propietario lo confirme.
 
 ---
 

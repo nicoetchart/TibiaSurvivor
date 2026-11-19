@@ -4,6 +4,10 @@
  * son los oficiales en inglés.
  */
 G.I18n.add({
+  // ---------------- PSR-1 economía (DEC-028) ----------------
+  'Moneda de oro': 'Gold coin',
+  'Monedas de oro': 'Gold coins',
+
   // ---------------- tipos y regiones ----------------
   'Acero': 'Steel', 'Agua': 'Water', 'Bicho': 'Bug', 'Dragón': 'Dragon', 'Eléctrico': 'Electric', 'Fantasma': 'Ghost',
   'Fuego': 'Fire', 'Hada': 'Fairy', 'Hielo': 'Ice', 'Lucha': 'Fighting', 'Planta': 'Grass', 'Psíquico': 'Psychic',

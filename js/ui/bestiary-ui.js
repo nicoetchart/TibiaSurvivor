@@ -26,7 +26,12 @@ G.BestiaryUI = (() => {
     boss: 'Boss'
   };
 
-  const TYPE_LABEL = { normal: 'Normal', elite: 'Elite', boss: 'Boss' };
+  const SECTION_LABEL = { bestiary: 'Bestiary', bosstiary: 'Bosstiary' };
+  const BOSS_CATEGORY_LABEL = { bane: 'Bane', archfoe: 'Archfoe', nemesis: 'Nemesis' };
+  const STAGE_LABEL = {
+    bestiary: { stage_1: 'Stage I', stage_2: 'Stage II', completed: 'Complete' },
+    bosstiary: { stage_1: 'Prowess', stage_2: 'Expertise', completed: 'Mastery' }
+  };
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
@@ -67,7 +72,7 @@ G.BestiaryUI = (() => {
     if (fState === 'progress' && st !== 'stage_1' && st !== 'stage_2') return false;
     if (fState === 'completed' && st !== 'completed') return false;
     if (fDiff !== 'all' && row.difficulty !== fDiff) return false;
-    if (fType !== 'all' && row.entryType !== fType) return false;
+    if (fType !== 'all' && row.section !== fType) return false;
     return true;
   }
 
@@ -119,10 +124,9 @@ G.BestiaryUI = (() => {
     mk('Complete', 'state', 'completed');
     mk('Difficulty: all', 'diff', 'all');
     for (const d of G.Bestiary.DIFFICULTIES) mk(DIFF_LABEL[d] || d, 'diff', d);
-    mk('Type: all', 'type', 'all');
-    mk('Normal', 'type', 'normal');
-    mk('Elite', 'type', 'elite');
-    mk('Boss', 'type', 'boss');
+    mk('Category: all', 'type', 'all');
+    mk('Bestiary', 'type', 'bestiary');
+    mk('Bosstiary', 'type', 'bosstiary');
   }
 
   function renderGrid() {
@@ -140,8 +144,7 @@ G.BestiaryUI = (() => {
       const cell = document.createElement('div');
       cell.className = 'cell' + (known ? '' : ' locked') + (row.creatureId === selId ? ' on' : '');
       cell.tabIndex = 0;
-      if (row.entryType === 'boss') cell.insertAdjacentHTML('beforeend', `<span class="badge-r" title="Boss">${G.Icons.html('crown', 12)}</span>`);
-      else if (row.entryType === 'elite') cell.insertAdjacentHTML('beforeend', `<span class="badge-r" title="Elite">★</span>`);
+      if (row.section === 'bosstiary') cell.insertAdjacentHTML('beforeend', `<span class="badge-r" title="Bosstiary">${G.Icons.html('crown', 12)}</span>`);
       if (legacy != null && G.GeoSprites) {
         cell.appendChild(G.UI.spriteCanvas(legacy, 92, 80, { scale: 2, silhouette: !known, shadow: known }));
       } else {
@@ -198,9 +201,15 @@ G.BestiaryUI = (() => {
       box.appendChild(canvasWrap);
       const head = document.createElement('div');
       head.className = 'center';
+      const sec = catalog.section || 'bestiary';
+      const tier = sec === 'bosstiary'
+        ? (BOSS_CATEGORY_LABEL[catalog.bossCategory] || catalog.bossCategory || 'Boss')
+        : (DIFF_LABEL[catalog.difficulty] || catalog.difficulty);
+      const stageNames = STAGE_LABEL[sec] || STAGE_LABEL.bestiary;
+      const stLabel = stageNames[st] || STATE_LABEL[st] || st;
       head.innerHTML = `<h3>${esc(catalog.displayName || creatureId)}</h3>` +
-        `<div class="sub">${TYPE_LABEL[catalog.entryType] || catalog.entryType} · ${DIFF_LABEL[catalog.difficulty] || catalog.difficulty}</div>` +
-        `<div class="sub">${STATE_LABEL[st]} · ${prog.kills} kills` +
+        `<div class="sub">${SECTION_LABEL[sec] || sec} · ${tier}</div>` +
+        `<div class="sub">${stLabel} · ${prog.kills} kills` +
         (catalog.thresholds ? ` · goal ${catalog.thresholds.final}` : '') + '</div>';
       box.appendChild(head);
     } else {
