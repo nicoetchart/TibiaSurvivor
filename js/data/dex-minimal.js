@@ -8,6 +8,4 @@ G.DEX = [];
 G.DEX_BY = {};
 /** @deprecated PSR-2 — usar G.getCreatureByLegacyId */
 G.getCreatureByLegacyId = legacyId => (G.Content && G.Content.runtimeByLegacyId(legacyId)) || null;
-/** @deprecated PSR-2 — alias temporal */
-G.getPokemon = G.getCreatureByLegacyId;
 G.SPRITE_META = {};

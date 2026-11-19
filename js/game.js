@@ -936,6 +936,7 @@ G.Game = (() => {
 /* ============ Flow — transiciones entre pantallas ============ */
 G.Flow = {
   boot() {
+    if (G.DB.purgeLegacyPs) G.DB.purgeLegacyPs();
     G.UI.initChrome();
     G.LoginUI.init(); G.VocationUI.init(); G.MenuUI.init();
     G.GoalsUI.init(); G.ProfileUI.init(); G.SettingsUI.init(); G.OutfitUI && G.OutfitUI.init(); G.NewsUI.init(); G.Updater.init();

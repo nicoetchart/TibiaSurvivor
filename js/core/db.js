@@ -7,7 +7,8 @@
  *   ts.save.<clave>  partida de esa cuenta (product: tibiasurvivor)
  *   ts.session       última cuenta con sesión iniciada
  *
- * Los saves históricos ps.* no se cargan ni se borran.
+ * Saves `ps.*` no se cargan. Tras migrar prefs (DEC-015), `purgeLegacyPs()` borra
+ * todas las claves `ps.*` del dispositivo (DEC-036).
  * El modo invitado juega con una partida en memoria que no se guarda.
  */
 G.DB = (() => {
@@ -76,6 +77,23 @@ G.DB = (() => {
     }
   }
   function remove(k) { try { localStorage.removeItem(k); } catch (e) { /* nada */ } }
+
+  let legacyPurged = false;
+  /** Borra claves `ps.*` (partidas y prefs PokéSurvivor) tras one-shot ts.* (DEC-036). */
+  function purgeLegacyPs() {
+    if (legacyPurged) return 0;
+    legacyPurged = true;
+    let n = 0;
+    try {
+      const drop = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('ps.')) drop.push(k);
+      }
+      for (const k of drop) { remove(k); n++; }
+    } catch (e) { /* nada */ }
+    return n;
+  }
 
   function acceptSave(s) {
     if (!s || typeof s !== 'object') return false;
@@ -490,6 +508,7 @@ G.DB = (() => {
     get storageOk() { return storageOk; },
     get PRODUCT() { return PRODUCT; },
     get SCHEMA_VERSION() { return SCHEMA_VERSION; },
+    purgeLegacyPs,
     START_COINS
   };
 })();

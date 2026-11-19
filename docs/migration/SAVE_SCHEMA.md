@@ -2,7 +2,7 @@
 
 **Fase:** 2 (2026-10-31)  
 **Producto:** `tibiasurvivor`  
-**Prefijo localStorage:** `ts.*` (los saves `ps.*` históricos no se cargan ni se borren)
+**Prefijo localStorage:** `ts.*` (los saves `ps.*` no se cargan; al arrancar se borran todas las claves `ps.*`, DEC-036)
 
 ## Claves localStorage
 

@@ -825,12 +825,37 @@ PSR-6 — completed (export/SEO Tibia; sprites legacy gated; dominio centralizad
 ### Dominio (DEC-035)
 - Canónico: `https://www.tibiasurvivor.com/` · `CNAME` → `www.tibiasurvivor.com`
 
-### No hecho (PSR-7)
-- Borrar `assets/pokemon/` del repo (DEC-030; miles de PNG legacy).
-
 ### Próximo paso
 
 **PSR-7** — purge `ps.*`, dominio y certificación final.
+
+---
+
+## 2026-11-18 — PSR-7
+
+### Fase
+PSR-7 — completed (purge `ps.*`; certificación; código legacy recortado)
+
+### Cambios
+
+| Archivo | Cambio |
+|---------|--------|
+| `js/core/db.js` | `purgeLegacyPs()` (DEC-036) |
+| `js/game.js` | Purge en `Flow.boot` |
+| `js/ui/menu.js` | Sin colección/mejoras Pokémon |
+| `js/ui/goals-ui.js` | Perfil solo Bestiary / neutral |
+| `js/data/dex-minimal.js` | Sin alias `getPokemon` |
+| `tools/validate-psr7.js` | Certificación MVP + dominio + purge |
+| `tools/prune-legacy-pokemon-assets.js` | Opcional: `git rm` de `assets/pokemon/` |
+| `dev.html` | Sin `window.PS_PAGES` |
+| `SAVE_SCHEMA.md` | Documenta purge `ps.*` |
+
+### Assets Pokémon (DEC-030)
+- Ejecutar `node tools/prune-legacy-pokemon-assets.js` para sacar `assets/pokemon/` del repo (~13k PNG).
+
+### Próximo paso
+
+Mantenimiento MVP; Fase siguiente según roadmap del propietario.
 
 ---
 

@@ -186,23 +186,6 @@
       for (const a of list) grid.appendChild(achCard(a, s));
       box.appendChild(grid);
 
-      if (!neutral && cat === 'legendarios') {
-        const legs = all.filter(a => a.dex);
-        const beaten = legs.filter(a => s.legends && s.legends[a.dex]).length;
-        box.insertAdjacentHTML('beforeend', `<h3 style="margin:14px 0 6px">Legendaries defeated ${beaten} / ${legs.length}</h3>`);
-        const lg = document.createElement('div');
-        lg.className = 'leg-grid';
-        for (const a of legs) {
-          const ok = !!(s.legends && s.legends[a.dex]);
-          const c = document.createElement('div');
-          c.className = 'leg-cell' + (ok ? ' ok' : '');
-          c.title = a.name + (ok ? ' · defeated!' : '');
-          c.appendChild(G.UI.spriteCanvas(a.dex, 64, 56, { scale: 1, silhouette: !ok, shadow: ok }));
-          c.insertAdjacentHTML('beforeend', `<small>${ok ? esc(G.DEX_BY[a.dex].name) : '???'}</small>`);
-          lg.appendChild(c);
-        }
-        box.appendChild(lg);
-      }
     }
 
     function achCard(a, s) {
@@ -256,22 +239,8 @@
           favs.appendChild(slot);
         }
         box.appendChild(favs);
-      } else if (G.DEX_BY) {
-      box.insertAdjacentHTML('beforeend', `<h3>Your 3 favorite Pokémon</h3>`);
-      const favs = document.createElement('div');
-      favs.className = 'fav-slots';
-      for (let i = 0; i < 3; i++) {
-        const f = P.favs[i];
-        const slot = document.createElement('div');
-        slot.className = 'fav-slot';
-        if (f && G.DEX_BY[f.dex]) {
-          slot.appendChild(G.UI.spriteCanvas(f.dex, 120, 100, { scale: 2, lively: true, shiny: !!f.shiny }));
-          slot.insertAdjacentHTML('beforeend', `<b>${f.shiny ? G.Icons.html('shiny', 12) + ' ' : ''}${esc(G.DEX_BY[f.dex].name)}</b>`);
-        } else slot.innerHTML = '<span>Choose</span>';
-        slot.onclick = () => pickFav(i);
-        favs.appendChild(slot);
-      }
-      box.appendChild(favs);
+      } else {
+        box.insertAdjacentHTML('beforeend', '<p class="note">Profile favorites require neutral Tibia mode.</p>');
       }
 
       const titles = G.Progress.titles();
@@ -320,33 +289,8 @@
         fill('');
         return;
       }
-      box.innerHTML = `<div class="row between"><h3>Pick favorite ${i + 1}</h3>
-        <button class="btn small ghost" id="fav-back">Back</button></div>
-        <input class="field" id="fav-q" placeholder="Search by name" style="max-width:320px;margin:6px 0 10px">
-        <div class="grid" id="fav-grid"></div>`;
-      $('fav-back').onclick = () => { tab = 'profile'; render(); };
-      const fill = q => {
-        const g = $('fav-grid');
-        g.innerHTML = '';
-        const mons = Object.keys(s.owned).map(Number).filter(d => G.DEX_BY[d] && (!q || G.DEX_BY[d].name.toLowerCase().includes(q)));
-        for (const d of mons.slice(0, 120)) {
-          for (const shiny of G.DB.ownsShiny(d) ? [false, true] : [false]) {
-            const c = document.createElement('div');
-            c.className = 'cell';
-            c.appendChild(G.UI.spriteCanvas(d, 92, 80, { scale: 2, shiny }));
-            c.insertAdjacentHTML('beforeend', `<b>${shiny ? G.Icons.html('shiny', 12) + ' ' : ''}${esc(G.DEX_BY[d].name)}</b>`);
-            c.onclick = () => {
-              s.profile.favs = (s.profile.favs || []).slice();
-              s.profile.favs[i] = { dex: d, shiny };
-              s.profile.favs = s.profile.favs.filter(Boolean).slice(0, 3);
-              save(); tab = 'profile'; render();
-            };
-            g.appendChild(c);
-          }
-        }
-      };
-      $('fav-q').oninput = () => fill($('fav-q').value.trim().toLowerCase());
-      fill('');
+      tab = 'profile';
+      render();
     }
 
     function save() {
