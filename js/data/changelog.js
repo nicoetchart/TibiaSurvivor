@@ -2,6 +2,10 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-18', title: ['Misiones', 'Missions'], chg: [
+    ['PSR-5: sin Collection/Upgrades/test en boot; perfil con favoritos del Bestiary y Cyclopedia.',
+     'PSR-5: no Collection/Upgrades/test in boot; profile favorites from Bestiary and Cyclopedia.'],
+  ] },
   { d: '2026-11-18', title: ['Menú', 'Menu'], fix: [
     ['Arreglo: el menú principal ya no queda en blanco si el save tenía partner inválido (PSR-4).',
      'Fix: main menu no longer stays blank when save had an invalid partner (PSR-4).'],

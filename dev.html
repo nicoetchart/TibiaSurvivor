@@ -131,45 +131,6 @@
   </div>
 </section>
 
-<!-- ====== Test de personalidad ====== -->
-<section id="scr-test" class="scr dim hidden">
-  <div class="box test-box">
-    <div class="progress"><i id="test-bar"></i></div>
-    <p class="sub" id="test-count"></p>
-    <p class="q" id="test-q"></p>
-    <div class="answers" id="test-a"></div>
-  </div>
-</section>
-
-<!-- ====== Resultado del test ====== -->
-<section id="scr-result" class="scr dim hidden">
-  <div class="box result">
-    <p class="sub">Your personality is…</p>
-    <div class="trait" id="res-trait"></div>
-    <p id="res-text"></p>
-    <canvas id="res-stage" class="stage" width="200" height="150"></canvas>
-    <h3>Your partner: <span class="gold" id="res-name"></span></h3>
-    <div class="row" style="justify-content:center;margin-top:14px">
-      <button id="res-ok" class="btn gold">Let's go!</button>
-      <button id="res-other" class="btn">Pick another</button>
-    </div>
-  </div>
-</section>
-
-<!-- ====== Elegir compañero ====== -->
-<section id="scr-starters" class="scr dim hidden">
-  <div class="box wide">
-    <h2>Choose your partner</h2>
-    <p class="sub">Starters from every region, plus two more friends.</p>
-    <div class="grid" id="starter-grid"></div>
-    <div class="row between" style="margin-top:14px">
-      <button id="starter-back" class="btn ghost">Back</button>
-      <span id="starter-info" class="grow" style="color:var(--muted)"></span>
-      <button id="starter-ok" class="btn gold" disabled>Choose</button>
-    </div>
-  </div>
-</section>
-
 <!-- ====== Menú principal ====== -->
 <section id="scr-menu" class="scr hidden">
   <div class="menu-left">
@@ -190,8 +151,6 @@
         <button class="menu-item play" data-go="play">Play<small>Start a hunt (~15 min)</small></button>
         <button class="menu-item hidden" data-go="bestiary">Bestiary<small id="menu-bestiary-sub">Hunt log</small></button>
         <button class="menu-item hidden" data-go="outfit">Outfit<small>Colors and addons</small></button>
-        <button class="menu-item" data-go="dex">Collection<small id="menu-dex-count">Legacy</small></button>
-        <button class="menu-item" data-go="upgrades">Upgrades<small>Legacy</small></button>
         <button class="menu-item" data-go="goals">Missions<small id="menu-goals-sub">Missions, achievements and profile</small></button>
         <button class="menu-item" data-go="settings">Settings<small>Sound, graphics, controls and account</small></button>
       </div>
@@ -358,39 +317,6 @@
   </div>
 </section>
 
-<!-- ====== Collection ====== -->
-<section id="scr-dex" class="scr dim hidden">
-  <div class="box wide">
-    <div class="row between"><h2>Collection <span id="dex-total" class="sub" style="font-size:17px"></span></h2><button class="btn small ghost" data-back>Back</button></div>
-    <div class="gen-tabs" id="dex-gens"></div>
-    <div class="split" style="margin-top:8px">
-      <div>
-        <div class="filters" id="dex-filters"></div>
-        <div class="grid" id="dex-grid"></div>
-      </div>
-      <div class="panel" id="dex-detail"></div>
-    </div>
-  </div>
-</section>
-
-<!-- ====== Upgrades ====== -->
-<section id="scr-upgrades" class="scr dim hidden">
-  <div class="box wide">
-    <div class="row between"><h2>Upgrades</h2><button class="btn small ghost" data-back>Back</button></div>
-    <div class="upg-head">
-      <canvas id="upg-stage" class="stage" width="120" height="96"></canvas>
-      <div class="grow">
-        <p class="sub" style="margin:0">Legacy upgrades (not available in neutral MVP).</p>
-        <div class="row" style="margin-top:8px">
-          <label for="upg-mon" style="margin:0">Partner</label>
-          <select id="upg-mon" class="field" style="width:auto;min-width:220px"></select>
-        </div>
-      </div>
-    </div>
-    <div class="upg" id="upg-list"></div>
-  </div>
-</section>
-
 <!-- ====== Durante la run ====== -->
 <section id="scr-levelup" class="scr dim hidden">
   <div class="box center">
@@ -524,12 +450,10 @@
 <script defer src="js/ui/ui.js"></script>
 <script defer src="js/ui/hud.js"></script>
 <script defer src="js/ui/login.js"></script>
-<script defer src="js/ui/test.js"></script>
 <script defer src="js/ui/vocation-ui.js"></script>
 <script defer src="js/ui/menu.js"></script>
 <script defer src="js/ui/bestiary-ui.js"></script>
 <script defer src="js/ui/bestiary-run-ui.js"></script>
-<script defer src="js/ui/slots.js"></script>
 <script defer src="js/ui/run-ui.js"></script>
 <script defer src="js/ui/goals-ui.js"></script>
 <script defer src="js/ui/outfit-ui.js"></script>

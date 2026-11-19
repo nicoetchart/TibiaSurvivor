@@ -193,6 +193,15 @@ G.DB = (() => {
     if (s.partner != null && G.Content && G.Content.isNeutralLegacyId(s.partner)) {
       if (!s.selectedVocation) s.selectedVocation = 'master_sorcerer';
     }
+    if (s.profile && G.Content && G.Content.shouldUseNeutralSave(s)) {
+      const favs = Array.isArray(s.profile.favs) ? s.profile.favs : [];
+      s.profile.favs = favs.filter(f => {
+        if (!f || typeof f !== 'object') return false;
+        if (f.creatureId && G.Bestiary && G.Bestiary.getCatalogEntry(f.creatureId)) return true;
+        const leg = f.legacyId != null ? f.legacyId : f.dex;
+        return G.Content.getCreature(leg);
+      }).slice(0, 3);
+    }
     if (s.pupg && G.Content && G.Content.shouldUseNeutralSave(s)) {
       const legacy = s.partner;
       s.upgrades = s.upgrades || {};

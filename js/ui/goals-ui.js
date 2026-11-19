@@ -10,15 +10,78 @@
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = t => (t >= 3600 ? Math.floor(t / 3600) + ':' + G.U.mmss(t % 3600).padStart(5, '0') : G.U.mmss(t));
 
+  function favSpriteId(f) {
+    if (!f) return null;
+    if (f.legacyId != null) return f.legacyId;
+    if (f.dex != null) return f.dex;
+    if (f.creatureId && G.CREATURE_BY_ID && G.CREATURE_BY_ID[f.creatureId]) return G.CREATURE_BY_ID[f.creatureId].legacyId;
+    return null;
+  }
+
+  function favName(f) {
+    if (!f) return '';
+    if (f.creatureId && G.Bestiary) {
+      const row = G.Bestiary.getCatalogEntry(f.creatureId);
+      if (row && row.name) return row.name;
+    }
+    const legacy = favSpriteId(f);
+    if (legacy != null && G.Content) return G.Content.creatureName(legacy) || '';
+    return '';
+  }
+
+  function discoveredCreatures() {
+    if (!G.Bestiary) return [];
+    const out = [];
+    for (const row of G.Bestiary.listEntries()) {
+      const p = G.Bestiary.getProgressEntry(row.creatureId);
+      const seen = p && (p.kills > 0 || p.firstSeenAt);
+      if (!seen) continue;
+      const cr = G.CREATURE_BY_ID[row.creatureId];
+      out.push({
+        creatureId: row.creatureId,
+        legacyId: cr && cr.legacyId,
+        name: row.name
+      });
+    }
+    return out;
+  }
+
+  function cyclopediaStats() {
+    const list = G.Bestiary ? G.Bestiary.listEntries() : [];
+    let disc = 0;
+    let complete = 0;
+    for (const row of list) {
+      const p = G.Bestiary.getProgressEntry(row.creatureId);
+      const seen = p && (p.kills > 0 || p.firstSeenAt);
+      if (seen) disc++;
+      const st = G.Bestiary.deriveStage(p ? p.kills : 0, row.thresholds, seen);
+      if (st === 'completed') complete++;
+    }
+    return { discovered: disc, total: list.length, complete };
+  }
+
   function localProfileData() {
     const s = G.DB.save;
     if (!s) return null;
-    return {
+    const neutral = G.Content && G.Content.mode === 'neutral';
+    const achIds = Object.keys(s.ach || {});
+    const d = {
       name: s.name || G.DB.user || 'Player',
       title: (s.profile && s.profile.title) || '',
       favs: (s.profile && s.profile.favs) || [],
-      best: { solo: s.stats.bestTime, group: s.stats.bestGroupTime || 0, level: s.stats.bestLevel, bosses: s.stats.bossesTotal }
+      best: {
+        solo: s.stats.bestTime,
+        group: s.stats.bestGroupTime || 0,
+        level: s.stats.bestLevel,
+        bosses: s.stats.bossesTotal || 0,
+        kills: s.stats.totalKills || 0,
+        legends: neutral ? 0 : Object.keys(s.legends || {}).length
+      },
+      medals: achIds.length,
+      medalIds: achIds
     };
+    if (neutral) d.cyclopedia = cyclopediaStats();
+    return d;
   }
 
   // ======================= PANTALLA =======================
@@ -165,6 +228,7 @@
       box.insertAdjacentHTML('beforeend', `<p class="sub">Preview of your local profile (this browser only).</p>`);
       if (neutral) {
         const st = s.stats || {};
+        const cy = cyclopediaStats();
         box.insertAdjacentHTML('beforeend', `<div class="stats" style="margin:10px 0">
           <div><span>Runs</span><b>${st.runs || 0}</b></div>
           <div><span>Wins</span><b>${st.wins || 0}</b></div>
@@ -172,8 +236,27 @@
           <div><span>Best level</span><b>${st.bestLevel || 0}</b></div>
           <div><span>Kills</span><b>${(st.totalKills || 0).toLocaleString('en-US')}</b></div>
           <div><span>Coins earned</span><b>${(st.coinsEarned || 0).toLocaleString('en-US')}</b></div>
+          <div><span>Cyclopedia</span><b>${cy.discovered} / ${cy.total} · ${cy.complete} complete</b></div>
         </div>`);
-      } else {
+        box.insertAdjacentHTML('beforeend', `<h3>Three favorite creatures</h3>
+          <p class="note">Pick from creatures you have discovered in the Bestiary.</p>`);
+        const favs = document.createElement('div');
+        favs.className = 'fav-slots';
+        for (let i = 0; i < 3; i++) {
+          const f = P.favs[i];
+          const slot = document.createElement('div');
+          slot.className = 'fav-slot';
+          const sid = favSpriteId(f);
+          const nm = favName(f);
+          if (sid != null && nm) {
+            slot.appendChild(G.UI.spriteCanvas(sid, 120, 100, { scale: 2, lively: true }));
+            slot.insertAdjacentHTML('beforeend', `<b>${esc(nm)}</b>`);
+          } else slot.innerHTML = '<span>Choose</span>';
+          slot.onclick = () => pickFav(i);
+          favs.appendChild(slot);
+        }
+        box.appendChild(favs);
+      } else if (G.DEX_BY) {
       box.insertAdjacentHTML('beforeend', `<h3>Your 3 favorite Pokémon</h3>`);
       const favs = document.createElement('div');
       favs.className = 'fav-slots';
@@ -204,7 +287,39 @@
 
     function pickFav(i) {
       const s = G.DB.save;
+      const neutral = G.Content && G.Content.mode === 'neutral';
       const box = $('goals-body');
+      if (neutral) {
+        box.innerHTML = `<div class="row between"><h3>Pick favorite ${i + 1}</h3>
+          <button class="btn small ghost" id="fav-back">Back</button></div>
+          <input class="field" id="fav-q" placeholder="Search by name" style="max-width:320px;margin:6px 0 10px">
+          <div class="grid" id="fav-grid"></div>`;
+        $('fav-back').onclick = () => { tab = 'profile'; render(); };
+        const fill = q => {
+          const g = $('fav-grid');
+          g.innerHTML = '';
+          let pool = discoveredCreatures();
+          if (q) pool = pool.filter(c => c.name.toLowerCase().includes(q));
+          for (const c of pool.slice(0, 96)) {
+            if (c.legacyId == null) continue;
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.appendChild(G.UI.spriteCanvas(c.legacyId, 92, 80, { scale: 2 }));
+            cell.insertAdjacentHTML('beforeend', `<b>${esc(c.name)}</b>`);
+            cell.onclick = () => {
+              s.profile.favs = (s.profile.favs || []).slice();
+              s.profile.favs[i] = { creatureId: c.creatureId, legacyId: c.legacyId };
+              s.profile.favs = s.profile.favs.filter(Boolean).slice(0, 3);
+              save(); tab = 'profile'; render();
+            };
+            g.appendChild(cell);
+          }
+          if (!g.children.length) g.innerHTML = '<p class="note">Discover creatures in the Bestiary first.</p>';
+        };
+        $('fav-q').oninput = () => fill($('fav-q').value.trim().toLowerCase());
+        fill('');
+        return;
+      }
       box.innerHTML = `<div class="row between"><h3>Pick favorite ${i + 1}</h3>
         <button class="btn small ghost" id="fav-back">Back</button></div>
         <input class="field" id="fav-q" placeholder="Search by name" style="max-width:320px;margin:6px 0 10px">
@@ -261,7 +376,11 @@
 
     function showData(d) {
       const b = d.best || {};
+      const neutral = G.Content && G.Content.mode === 'neutral';
       const body = $('prof-body');
+      const cycLine = d.cyclopedia
+        ? `<div><span>Cyclopedia</span><b>${d.cyclopedia.discovered} / ${d.cyclopedia.total}</b></div>`
+        : (neutral ? '' : `<div><span>Legendaries</span><b>${b.legends || 0}</b></div>`);
       body.innerHTML = `
         <div class="prof-head"><h2 translate="no">${esc(d.name || '???')}</h2>${d.title ? `<span class="prof-title">${esc(d.title)}</span>` : ''}</div>
         <div class="fav-slots view" id="prof-favs"></div>
@@ -270,23 +389,26 @@
           <div><span>In group</span><b>${fmt(b.group || 0)}</b></div>
           <div><span>Best level</span><b>${b.level || 0}</b></div>
           <div><span>Bosses</span><b>${(b.bosses || 0).toLocaleString('en-US')}</b></div>
-          <div><span>Legendaries</span><b>${b.legends || 0}</b></div>
+          ${cycLine}
           <div><span>Kills</span><b>${(b.kills || 0).toLocaleString('en-US')}</b></div>
         </div>
-        <h3>Medals <span class="sub">${b.medals || 0}</span></h3>
+        <h3>Medals <span class="sub">${d.medals || 0}</span></h3>
         <div class="prof-medals" id="prof-medals"></div>`;
       const favs = $('prof-favs');
       for (const f of (d.favs || []).slice(0, 3)) {
-        if (!G.DEX_BY[f.dex]) continue;
+        const sid = favSpriteId(f);
+        const nm = favName(f);
+        if (sid == null || !nm) continue;
         const slot = document.createElement('div');
         slot.className = 'fav-slot';
-        slot.appendChild(G.UI.spriteCanvas(f.dex, 120, 100, { scale: 2, lively: true, shiny: !!f.shiny }));
-        slot.insertAdjacentHTML('beforeend', `<b>${f.shiny ? G.Icons.html('shiny', 12) + ' ' : ''}${esc(G.DEX_BY[f.dex].name)}</b>`);
+        slot.appendChild(G.UI.spriteCanvas(sid, 120, 100, { scale: 2, lively: true, shiny: !!f.shiny }));
+        slot.insertAdjacentHTML('beforeend', `<b>${f.shiny ? G.Icons.html('shiny', 12) + ' ' : ''}${esc(nm)}</b>`);
         favs.appendChild(slot);
       }
       if (!favs.children.length) favs.innerHTML = '<p class="sub">No favorites yet.</p>';
       const med = $('prof-medals');
-      for (const id of d.medals || []) {
+      const medalIds = d.medalIds || d.medals || [];
+      for (const id of medalIds) {
         const a = G.AchDefs.BY[id];
         if (!a) continue;
         const m = document.createElement('div');

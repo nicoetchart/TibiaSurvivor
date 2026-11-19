@@ -785,6 +785,28 @@ DEC-027, DEC-028, DEC-030, DEC-038.
 
 ---
 
+## 2026-11-18 — PSR-5
+
+### Fase
+PSR-5 — completed (UI neutral; legacy HTML/boot retirado)
+
+### Cambios
+
+| Archivo | Cambio |
+|---------|--------|
+| `dev.html` | Sin scr-test/dex/upgrades; sin test.js/slots.js |
+| `js/ui/goals-ui.js` | Perfil neutral: Cyclopedia, favoritos Bestiary, sin `G.DEX_BY` |
+| `js/ui/menu.js` | Sin Collection/Upgrades |
+| `js/ui/ui.js` | Lista `SCREENS` alineada |
+| `js/game.js` | Sin TestUI; `ProfileUI.init` |
+| `js/core/db.js` | Sanitize `profile.favs` neutral |
+
+### Próximo paso
+
+**PSR-6** — assets/sprites Pokémon; SEO/dominio.
+
+---
+
 <!-- Plantilla para entradas futuras
 
 ## YYYY-MM-DD — FASE N

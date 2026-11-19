@@ -5,19 +5,15 @@ G.MenuUI = (() => {
   let dexFilter = 'all', dexGen = 1, dexSel = null;
 
   function init() {
-    const ICON_LEGACY = { dex: 'book', upgrades: 'up', gacha: 'ball4' };
     document.querySelectorAll('#scr-menu [data-go]').forEach(b => {
       const go = b.dataset.go;
-      const icon = ICON_LEGACY[go] || G.Icons.menuIcon(go);
-      b.insertAdjacentHTML('afterbegin', `<span class="mi-ico">${G.Icons.html(icon, 26)}</span>`);
+      b.insertAdjacentHTML('afterbegin', `<span class="mi-ico">${G.Icons.html(G.Icons.menuIcon(go), 26)}</span>`);
       b.dataset.sfx = b.dataset.go === 'play' ? 'confirm' : 'click';
       b.onclick = () => {
         const go = b.dataset.go;
         if (go === 'play') G.Flow.play();
         else if (go === 'bestiary') G.BestiaryUI.open();
         else if (go === 'outfit') G.OutfitUI && G.OutfitUI.open();
-        else if (go === 'dex') openDex();
-        else if (go === 'upgrades') openUpgrades();
         else if (go === 'goals') G.GoalsUI.open();
         else if (go === 'settings') G.SettingsUI.open();
       };
@@ -35,9 +31,6 @@ G.MenuUI = (() => {
   function open() {
     const s = G.DB.save;
     const neutral = G.Content.mode === 'neutral';
-    document.querySelectorAll('#scr-menu [data-go="dex"], #scr-menu [data-go="upgrades"], #scr-menu [data-go="gacha"]').forEach(b => {
-      b.classList.toggle('hidden', neutral);
-    });
     document.querySelectorAll('#scr-menu [data-go="bestiary"], #scr-menu [data-go="outfit"]').forEach(b => {
       b.classList.toggle('hidden', !neutral);
     });
@@ -80,14 +73,6 @@ G.MenuUI = (() => {
     // Normal / shiny a mano, aquí mismo (en el móvil no se encontraba en la ficha).
     const seg = $('menu-shiny');
     if (seg) seg.classList.add('hidden');
-
-    const shinies = Object.keys(s.shiny || {}).length;
-    if (neutral) {
-      $('menu-dex-count').textContent = '';
-    } else {
-      const owned = Object.keys(s.owned).filter(d => G.DEX_BY[d]).length;
-      $('menu-dex-count').textContent = `${owned} / ${G.DEX.length}` + (shinies ? ` · ${shinies} shiny` : '');
-    }
 
     const st = s.stats;
     $('menu-stats').innerHTML = neutral

@@ -7,9 +7,9 @@
  */
 G.UI = (() => {
   const $ = id => document.getElementById(id);
-  const SCREENS = ['scr-login', 'scr-vocation', 'scr-test', 'scr-result', 'scr-starters', 'scr-menu',
-                   'scr-outfit', 'scr-bestiary', 'scr-dex', 'scr-upgrades', 'scr-levelup', 'scr-pause', 'scr-over',
-                   'scr-item', 'scr-goals', 'scr-bond'];
+  const SCREENS = ['scr-login', 'scr-vocation', 'scr-menu',
+                   'scr-outfit', 'scr-bestiary', 'scr-levelup', 'scr-pause', 'scr-over',
+                   'scr-item', 'scr-goals', 'scr-bond', 'scr-settings', 'scr-news', 'scr-profile'];
 
   function el(id) { return document.getElementById(id); }
   function hideEl(node) { if (node) node.classList.add('hidden'); }
