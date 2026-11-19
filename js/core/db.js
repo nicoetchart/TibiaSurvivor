@@ -117,6 +117,7 @@ G.DB = (() => {
       shiny: {},
       partner: null,
       partnerShiny: false,
+      selectedVocation: null,
       starter: null,
       personality: null,
       upgrades: {},
@@ -184,19 +185,47 @@ G.DB = (() => {
     return s;
   }
 
+  function applyTibiaProductMeta(s) {
+    if (s.product !== PRODUCT) return;
+    s.tickets = { t1: 0, t10: 0 };
+    s.partnerShiny = false;
+    if (s.pity) delete s.pity;
+    if (s.partner != null && G.Content && G.Content.isNeutralLegacyId(s.partner)) {
+      if (!s.selectedVocation) s.selectedVocation = 'master_sorcerer';
+    }
+    if (s.pupg && G.Content && G.Content.shouldUseNeutralSave(s)) {
+      const legacy = s.partner;
+      s.upgrades = s.upgrades || {};
+      if (legacy && s.pupg[legacy] && !s._psr4UpgMerged) {
+        for (const id in s.pupg[legacy]) {
+          const v = s.pupg[legacy][id];
+          if (v > (s.upgrades[id] || 0)) s.upgrades[id] = v;
+        }
+        s._psr4UpgMerged = true;
+      }
+    }
+  }
+
   function sanitize(s) {
     const n = v => (Number.isFinite(+v) && +v > 0 ? Math.floor(+v) : 0);
     s.coins = n(s.coins);
-    s.tickets = s.tickets || { t1: 0, t10: 0 };
-    s.tickets.t1 = n(s.tickets.t1);
-    s.tickets.t10 = n(s.tickets.t10);
     const knownId = d => G.Content && G.Content.getCreature && G.Content.getCreature(d);
+    const neutralSave = G.Content && G.Content.shouldUseNeutralSave(s);
+    if (!neutralSave) {
+      s.tickets = s.tickets || { t1: 0, t10: 0 };
+      s.tickets.t1 = n(s.tickets.t1);
+      s.tickets.t10 = n(s.tickets.t10);
+    }
+    applyTibiaProductMeta(s);
     if (G.Content) for (const coll of ['owned', 'shiny']) {
       for (const d of Object.keys(s[coll] || {})) if (!knownId(d)) delete s[coll][d];
     }
     if (s.partner != null && G.Content) {
       const dex = s.partner;
-      if (!knownId(dex) || !(s.owned && s.owned[dex])) {
+      if (!knownId(dex)) {
+        s.partner = null;
+        s.partnerShiny = false;
+      } else if (!neutralSave && !(s.owned && s.owned[dex])) {
         s.partner = null;
         s.partnerShiny = false;
       }
@@ -218,12 +247,18 @@ G.DB = (() => {
         s.pban[d] = [...new Set(l.filter(id => typeof id === 'string' && (!G.Moves || G.Moves.BY_ID[id])))].slice(0, 3);
       }
     } else s.pban = {};
-    if (G.Upgrades) for (const d of Object.keys(s.pupg || {})) {
+    if (G.Upgrades && !neutralSave) for (const d of Object.keys(s.pupg || {})) {
       const u = s.pupg[d];
       if (!u || typeof u !== 'object') { delete s.pupg[d]; continue; }
       for (const id of Object.keys(u)) {
         if (!G.Upgrades.BY[id]) delete u[id];
         else u[id] = Math.min(G.Upgrades.BY[id].max, n(u[id]));
+      }
+    }
+    if (G.Upgrades && neutralSave && s.upgrades && typeof s.upgrades === 'object') {
+      for (const id of Object.keys(s.upgrades)) {
+        if (!G.Upgrades.BY[id]) delete s.upgrades[id];
+        else s.upgrades[id] = Math.min(G.Upgrades.BY[id].max, n(s.upgrades[id]));
       }
     }
     if (G.Bestiary && G.Bestiary.sanitizeSave) G.Bestiary.sanitizeSave(s);
@@ -315,6 +350,7 @@ G.DB = (() => {
         const id = G.Content.playerLegacyIdForVocation('master_sorcerer');
         save.partner = id;
         save.starter = id;
+        save.selectedVocation = 'master_sorcerer';
         save.partnerShiny = false;
         grant(id, 'start');
       }
@@ -361,6 +397,7 @@ G.DB = (() => {
   function playAsGuest() {
     user = 'Invitado'; key = null; guest = true;
     save = newSave('Invitado');
+    sanitize(save);
     attachBestiary(save);
     remove(K_SES);
     return { ok: true, isNew: true };
@@ -402,11 +439,17 @@ G.DB = (() => {
 
   function upgradesOf(dex) {
     if (!save) return {};
+    if (G.Content && G.Content.shouldUseNeutralSave(save)) {
+      save.upgrades = save.upgrades || {};
+      applyTibiaProductMeta(save);
+      return save.upgrades;
+    }
     save.pupg = save.pupg || {};
     return save.pupg[dex] || (save.pupg[dex] = {});
   }
 
   function grantShiny(dex, from) {
+    if (save.product === PRODUCT) return false;
     grant(dex, from);
     if (save.shiny[dex]) return false;
     save.shiny[dex] = { at: Date.now(), from };

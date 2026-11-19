@@ -142,17 +142,23 @@ G.Progress = (() => {
   function grant(r) {
     const s = G.DB.save;
     if (!r) return;
-    s.tickets = s.tickets || { t1: 0, t10: 0 };
+    const neutral = G.Content && G.Content.shouldUseNeutralSave(s);
     if (r.coins) s.coins += r.coins;
-    if (r.t1) s.tickets.t1 += r.t1;
-    if (r.t10) s.tickets.t10 += r.t10;
+    if (!neutral) {
+      s.tickets = s.tickets || { t1: 0, t10: 0 };
+      if (r.t1) s.tickets.t1 += r.t1;
+      if (r.t10) s.tickets.t10 += r.t10;
+    }
     if (G.UI && G.UI.refreshCoins && !document.getElementById('topbar').classList.contains('hidden')) G.UI.refreshCoins();
   }
 
   function rewardText(r) {
     const p = [];
-    if (r.t10) p.push(G.Icons.html('ticket10', 12) + ' ' + r.t10 + ' ×10');
-    if (r.t1) p.push(G.Icons.html('ticket', 12) + ' ' + r.t1);
+    const neutral = G.Content && G.DB.save && G.Content.shouldUseNeutralSave(G.DB.save);
+    if (!neutral) {
+      if (r.t10) p.push(G.Icons.html('ticket10', 12) + ' ' + r.t10 + ' ×10');
+      if (r.t1) p.push(G.Icons.html('ticket', 12) + ' ' + r.t1);
+    }
     if (r.coins) p.push('<span class="coin"></span> ' + r.coins);
     return p.join(' &nbsp;');
   }

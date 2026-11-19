@@ -192,7 +192,6 @@
         <button class="menu-item hidden" data-go="outfit">Outfit<small>Colors and addons</small></button>
         <button class="menu-item" data-go="dex">Collection<small id="menu-dex-count">Legacy</small></button>
         <button class="menu-item" data-go="upgrades">Upgrades<small>Legacy</small></button>
-        <button class="menu-item" data-go="gacha">Gacha<small>Legacy</small></button>
         <button class="menu-item" data-go="goals">Missions<small id="menu-goals-sub">Missions, achievements and profile</small></button>
         <button class="menu-item" data-go="settings">Settings<small>Sound, graphics, controls and account</small></button>
       </div>
@@ -205,7 +204,7 @@
 
 <div id="topbar" class="topbar hidden">
   <div class="pill"><span class="coin"></span><span id="coins">0</span></div>
-  <div class="pill" id="tickets-pill" title="Gacha tickets"></div>
+  <div class="pill hidden" id="tickets-pill" title="Gacha tickets"></div>
   <div class="pill" id="user-pill"></div>
   <button id="btn-news" class="btn small ghost news-btn" title="News"></button>
   <button id="btn-sound" class="btn small ghost" title="Sound"></button>
@@ -392,38 +391,6 @@
   </div>
 </section>
 
-<!-- ====== Gacha ====== -->
-<section id="scr-gacha" class="scr dim hidden">
-  <div class="box wide">
-    <div class="row between"><h2>Gacha</h2><button class="btn small ghost" data-back>Back</button></div>
-    <div class="gen-tabs" id="gacha-gens"></div>
-    <div class="split" style="margin-top:8px">
-      <div>
-        <div class="banner" id="banner">
-          <h3 id="banner-title"></h3>
-          <p id="banner-desc" style="margin:4px 0 6px"></p>
-          <p class="sub" id="gacha-owned" style="margin:0"></p>
-          <div class="feat" id="gacha-feat"></div>
-        </div>
-        <div class="row" style="margin-top:14px">
-          <button id="pull-1" class="btn grow" data-sfx="none">Pull ×1 · <span id="cost-1"></span></button>
-          <button id="pull-10" class="btn gold grow" data-sfx="none">Pull ×10 · <span id="cost-10"></span></button>
-          <button id="pull-10b" class="btn gold grow" data-sfx="none">Pull ×10 · <span id="cost-10b"></span></button>
-        </div>
-        <p class="note tickets-line" id="gacha-tickets"></p>
-        <p class="note" id="gacha-pity"></p>
-      </div>
-      <div class="panel rates" id="gacha-rates"></div>
-    </div>
-  </div>
-</section>
-
-<div id="pull-fx" class="hidden">
-  <canvas id="slot" width="176" height="170" title="Click to skip animation"></canvas>
-  <div class="pull-results" id="pull-results"></div>
-  <button id="pull-close" class="btn gold hidden">Continue</button>
-</div>
-
 <!-- ====== Durante la run ====== -->
 <section id="scr-levelup" class="scr dim hidden">
   <div class="box center">
@@ -520,6 +487,7 @@
 <script defer src="js/core/tibia-tiles.js"></script>
 <script defer src="js/data/neutral-roster.js"></script>
 <script defer src="js/data/upgrades.js"></script>
+<script defer src="js/data/gacha-stub.js"></script>
 <script defer src="js/data/items.js"></script>
 <script defer src="js/data/missions.js"></script>
 <script defer src="js/data/achievements.js"></script>
@@ -539,7 +507,6 @@
 <script defer src="js/systems/spawner.js"></script>
 <script defer src="js/systems/ms-telemetry.js"></script>
 <script defer src="js/systems/levelup.js"></script>
-<script defer src="js/systems/gacha.js"></script>
 <script defer src="js/systems/interact.js"></script>
 <script defer src="js/systems/rift.js"></script>
 <script defer src="js/systems/judgment-stub.js"></script>
@@ -563,7 +530,6 @@
 <script defer src="js/ui/bestiary-ui.js"></script>
 <script defer src="js/ui/bestiary-run-ui.js"></script>
 <script defer src="js/ui/slots.js"></script>
-<script defer src="js/ui/gacha-ui.js"></script>
 <script defer src="js/ui/run-ui.js"></script>
 <script defer src="js/ui/goals-ui.js"></script>
 <script defer src="js/ui/outfit-ui.js"></script>

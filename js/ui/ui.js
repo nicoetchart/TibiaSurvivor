@@ -8,16 +8,23 @@
 G.UI = (() => {
   const $ = id => document.getElementById(id);
   const SCREENS = ['scr-login', 'scr-vocation', 'scr-test', 'scr-result', 'scr-starters', 'scr-menu',
-                   'scr-outfit', 'scr-bestiary', 'scr-dex', 'scr-upgrades', 'scr-gacha', 'scr-levelup', 'scr-pause', 'scr-over',
+                   'scr-outfit', 'scr-bestiary', 'scr-dex', 'scr-upgrades', 'scr-levelup', 'scr-pause', 'scr-over',
                    'scr-item', 'scr-goals', 'scr-bond'];
 
+  function el(id) { return document.getElementById(id); }
+  function hideEl(node) { if (node) node.classList.add('hidden'); }
+
   function show(id, keepMenu = false) {
-    for (const s of SCREENS) if (s !== id && !(keepMenu && s === 'scr-menu')) $(s).classList.add('hidden');
-    $(id).classList.remove('hidden');
+    for (const s of SCREENS) {
+      if (s !== id && !(keepMenu && s === 'scr-menu')) hideEl(el(s));
+    }
+    const root = el(id);
+    if (!root) { console.warn('[UI] missing screen', id); return; }
+    root.classList.remove('hidden');
   }
-  function hide(id) { $(id).classList.add('hidden'); }
-  function hideAll() { for (const s of SCREENS) $(s).classList.add('hidden'); }
-  function isOpen(id) { return !$(id).classList.contains('hidden'); }
+  function hide(id) { hideEl(el(id)); }
+  function hideAll() { for (const s of SCREENS) hideEl(el(s)); }
+  function isOpen(id) { const node = el(id); return !!(node && !node.classList.contains('hidden')); }
 
   /** Barra superior (monedas, usuario, sonido) sólo fuera de las runs. */
   function chrome(on) {

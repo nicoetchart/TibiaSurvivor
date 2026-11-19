@@ -4,7 +4,7 @@
   // avisar que arrancar a medias.
   const NEED = ['U', 'I18n', 'Settings', 'DB', 'Audio', 'Input', 'Touch', 'Sprites', 'GeoSprites', 'Camera', 'DamageTypes', 'MvpConfig', 'Bestiary', 'Content',
                 'Moves', 'Abilities', 'Vocations', 'NeutralRoster', 'Upgrades', 'Items',
-                'World', 'FX', 'Projectiles', 'EnemyMgr', 'Pickups', 'Player', 'Combat', 'Spawner', 'LevelUp', 'Gacha',
+                'World', 'FX', 'Projectiles', 'EnemyMgr', 'Pickups', 'Player', 'Combat', 'Spawner', 'LevelUp',
                 'Rift', 'Weather', 'Progress', 'Hazards', 'Icons', 'UI', 'HUD',
                 'MenuUI', 'BestiaryUI', 'BestiaryRunUI', 'BestiaryCharms', 'BestiaryTelemetry', 'VocationUI', 'RunUI', 'SettingsUI', 'Game', 'Flow'];
   function broken() {

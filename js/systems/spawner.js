@@ -130,6 +130,7 @@ G.Spawner = (() => {
   function isFlyer(def) { return G.Sprites.hovers(def.dex); }
 
   function rollShiny(dex) {
+    if (G.Content && G.Content.mode === 'neutral') return false;
     if (!G.Sprites.hasShiny(dex)) return false;
     if (forceShiny > 0) { forceShiny--; return true; }
     return Math.random() < SHINY_RATE;

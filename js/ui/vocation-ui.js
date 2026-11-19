@@ -38,6 +38,7 @@ G.VocationUI = (() => {
     save.starter = id;
     save.partner = id;
     save.partnerShiny = false;
+    save.selectedVocation = v.id;
     save.personality = null;
     G.DB.grant(id, 'vocation');
     if (G.TibiaOutfits) G.DB.save.playerOutfit = G.TibiaOutfits.defaultLook();

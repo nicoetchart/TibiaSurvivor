@@ -18,7 +18,6 @@ G.MenuUI = (() => {
         else if (go === 'outfit') G.OutfitUI && G.OutfitUI.open();
         else if (go === 'dex') openDex();
         else if (go === 'upgrades') openUpgrades();
-        else if (go === 'gacha') G.GachaUI.open();
         else if (go === 'goals') G.GoalsUI.open();
         else if (go === 'settings') G.SettingsUI.open();
       };
@@ -42,9 +41,28 @@ G.MenuUI = (() => {
     document.querySelectorAll('#scr-menu [data-go="bestiary"], #scr-menu [data-go="outfit"]').forEach(b => {
       b.classList.toggle('hidden', !neutral);
     });
-    const mon = G.Content.runtimeByLegacyId(s.partner);
-    if (!mon) return;
-    const shiny = !!s.partnerShiny && G.DB.ownsShiny(mon.dex);
+    let mon = s.partner != null ? G.Content.runtimeByLegacyId(s.partner) : null;
+    if (!mon && s.partner != null && G.Content.getCreature) {
+      const cr = G.Content.getCreature(s.partner);
+      if (cr) mon = G.Content.toRuntimeMon(cr);
+    }
+    if (!mon) {
+      if (neutral) {
+        const voc = s.selectedVocation || 'master_sorcerer';
+        const id = G.Content.playerLegacyIdForVocation(voc);
+        s.partner = id;
+        s.selectedVocation = voc;
+        s.partnerShiny = false;
+        G.DB.grant(id, 'repair');
+        G.DB.commit();
+        mon = G.Content.runtimeByLegacyId(id);
+      }
+      if (!mon) {
+        G.VocationUI.start();
+        return;
+      }
+    }
+    const shiny = false;
     G.UI.chrome(true);
     G.UI.show('scr-menu');
     G.UI.sprite($('menu-partner'), mon.dex, { lively: true, scale: 4, hero: true, shiny });
@@ -61,18 +79,7 @@ G.MenuUI = (() => {
       : G.UI.typeChips(mon.types) + ' ' + G.UI.stars(mon.rarity);
     // Normal / shiny a mano, aquí mismo (en el móvil no se encontraba en la ficha).
     const seg = $('menu-shiny');
-    seg.classList.toggle('hidden', neutral || !G.DB.ownsShiny(mon.dex));
-    seg.lastChild.innerHTML = G.Icons.html('shiny', 12) + ' Shiny';
-    seg.querySelectorAll('button').forEach(b => {
-      b.classList.toggle('on', (b.dataset.v === '1') === shiny);
-      b.onclick = () => {
-        if ((b.dataset.v === '1') === shiny) return;
-        s.partnerShiny = b.dataset.v === '1';
-        G.DB.commit();
-        G.Audio.sfx('confirm');
-        open();
-      };
-    });
+    if (seg) seg.classList.add('hidden');
 
     const shinies = Object.keys(s.shiny || {}).length;
     if (neutral) {

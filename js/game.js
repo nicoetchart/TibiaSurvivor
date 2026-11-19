@@ -199,6 +199,7 @@ G.Game = (() => {
   function bankTickets(save_ = true) {
     const sv = G.DB.save;
     if (!sv || !pl) return;
+    if (G.Content && G.Content.mode === 'neutral') return;
     sv.tickets = sv.tickets || { t1: 0, t10: 0 };
     const d1 = Math.max(0, pl.t1 - banked.t1), d10 = Math.max(0, pl.t10 - banked.t10);
     if (!d1 && !d10) return;
@@ -209,6 +210,7 @@ G.Game = (() => {
 
   /** Has llevado a casa a un Pokémon perdido y se une a ti (events.js). */
   G.onRescue = (dex, name) => {
+    if (G.Content && G.Content.mode === 'neutral') return;
     if (!G.DB.save || !pl) return;
     const isNew = !G.DB.owns(dex);
     if (isNew) { G.DB.grant(dex, 'rescue'); G.DB.commit(true); }
@@ -219,6 +221,7 @@ G.Game = (() => {
 
   /** Un shiny salvaje cae: te lo quedas (y la versión normal si no la tenías). */
   G.onShinyCaught = e => {
+    if (G.Content && G.Content.mode === 'neutral') return;
     if (!G.DB.save || !pl) return;
     const isNew = G.DB.grantShiny(e.dex, 'wild');
     G.DB.save.stats.shinies++;
@@ -454,6 +457,7 @@ G.Game = (() => {
       return;
     }
     if (p.kind === 'ticket' || p.kind === 'ticket10') {
+      if (G.Content && G.Content.mode === 'neutral') return;
       if (p.kind === 'ticket') pl.t1++; else pl.t10++;
       bankTickets();
       G.FX.dmgText(who.x, who.y - who.bodyH - 8, p.kind === 'ticket' ? '+1 ticket' : '×10 ticket!', p.kind === 'ticket' ? '#ffd23f' : '#d9a6ff', true);
@@ -511,8 +515,9 @@ G.Game = (() => {
     }
     if (state === 'ui') {
       // Esc en una subpantalla del menú vuelve al menú.
-      if (G.Input.tap('escape') && !G.UI.isOpen('scr-profile') && ['scr-bestiary', 'scr-dex', 'scr-upgrades', 'scr-gacha', 'scr-goals'].some(G.UI.isOpen)
-          && document.getElementById('pull-fx').classList.contains('hidden')) G.MenuUI.open();
+      const pullFx = document.getElementById('pull-fx');
+      if (G.Input.tap('escape') && !G.UI.isOpen('scr-profile') && ['scr-bestiary', 'scr-dex', 'scr-upgrades', 'scr-goals'].some(G.UI.isOpen)
+          && (!pullFx || pullFx.classList.contains('hidden'))) G.MenuUI.open();
       return;
     }
     if (G.Input.tap('escape') || G.Input.tap('keyp')) { togglePause(); return; }
@@ -932,7 +937,7 @@ G.Game = (() => {
 G.Flow = {
   boot() {
     G.UI.initChrome();
-    G.LoginUI.init(); G.VocationUI.init(); G.TestUI.init(); G.MenuUI.init(); G.GachaUI.init();
+    G.LoginUI.init(); G.VocationUI.init(); G.TestUI.init(); G.MenuUI.init();
     G.GoalsUI.init(); G.SettingsUI.init(); G.OutfitUI && G.OutfitUI.init(); G.NewsUI.init(); G.Updater.init();
     // Tu nombre arriba a la derecha abre tu perfil.
     document.getElementById('user-pill').onclick = () => G.GoalsUI.open('profile');

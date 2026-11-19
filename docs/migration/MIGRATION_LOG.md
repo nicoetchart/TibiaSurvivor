@@ -746,6 +746,45 @@ DEC-034 (sin Judgment/Arceus), DEC-037 (neutral), grietas desactivadas MVP (`DIS
 
 ---
 
+## 2026-11-18 — PSR-4
+
+### Fase
+PSR-4 — completed (gacha/shiny/tickets; vocación + `upgrades`)
+
+### Cambios
+
+| Archivo | Cambio |
+|---------|--------|
+| `dev.html` | Sin pantalla/botón gacha; `gacha-stub.js` |
+| `js/data/gacha-stub.js` | Constantes rarity (iconos) |
+| `js/core/db.js` | `selectedVocation`, `upgrades` vocación, strip tickets/pity |
+| `js/ui/vocation-ui.js` | Guarda `selectedVocation` |
+| `js/systems/spawner.js` | Sin shiny wild neutral |
+| `js/game.js` | Sin tickets/shiny/rescue; sin `GachaUI` |
+| `js/systems/progress.js` | Recompensas sin tickets en save neutral |
+
+### Decisiones
+
+DEC-027, DEC-028, DEC-030, DEC-038.
+
+### Pruebas
+
+| Prueba | Resultado |
+|--------|-----------|
+| `validate-mvp.js` | **OK** |
+| `ms9-smoke.js` | **OK** |
+| Boot menú sin Gacha | Operador |
+
+### Deuda
+
+`goals-ui` / misiones con copy legacy; pantallas `scr-dex`/`scr-upgrades` en HTML; `gacha.js` en repo.
+
+### Próximo paso
+
+**PSR-5** — goals/profile sin `G.DEX_BY`; limpiar HTML legacy.
+
+---
+
 <!-- Plantilla para entradas futuras
 
 ## YYYY-MM-DD — FASE N

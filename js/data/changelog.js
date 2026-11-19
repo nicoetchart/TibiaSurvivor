@@ -2,6 +2,18 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-18', title: ['Menú', 'Menu'], fix: [
+    ['Arreglo: el menú principal ya no queda en blanco si el save tenía partner inválido (PSR-4).',
+     'Fix: main menu no longer stays blank when save had an invalid partner (PSR-4).'],
+    ['UI: `G.UI.show` ya no falla si falta `scr-gacha` u otras pantallas legacy en el HTML.',
+     'UI: `G.UI.show` no longer crashes when legacy screens like `scr-gacha` are absent from HTML.'],
+  ] },
+  { d: '2026-11-18', title: ['Sin gacha', 'No gacha'], chg: [
+    ['PSR-4: gacha y tickets fuera del boot; save con `selectedVocation` y mejoras en `upgrades`.',
+     'PSR-4: gacha and tickets removed from boot; save uses `selectedVocation` and vocation `upgrades`.'],
+    ['Sin shiny salvaje ni drops de tickets en runs neutrales (DEC-027/030).',
+     'No wild shinies or ticket drops in neutral runs (DEC-027/030).'],
+  ] },
   { d: '2026-11-18', title: ['Boot Tibia', 'Tibia boot'], chg: [
     ['PSR-3: sin moves.js, types.js, enemies.js, starters ni Judgment en dev.html; hechizos vía spell-runtime.',
      'PSR-3: dev.html drops moves.js, types.js, enemies.js, starters, Judgment; spells via spell-runtime.'],
