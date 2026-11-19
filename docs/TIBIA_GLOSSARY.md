@@ -100,4 +100,7 @@ Contrato completo: **`docs/CYCLOPEDIA_REFERENCE.md`** (alineado a [Cyclopedia wi
 | PSR-3 | Combate, rift bosses, sin shiny |
 | PSR-4 | Gacha fuera, goals, gold coin UI |
 | PSR-5 | UI e i18n |
-| PSR-6+ | Assets, dominio, certificación |
+| PSR-6 | Assets SEO, dominio |
+| PSR-7 | Purge `ps.*`, certificación |
+| PSR-8 | Purga datasets/módulos Pokémon del repo |
+| PSR-9 | SEO bestiario + runtime sin rutas legacy |

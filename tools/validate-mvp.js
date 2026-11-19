@@ -28,7 +28,7 @@ load('js/data/vocations.js');
 load('js/data/neutral-roster.js');
 load('js/data/spell-runtime.js');
 load('js/data/content-api.js');
-load('js/data/dex-minimal.js');
+load('js/data/runtime-stubs.js');
 const G = sandbox.G;
 
 const SLICE_TYPES = ['physical', 'fire', 'energy'];

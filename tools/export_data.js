@@ -21,7 +21,7 @@ for (const f of ['js/core/util.js', 'js/core/i18n.js']) load(f);
 const add = G.I18n.add;
 G.I18n.add = d => { Object.assign(EN, d); add(d); };
 const DATA = [
-  'js/data/lang-en.js', 'js/core/settings.js', 'js/data/dex-minimal.js',
+  'js/data/lang-en.js', 'js/core/settings.js', 'js/data/runtime-stubs.js',
   'js/data/damage-types.js', 'js/data/mvp-config.js', 'js/data/creatures.js',
   'js/data/vocations.js', 'js/data/abilities.js', 'js/data/master-sorcerer-spells.js',
   'js/data/master-sorcerer-passives.js', 'js/data/master-sorcerer-register.js', 'js/data/spell-runtime.js',

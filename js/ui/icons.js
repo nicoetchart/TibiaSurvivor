@@ -604,13 +604,11 @@ G.Icons = (() => {
     }
   }
 
-  /**
-   * Rareza como Poké Ball: Poké (Común), Super (Poco común), Ultra (Rara),
-   * Lujo (Épica) y Master (Legendaria).
-   */
+  const RARITY_NAME = { 1: 'Common', 2: 'Uncommon', 3: 'Rare', 4: 'Epic', 5: 'Legendary' };
+  const RARITY_COLOR = { 1: '#9fb1c9', 2: '#5fe08a', 3: '#4fb4ff', 4: '#c47bff', 5: '#ffcb3d' };
   const RARITY_BALL = { 1: 'ball', 2: 'ball2', 3: 'ball3', 4: 'ballLux', 5: 'ball4' };
   function rarity(n, size = 12) {
-    return `<span class="rarity-ball" title="${(G.Gacha && G.Gacha.RARITY_NAME[n]) || ''}">${html(RARITY_BALL[n] || 'ball', size)}</span>`;
+    return `<span class="rarity-ball" title="${RARITY_NAME[n] || ''}">${html(RARITY_BALL[n] || 'ball', size)}</span>`;
   }
 
   /** Publica en CSS los iconos que usan las hojas de estilo. */
@@ -621,6 +619,6 @@ G.Icons = (() => {
     r.setProperty('--ico-cursor', `url("${url('cursor')}")`);
   }
 
-  return { canvas, url, html, draw, drawSpell, twinkle, rarity, RARITY_BALL, installCss, coinId, menuIcon, bust,
+  return { canvas, url, html, draw, drawSpell, twinkle, rarity, RARITY_NAME, RARITY_COLOR, RARITY_BALL, installCss, coinId, menuIcon, bust,
     preloadSpellIcons, UI, TYPE_GLYPH };
 })();

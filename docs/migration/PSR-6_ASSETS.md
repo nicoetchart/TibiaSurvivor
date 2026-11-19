@@ -6,8 +6,8 @@
 - `hasShiny()` devuelve `false` en neutral (sin rutas `assets/pokemon/.../s/`).
 
 ## Repo (legacy)
-- `assets/pokemon/` y `js/data/pokedex.js` siguen en el árbol por si se prueba `?content=legacy` en dev.
-- No forman parte del export SEO ni del bundle de producción neutral.
+- **PSR-7:** `assets/pokemon/` eliminado del repo.
+- **PSR-8:** datasets/módulos Pokémon (`pokedex.js`, `moves.js`, …) eliminados; sin `?content=legacy`.
 
 ## SEO / dominio
 - Canonical, sitemap y Open Graph: `tools/site-config.json` → `siteUrl`.

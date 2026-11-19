@@ -1,9 +1,9 @@
-# Páginas SEO TibiaSurvivor (rutas legacy pokedex/movimientos…), español e inglés.
+# Páginas SEO TibiaSurvivor (bestiario, guía, hechizos…). Redirects desde rutas legacy.
 #   node tools/export_data.js && node tools/run_make_seo.js
 # Son páginas de texto de verdad (el juego es un canvas que Google no puede leer)
 # hechas con los datos del propio juego, y enlazan al juego. Genera:
-#   es: guia/ pokedex/ legendarios/ shinies/ tipos/ movimientos/ objetos/ logros/ novedades/
-#   en: en/ (el juego en inglés) en/guide/ en/pokedex/ en/legendaries/ ... en/news/
+#   es: guia/ bestiario/ legendarios/ tipos/ movimientos/ … + redirect pokedex/ shinies/
+#   en: en/bestiary/ en/guide/ …
 #   404.html, robots.txt, sitemap.xml (con las versiones de cada idioma)
 import json, os, re, datetime, html
 
@@ -52,18 +52,18 @@ def dtname(t, lang):
 def dtbadge(t, lang): return f'<i class="ty" style="background:{DTC.get(t, "#888")}">{dtname(t, lang)}</i>'
 
 # ---------------- rutas ----------------
-PAGES = ['home', 'guide', 'pokedex', 'legends', 'shinies', 'types', 'moves', 'items', 'achievements', 'news', 'support']
+PAGES = ['home', 'guide', 'bestiary', 'legends', 'types', 'moves', 'items', 'achievements', 'news', 'support']
 PATH = {
-    'es': {'home': '', 'guide': 'guia/', 'pokedex': 'pokedex/', 'legends': 'legendarios/', 'shinies': 'shinies/', 'types': 'tipos/',
+    'es': {'home': '', 'guide': 'guia/', 'bestiary': 'bestiario/', 'legends': 'legendarios/', 'types': 'tipos/',
            'moves': 'movimientos/', 'items': 'objetos/', 'achievements': 'logros/', 'news': 'novedades/', 'support': 'apoyar/'},
-    'en': {'home': 'en/', 'guide': 'en/guide/', 'pokedex': 'en/pokedex/', 'legends': 'en/legendaries/', 'shinies': 'en/shinies/', 'types': 'en/types/',
+    'en': {'home': 'en/', 'guide': 'en/guide/', 'bestiary': 'en/bestiary/', 'legends': 'en/legendaries/', 'types': 'en/types/',
            'moves': 'en/moves/', 'items': 'en/items/', 'achievements': 'en/achievements/', 'news': 'en/news/', 'support': 'en/support/'},
 }
-NAV = {'es': [('guide', 'Guide'), ('pokedex', 'Bestiary'), ('legends', 'Elite & boss'), ('moves', 'Spells'), ('types', 'Damage types')],
-       'en': [('guide', 'Guide'), ('pokedex', 'Bestiary'), ('legends', 'Elite & boss'), ('moves', 'Spells'), ('types', 'Damage types')]}
-FOOT = {'es': [('guide', 'Guide'), ('pokedex', 'Bestiary'), ('legends', 'Elite & final boss'), ('types', 'Damage types'),
+NAV = {'es': [('guide', 'Guide'), ('bestiary', 'Bestiary'), ('legends', 'Elite & boss'), ('moves', 'Spells'), ('types', 'Damage types')],
+       'en': [('guide', 'Guide'), ('bestiary', 'Bestiary'), ('legends', 'Elite & boss'), ('moves', 'Spells'), ('types', 'Damage types')]}
+FOOT = {'es': [('guide', 'Guide'), ('bestiary', 'Bestiary'), ('legends', 'Elite & final boss'), ('types', 'Damage types'),
                ('moves', 'Master Sorcerer spells'), ('items', 'Items'), ('achievements', 'Achievements & missions'), ('news', 'News'), ('support', 'Support the project')],
-        'en': [('guide', 'Guide'), ('pokedex', 'Bestiary'), ('legends', 'Elite & final boss'), ('types', 'Damage types'),
+        'en': [('guide', 'Guide'), ('bestiary', 'Bestiary'), ('legends', 'Elite & final boss'), ('types', 'Damage types'),
                ('moves', 'Master Sorcerer spells'), ('items', 'Items'), ('achievements', 'Achievements & missions'), ('news', 'News'), ('support', 'Support the project')]}
 
 def rel(frm, to):
@@ -182,7 +182,7 @@ Each run lasts about <b>{RUN_MIN} minutes</b> up to the final boss.</p>
 </ul>
 <h2>MVP content</h2>
 <ul class="feat">
-<li><b>{N_CRE} creatures</b> in the <a href="{lk('pokedex')}">bestiary</a> (orcs, undead, demons…).</li>
+<li><b>{N_CRE} creatures</b> in the <a href="{lk('bestiary')}">bestiary</a> (orcs, undead, demons…).</li>
 <li><b>{N_SPELL} Master Sorcerer spells and passives</b> with Tibia-style icons.</li>
 <li><a href="{lk('legends')}"><b>Elite sentinel</b></a> (Minotaur Guard) and <b>Demon</b> boss at the end of the run.</li>
 <li><a href="{lk('types')}"><b>Damage types</b></a>: weaknesses and resistances per creature.</li>
@@ -192,7 +192,7 @@ Each run lasts about <b>{RUN_MIN} minutes</b> up to the final boss.</p>
 <h2>Tips</h2>
 <ol>
 <li>Loop in wide circles so hordes line up for chain spells.</li>
-<li>Check <a href="{lk('pokedex')}">bestiary</a> weaknesses and swap to the right element.</li>
+<li>Check <a href="{lk('bestiary')}">bestiary</a> weaknesses and swap to the right element.</li>
 <li>Step out of ground circles and lines: telegraphed enemy attacks.</li>
 <li>Drop healers and shielders first (sentinel, ghouls…).</li>
 <li>Spend coins on permanent upgrades between runs.</li>
@@ -208,7 +208,7 @@ Each run lasts about <b>{RUN_MIN} minutes</b> up to the final boss.</p>
         crumbs(pid, lang, 'Guide')]}
     write(pid, lang, page(pid, lang, title, desc, body, ld))
 
-# ================= Bestiario (ruta pokedex/) =================
+# ================= Bestiario =================
 FAM_ES = {'humanoid': 'Humanoides', 'undead': 'No muertos', 'demon': 'Demonios', 'vermin': 'Vermin', 'magical': 'Mágicos'}
 FAM_EN = {'humanoid': 'Humanoids', 'undead': 'Undead', 'demon': 'Demons', 'vermin': 'Vermin', 'magical': 'Magical'}
 
@@ -225,8 +225,8 @@ def creature_li(c, lang):
     return (f'<li id="{esc(c["id"])}"><span class="nm">{esc(c["name"])}</span>'
             f'<span class="n">{diff}</span><span class="tys">{wk}</span>{tag}<p class="sm">{desc}</p></li>')
 
-def pokedex(lang):
-    pid = 'pokedex'
+def bestiary_page(lang):
+    pid = 'bestiary'
     fam_l = FAM_EN
     by_fam = {}
     for c in sorted(CREATURES, key=lambda x: x['name']):
@@ -265,20 +265,6 @@ def legends(lang):
     crumb = 'Elite & boss'
     body = f'<article class="doc wide"><h1>{esc(h1)}</h1>{intro}<h2>{h2a}</h2><ul class="dexgrid">{el or "<li>—</li>"}</ul>{tip}<h2>{h2b}</h2><ul class="dexgrid">{bo or "<li>—</li>"}</ul>{cta(pid, lang, c)}</article>'
     write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, crumb)]}))
-
-# ================= shinies (legacy URL, contenido Tibia) =================
-def shinies(lang):
-    pid = 'shinies'
-    home = rel(PATH[lang][pid], PATH[lang]['pokedex'])
-    h1 = 'Shiny collection (legacy mode)'
-    body = f'''<article class="doc"><h1>{h1}</h1>
-<p class="lead">In the <b>{BRAND} MVP</b> there are no in-run shiny creatures: you play Master Sorcerer versus the Tibia bestiary.
-The <code>/shinies/</code> URL is kept for old legacy-mode links.</p>
-<p>If your save still has legacy collection or gacha, it remains in the game menu. For current content see the
-<a href="{home}">bestiary</a> and <a href="{rel(PATH[lang][pid], PATH[lang]['moves'])}">spells</a>.</p>
-{cta(pid, lang, 'Play free')}</article>'''
-    title, desc = f'{BRAND}: no shinies in the Tibia MVP', f'The {BRAND} MVP has no hunt shinies; info page for legacy /shinies/ URL.'
-    write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, h1)]}))
 
 # ================= tipos de daño (Tibia MVP) =================
 def types_page(lang):
@@ -421,7 +407,7 @@ def game_en():
     for a, b in rep:
         s = s.replace(a, b)
     # Enlaces a las páginas: las de inglés (legacy Pokémon si existen en el HTML).
-    s = s.replace('href="guia/"', 'href="en/guide/"').replace('href="pokedex/"', 'href="en/pokedex/"')
+    s = s.replace('href="guia/"', 'href="en/guide/"').replace('href="bestiario/"', 'href="en/bestiary/"')
     os.makedirs(os.path.join(ROOT, 'en'), exist_ok=True)
     open(os.path.join(ROOT, 'en', 'index.html'), 'w', encoding='utf-8').write(s)
 
@@ -435,7 +421,7 @@ def extra():
 '''
     open(os.path.join(ROOT, '404.html'), 'w', encoding='utf-8').write(nf)
     open(os.path.join(ROOT, 'robots.txt'), 'w', encoding='utf-8').write(f'# TibiaSurvivor\nUser-agent: *\nAllow: /\nDisallow: /tools/\nDisallow: /docs/\nDisallow: /dev.html\n\nSitemap: {SITE}sitemap.xml\n')
-    PRI = {'home': '1.0', 'guide': '0.8', 'pokedex': '0.7', 'legends': '0.7', 'moves': '0.6', 'types': '0.6', 'shinies': '0.6', 'achievements': '0.5', 'items': '0.5', 'news': '0.5', 'support': '0.4'}
+    PRI = {'home': '1.0', 'guide': '0.8', 'bestiary': '0.7', 'legends': '0.7', 'moves': '0.6', 'types': '0.6', 'achievements': '0.5', 'items': '0.5', 'news': '0.5', 'support': '0.4'}
     urls = []
     for pid in PAGES:
         for lang in ('es', 'en'):
@@ -445,7 +431,28 @@ def extra():
     open(os.path.join(ROOT, 'sitemap.xml'), 'w', encoding='utf-8').write(
         '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' + ''.join(urls) + '</urlset>\n')
 
+def write_redirect(from_path, to_path, title):
+    """Redirect estático GitHub Pages (rutas legacy)."""
+    up = '../' * from_path.count('/')
+    dest = SITE + to_path
+    rel_href = up + to_path if from_path.count('/') else to_path
+    html = f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta http-equiv="refresh" content="0;url={rel_href}">
+<link rel="canonical" href="{dest}">
+<title>{esc(title)} · {BRAND}</title>
+<meta name="robots" content="noindex,follow">
+<link rel="stylesheet" href="{up}css/pages.css"></head>
+<body><article class="doc center"><h1>Moved</h1><p><a href="{rel_href}">Continue to the {esc(title)}</a></p></article></body></html>
+'''
+    p = os.path.join(ROOT, from_path, 'index.html')
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    open(p, 'w', encoding='utf-8').write(html)
+
 for lang in ('es', 'en'):
-    guide(lang); pokedex(lang); legends(lang); shinies(lang); types_page(lang); moves_page(lang); items_page(lang); ach_page(lang); news(lang); support(lang)
+    guide(lang); bestiary_page(lang); legends(lang); types_page(lang); moves_page(lang); items_page(lang); ach_page(lang); news(lang); support(lang)
+write_redirect('pokedex', PATH['es']['bestiary'], 'Bestiary')
+write_redirect('en/pokedex', PATH['en']['bestiary'], 'Bestiary')
+write_redirect('shinies', PATH['es']['bestiary'], 'Bestiary')
+write_redirect('en/shinies', PATH['en']['bestiary'], 'Bestiary')
 game_en(); extra()
 print('ok:', 2 * (len(PAGES) - 1), 'páginas + en/ (juego en inglés), 404, robots, sitemap')

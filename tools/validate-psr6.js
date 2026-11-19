@@ -17,12 +17,14 @@ if (seoSrc.includes('sprites-meta.js')) err('make_seo_pages.py must not read spr
 if (!seoSrc.includes('site-config.json')) err('make_seo_pages.py must read tools/site-config.json');
 
 const dev = fs.readFileSync(path.join(ROOT, 'dev.html'), 'utf8');
-for (const ban of ['pokedex.js', 'sprites-meta.js', 'moves.js', 'types.js', 'enemies.js']) {
+for (const ban of ['pokedex.js', 'sprites-meta.js', 'moves.js', 'types.js', 'enemies.js', 'gacha-stub.js', 'dex-minimal.js']) {
   if (dev.includes(`src="js/data/${ban}"`)) err(`dev.html must not load js/data/${ban}`);
 }
+if (!dev.includes('runtime-stubs.js')) err('dev.html must load runtime-stubs.js');
 
 const sprites = fs.readFileSync(path.join(ROOT, 'js/core/sprites.js'), 'utf8');
-if (!sprites.includes("G.Content.mode === 'neutral'")) err('sprites.js should gate legacy PNG/shiny in neutral mode');
+if (sprites.includes('assets/pokemon/')) err('sprites.js must not reference assets/pokemon/');
+if (!/function hasShiny\(\)\s*\{\s*return false;/.test(sprites)) err('sprites.js must not load legacy shiny PNGs (hasShiny false)');
 
 const cfgPath = path.join(__dirname, 'site-config.json');
 if (!fs.existsSync(cfgPath)) err('missing tools/site-config.json');

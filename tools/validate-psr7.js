@@ -21,8 +21,8 @@ if (!db.includes('purgeLegacyPs')) err('db.js missing purgeLegacyPs (DEC-036)');
 const flow = fs.readFileSync(path.join(ROOT, 'js/game.js'), 'utf8');
 if (!flow.includes('purgeLegacyPs')) err('Flow.boot must call purgeLegacyPs');
 
-const dex = fs.readFileSync(path.join(ROOT, 'js/data/dex-minimal.js'), 'utf8');
-if (dex.includes('getPokemon')) err('dex-minimal.js must not define getPokemon');
+const stubs = fs.readFileSync(path.join(ROOT, 'js/data/runtime-stubs.js'), 'utf8');
+if (stubs.includes('getPokemon')) err('runtime-stubs.js must not define getPokemon');
 
 const cname = fs.readFileSync(path.join(ROOT, 'CNAME'), 'utf8').trim();
 const cfg = JSON.parse(fs.readFileSync(path.join(__dirname, 'site-config.json'), 'utf8'));

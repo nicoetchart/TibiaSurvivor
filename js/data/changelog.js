@@ -2,6 +2,16 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-18', title: ['Identidad', 'Identity'], chg: [
+    ['PSR-9: SEO en /bestiario/ y /en/bestiary/; redirect desde /pokedex/ y /shinies/; sin sprites Pokémon en runtime.',
+     'PSR-9: SEO at /bestiario/ and /en/bestiary/; redirect from /pokedex/ and /shinies/; no Pokémon sprites in runtime.'],
+    ['Iconos de rareza en G.Icons (sin gacha-stub); grietas y eventos sin código legacy.',
+     'Rarity icons on G.Icons (no gacha-stub); rifts and events without legacy code paths.'],
+  ] },
+  { d: '2026-11-18', title: ['Repo limpio', 'Clean repo'], chg: [
+    ['PSR-8: fuera pokedex, moves, types, enemies, gacha y judgment del repo; Content solo neutral.',
+     'PSR-8: removed pokedex, moves, types, enemies, gacha and judgment from repo; Content is neutral-only.'],
+  ] },
   { d: '2026-11-18', title: ['Migración', 'Migration'], chg: [
     ['PSR-7: al arrancar se borran claves ps.* del navegador; menú/goals sin UI Pokédex legacy.',
      'PSR-7: boot purges ps.* localStorage keys; menu/goals drop legacy Pokédex UI.'],

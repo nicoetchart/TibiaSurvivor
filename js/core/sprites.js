@@ -1,6 +1,6 @@
 /* ============ sprites.js — animador de sprites (PNG propio o geo) ============
  * TibiaSurvivor MVP: criaturas 99001–99099 usan G.GeoSprites (sin PNG).
- * PNG opcional: assets/… + G.SPRITE_META cuando exista arte con licencia clara.
+ * Arte: TibiaSprites, GeoSprites o geo (PSR-9: sin hojas PNG legacy).
  *
  *   columnas = fotogramas · filas = 8 direcciones
  *   0 Down · 1 DownRight · 2 Right · 3 UpRight · 4 Up · 5 UpLeft · 6 Left · 7 DownLeft
@@ -40,12 +40,7 @@ G.Sprites = (() => {
     return c;
   }
 
-  /** ¿Tiene versión shiny? (legacy PNG; desactivado en modo neutral / Tibia MVP). */
-  function hasShiny(dex) {
-    if (G.Content && G.Content.mode === 'neutral') return false;
-    const m = meta(dex);
-    return !!(m && m.sh);
-  }
+  function hasShiny() { return false; }
 
   /** Animaciones disponibles para esa variante. */
   function has(m, anim, shiny) {
@@ -97,31 +92,7 @@ G.Sprites = (() => {
     }
   }
 
-  function sheet(dex, anim, shiny = false) {
-    if (G.GeoSprites && G.GeoSprites.isGeo(dex)) return null;
-    if (G.Content && G.Content.mode === 'neutral') return null;
-    const m = meta(dex);
-    shiny = shiny && !!(m && m.sh);
-    const name = animName(dex, anim, shiny);
-    if (!name) return null;
-    const k = dex + '/' + name + (shiny ? '/s' : '');
-    let s = sheets.get(k);
-    const now = Date.now();
-    if (s) {
-      s.at = now;
-      // Si la descarga se cortó (red mala, servidor saturado), reintenta más tarde.
-      if (s.failed && performance.now() > s.retryAt) { s.failed = false; s.img.src = s.src + '?r=' + s.tries; }
-      return s;
-    }
-    if (sheets.size >= MAX_SHEETS) evict(now);
-    s = { ready: false, failed: false, img: new Image(), tries: 0, retryAt: 0, at: now,
-          src: `assets/pokemon/${dex}/${shiny ? 's/' : ''}${name}.png` };
-    s.img.onload = () => { s.ready = true; };
-    s.img.onerror = () => { s.failed = true; s.retryAt = performance.now() + 1000 * Math.min(8, 2 ** s.tries++); };
-    s.img.src = s.src;
-    sheets.set(k, s);
-    return s;
-  }
+  function sheet() { return null; }
 
   const ANIMS = ['Idle', 'Walk', 'Attack', 'Shoot', 'Charge', 'Hurt', 'Faint'];
 

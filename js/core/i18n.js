@@ -125,7 +125,7 @@ G.I18n = (() => {
   function startDom() {
     if (lang === 'es') return;
     // Los enlaces a las páginas de la web, a su versión en inglés.
-    const EN_LINKS = { 'guia/': 'en/guide/', 'pokedex/': 'en/pokedex/' };
+    const EN_LINKS = { 'guia/': 'en/guide/', 'bestiario/': 'en/bestiary/', 'pokedex/': 'en/bestiary/' };
     document.querySelectorAll('a[href]').forEach(a => { const h = a.getAttribute('href'); if (EN_LINKS[h]) a.setAttribute('href', EN_LINKS[h]); });
     walk(document.body);
     new MutationObserver(ms => {

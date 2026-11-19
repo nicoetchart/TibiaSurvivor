@@ -859,6 +859,48 @@ Mantenimiento MVP; Fase siguiente según roadmap del propietario.
 
 ---
 
+## 2026-11-18 — PSR-8
+
+### Fase
+PSR-8 — completed (purge repo datos/módulos Pokémon; Content solo neutral)
+
+### Cambios
+
+| Área | Cambio |
+|------|--------|
+| `js/data/content-api.js` | Sin `?content=legacy`, `G.Enemies`, `G.Types`; roster → `NeutralRoster` |
+| Eliminados del repo | `pokedex`, `moves`, `types`, `enemies`, `starters`, `sprites-meta`, `content-bridge`, `gacha`, `judgment`, `gacha-ui`, `test`, `slots`, `fetch_pokedex.py`, `fetch_sprites.py` |
+| `tools/validate-psr8.js` | Certificación árbol limpio + `validate-psr7` |
+| `tools/prune-legacy-pokemon-data.js` | Script de borrado |
+
+### Próximo paso
+
+Mantenimiento; docs/SEO/copy residual en guías externas si aplica.
+
+---
+
+## 2026-11-18 — PSR-9
+
+### Fase
+PSR-9 — completed (SEO bestiario; runtime sin Pokémon)
+
+### Cambios
+
+| Área | Cambio |
+|------|--------|
+| `tools/make_seo_pages.py` | Rutas `bestiario/` · `en/bestiary/`; redirects `pokedex/` y `shinies/` |
+| `js/data/runtime-stubs.js` | Sustituye `dex-minimal.js` |
+| `js/core/sprites.js` | Sin carga PNG `assets/pokemon/` |
+| `js/systems/rift.js`, `events.js` | Solo caminos neutral |
+| `js/ui/icons.js` | Rareza sin `G.Gacha` |
+| `tools/validate-psr9.js` | Certificación |
+
+### Próximo paso
+
+Mantenimiento; copy residual en docs históricos (`CAVERN_ARCHITECTURE_AUDIT.md`, etc.).
+
+---
+
 <!-- Plantilla para entradas futuras
 
 ## YYYY-MM-DD — FASE N

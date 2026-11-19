@@ -55,7 +55,7 @@ G.Events = (() => {
     if (nextT > 0) return;
     if (G.EnemyMgr.bossAlive()) { nextT = 10; return; }
     nextT = G.U.rand(EVERY[0], EVERY[1]);
-    const ids = (G.Content.mode === 'neutral' ? ['horde', 'gold'] : ['horde', 'gold', 'lost']).filter(id => id !== last);
+    const ids = ['horde', 'gold'].filter(id => id !== last);
     start(G.U.pick(ids), time, players);
   }
 
@@ -99,30 +99,7 @@ G.Events = (() => {
 
   // ---------------- duende del tesoro ----------------
 
-  function spawnThief(players, time) {
-    if (G.Content.mode === 'neutral') return;
-    const gold = Math.random() < 0.25;
-    const dex = gold ? 1000 : 52;
-    const mon = G.DEX_BY[dex];
-    if (!mon || !G.SPRITE_META[dex]) return;
-    const pl = G.U.pick(players.filter(p => !p.dead).length ? players.filter(p => !p.dead) : players);
-    G.Sprites.preload([dex]);
-    const def = { dex, name: mon.name, behavior: 'thief', hp: Math.round(60 * (1 + time / 95) * (gold ? 1.5 : 1)),
-                  spd: 92, dmg: 0, xp: 10, loot: gold ? 'ticket10' : 'coins' };
-    for (let i = 0; i < 12; i++) {
-      const a = Math.random() * 6.2832, d = G.U.rand(230, 300);
-      const x = pl.x + Math.cos(a) * d, y = pl.y + Math.sin(a) * d * 0.8;
-      if (!G.World.isFree(x, y, 14)) continue;
-      const e = new G.Enemy(def, x, y, { hp: 1, spd: 1, dmg: 1 });
-      e.life = THIEF_LIFE;
-      G.EnemyMgr.add(e);
-      G.FX.ring(x, y, 4, 40, '#ffd23f', 0.5, 3);
-      G.Spawner.say(gold ? 'A ' + mon.name + ' with a ×10 ticket! Catch it before it runs away!'
-                         : 'A ' + mon.name + ' loaded with coins! Catch it before it runs away!', 3.2);
-      G.Audio.sfx('shiny');
-      return;
-    }
-  }
+  function spawnThief() { /* PSR-9: sin eventos legacy */ }
 
   // ---------------- Pokémon perdido ----------------
 

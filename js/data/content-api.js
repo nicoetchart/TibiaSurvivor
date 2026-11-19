@@ -7,11 +7,8 @@ G.Content = (() => {
   const ID_MIN = 99001;
   const ID_MAX = 99099;
 
-  /** @ts-adapter-f3: 'legacy' | 'neutral' — flip en 3D según save (DEC-019). */
-  function isTibiaUi() {
-    return typeof document !== 'undefined' && document.documentElement.getAttribute('data-ui') === 'tibia';
-  }
-  let mode = isTibiaUi() ? 'neutral' : 'legacy';
+  /** PSR-8 (DEC-037): solo modo neutral en producción y dev. */
+  let mode = 'neutral';
 
   function isNeutralLegacyId(id) {
     const n = +id;
@@ -81,23 +78,17 @@ G.Content = (() => {
     return false;
   }
 
-  /** Resuelve modo efectivo (3A: siempre legacy en runtime salvo ?dev=neutral). */
-  function effectiveMode(save) {
-    if (typeof location !== 'undefined' && /[?&]content=legacy\b/.test(location.search)) return 'legacy';
-    if (typeof location !== 'undefined' && /[?&]content=neutral\b/.test(location.search)) return 'neutral';
-    if (mode === 'neutral') return 'neutral';
-    if (save && shouldUseNeutralSave(save)) return 'neutral';
-    return 'legacy';
+  function effectiveMode() {
+    return 'neutral';
   }
 
   function setMode(next) {
     mode = next === 'neutral' ? 'neutral' : 'legacy';
   }
 
-  /** PSR-2 / DEC-037: runtime solo neutral. (Legacy deliberado: `?content=legacy` en desarrollo.) */
-  function syncFromSave(save) {
-    if (typeof location !== 'undefined' && /[?&]content=legacy\b/.test(location.search)) setMode('legacy');
-    else setMode('neutral');
+  /** PSR-8: siempre neutral (DEC-037). */
+  function syncFromSave() {
+    setMode('neutral');
     return mode;
   }
 
@@ -121,9 +112,8 @@ G.Content = (() => {
   }
 
   function learnPool(mon) {
-    if (mode !== 'neutral' && G.Moves && G.Moves.poolFor) return G.Moves.poolFor(mon);
     const c = getCreature((mon && (mon.creatureId || mon.legacyId || mon.dex)) || null);
-    return G.Abilities.poolFor(c);
+    return G.Abilities.poolFor(c || mon);
   }
 
   function playerLegacyIdForVocation(vocationId) {
@@ -131,33 +121,20 @@ G.Content = (() => {
     return v ? v.legacyPartnerId : ID_MIN;
   }
 
-  /** Elenco de la run (PSR-3: G.NeutralRoster; G.Enemies solo ?content=legacy + boot legacy). */
   function roster() {
-    if (G.NeutralRoster && (mode === 'neutral' || !G.Enemies)) return G.NeutralRoster;
-    return G.Enemies;
+    return G.NeutralRoster;
   }
 
-  /** Habilidad original o partida en modo neutral: sin tabla Pokémon ni clima. */
-  function usesNeutralDamage(sourceId) {
-    if (mode === 'neutral') return true;
-    return !!(sourceId && G.Abilities && G.Abilities.BY_ID[sourceId]);
+  function usesNeutralDamage() {
+    return true;
   }
 
-  /**
-   * Factor de daño de un ataque. Incluye clima solo en el camino Pokémon.
-   * @ts-adapter-f3 quitar cuando G.Types deje de usarse (Fase 4).
-   */
-  function attackFactor(type, defTypes, sourceId) {
-    if (usesNeutralDamage(sourceId)) return G.DamageTypes.mult(type, defTypes);
-    const chart = G.Types ? G.Types.mult(type, defTypes) : 1;
-    const weather = G.Weather ? G.Weather.mult(type) : 1;
-    return chart * weather;
+  function attackFactor(type, defTypes) {
+    return G.DamageTypes.mult(type, defTypes);
   }
 
-  function effectivenessLabel(type, defTypes, sourceId) {
-    if (usesNeutralDamage(sourceId)) return G.DamageTypes.label(G.DamageTypes.mult(type, defTypes));
-    const chart = G.Types ? G.Types.mult(type, defTypes) : 1;
-    return G.Types ? G.Types.label(chart) : null;
+  function effectivenessLabel(type, defTypes) {
+    return G.DamageTypes.label(G.DamageTypes.mult(type, defTypes));
   }
 
   function assertData() {

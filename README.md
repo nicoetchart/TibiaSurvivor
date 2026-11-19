@@ -90,7 +90,7 @@ No se requieren secretos ni APIs externas para jugar.
 
 - Sin multijugador online en el MVP neutral.
 - Sin grietas ni “juicio final” en MVP (`mvp-config.js`).
-- Carpeta `assets/pokemon/` puede existir en el repo pero **no se usa** en partidas neutral.
+- Contenido Pokémon legacy fue retirado del repo (PSR-7/8); el MVP usa solo datos Tibia.
 - Páginas SEO legacy (`pokedex/`, etc.) no forman parte del producto TibiaSurvivor.
 
 ## Licencia
