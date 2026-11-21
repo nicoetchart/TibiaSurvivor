@@ -967,6 +967,26 @@ Podar claves ES huérfanas en `lang-en`; docs `CAVERN_*`; smoke manual F2.
 
 ---
 
+## 2026-11-19 — PSR-15
+
+### Fase
+
+PSR-15 — completed (lang-en orphans)
+
+### Cambios
+
+| Área | Cambio |
+|------|--------|
+| `tools/prune-lang-en-orphans-psr15.js` | Corpus del repo + lista legacy; reescribe `lang-en.js` |
+| `tools/validate-psr15.js` | Cadena PSR-14; dry-run sin huérfanas; sin bloque personalidad |
+| `js/data/lang-en.js` | ~860 → ~201 claves (Español residual en runtime / fragmentos i18n) |
+
+### Próximo paso
+
+Docs `CAVERN_*`; smoke manual F2; commit/push si aún no publicado.
+
+---
+
 <!-- Plantilla para entradas futuras
 
 ## YYYY-MM-DD — FASE N

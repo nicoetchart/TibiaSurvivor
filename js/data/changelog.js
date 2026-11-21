@@ -3,6 +3,8 @@
  */
 G.CHANGELOG = [
   { d: '2026-11-19', title: ['Copy', 'Copy'], chg: [
+    ['PSR-15: lang-en podado a claves referenciadas; fuera test personalidad y bloques legacy.',
+     'PSR-15: lang-en pruned to referenced keys; removed personality test and legacy blocks.'],
     ['PSR-13: comentarios y cableado runtime sin marcas legacy; validate-psr13; ui sin tickets-pill.',
      'PSR-13: runtime comments and wiring without legacy marks; validate-psr13; ui without tickets-pill.'],
     ['PSR-14: lang-en sin bloques tipos/movimientos Pokémon; tools/prune-lang-en-tibia.js.',
