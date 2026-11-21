@@ -1,6 +1,6 @@
 /* ============ damage-types.js — tipos de daño TibiaSurvivor (Fase 3) ============
  * Tabla objetivo: physical, fire, ice, energy, earth, death, holy.
- * Fase 3A: multiplicadores neutros (×1); sin chart Pokémon.
+ * Fase 3A: multiplicadores neutros (×1); sin tabla de tipos legacy.
  */
 G.DamageTypes = (() => {
   const ALL = ['physical', 'fire', 'ice', 'energy', 'earth', 'death', 'holy'];
@@ -64,7 +64,7 @@ G.DamageTypes = (() => {
   return { ALL, COLOR, NAME, mult, label, names, WEAK_MULT, RESIST_MULT, IMMUNE_MULT };
 })();
 
-/* Colores y nombres que el HUD ya lee en G.U (sin pisar fuego/hielo Pokémon). */
+/* Colores y nombres que el HUD ya lee en G.U (sin pisar fuego/hielo base). */
 (() => {
   if (!G.U) return;
   for (const id of G.DamageTypes.ALL) {

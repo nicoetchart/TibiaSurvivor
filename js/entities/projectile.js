@@ -1,6 +1,6 @@
 /* ============ projectile.js — proyectiles y orbes ============
  * Una sola lista para todo lo que vuela: disparos del jugador, disparos
- * enemigos y los orbes que giran alrededor del Pokémon (los orbes son
+ * enemigos y los orbes que giran alrededor del jugador (los orbes son
  * proyectiles con `orb`, anclados al jugador y que vuelven a golpear cada
  * `rehit` segundos).
  *

@@ -1,11 +1,9 @@
-/* ============ player.js — el Pokémon que controlas ============
- * (x, y) son los PIES. Sólo UN movimiento está activo a la vez: se dispara
- * solo y se cambia con 1-4 / Q / E. Cada disparo reproduce la animación de
- * ataque de Mundo Misterioso que le toca (Attack, Shoot o Charge).
+/* ============ player.js — vocación / criatura del jugador ============
+ * (x, y) son los PIES. Un hechizo activo a la vez (1-4 / Q / E).
  */
 G.Player = class Player {
   /**
-   * @param mon   entrada de G.DEX
+   * @param mon   criatura (G.Content / G.CREATURES)
    * @param perks mejoras permanentes ya resueltas (ver data/upgrades.js)
    */
   constructor(mon, perks = {}, shiny = false) {
@@ -55,7 +53,7 @@ G.Player = class Player {
     this.banned = new Set();                 // movimientos vetados (Mejoras → Veto): no salen en las cartas
     this.bind = {};                          // movimiento -> hueco fijo (0-3), elegido en Mejoras
     this.coins = 0;            // monedas recogidas en esta run
-    this.t1 = 0; this.t10 = 0; // tickets del gacha recogidos en esta run
+    this.t1 = 0; this.t10 = 0; // contadores ticket legacy (MVP neutral no persiste)
     this.dmgDealt = 0;
 
     this.invuln = 0;
@@ -263,7 +261,7 @@ G.Player = class Player {
   activeMove() { return this.activeGroup()[0]; }
 
   /**
-   * Lo llama combat.js al lanzar un movimiento. Elige la animación de PMD y la
+   * Lo llama combat.js al lanzar un hechizo. Elige la animación del sheet y la
    * acelera si la recarga es más corta que la animación, para que encadene.
    */
   cast(m) {
@@ -289,7 +287,7 @@ G.Player = class Player {
   // ---------------- daño y curación ----------------
   /**
    * @param type  tipo del ataque (tabla de tipos y clima); sin tipo, daño tal cual
-   * @param pure  daño que no baja con la defensa ni el cuerpo a cuerpo (Arceus)
+   * @param pure  daño que ignora defensa (eventos especiales / jefes)
    */
   hurt(amount, type = null, pure = false) {
     if (this.invuln > 0 || this.dead) return;

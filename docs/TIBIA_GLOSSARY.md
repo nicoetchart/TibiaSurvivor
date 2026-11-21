@@ -14,8 +14,8 @@
 4. **Habilidades de combate:** `abilityId` / `spellId` (p. ej. `flame_strike`). Implementación en `G.Abilities`; no añadir movimientos con ids del catálogo Pokémon.
 5. **Tipos de daño:** solo ids en `G.DamageTypes.ALL`: `physical`, `fire`, `ice`, `energy`, `earth`, `death`, `holy` (DEC-004). No usar `G.Types` en código nuevo.
 6. **Metaprogresión MVP:** bestiario + bosstiary + charms + upgrades de vocación + misiones + logros (DEC-038). Sin colección por especie, sin `pupg` por dex.
-7. **Modo runtime objetivo:** neutral único tras PSR-2 (DEC-037). Hasta entonces: no ampliar el camino `legacy`.
-8. **Adaptadores:** `content-bridge.js` y `G.DEX_BY` son **temporales**; no crear adaptadores nuevos.
+7. **Modo runtime objetivo:** neutral único (DEC-037, PSR-8). Sin `content=legacy`.
+8. **Sin contratos Pokédex:** no `G.DEX`, `G.DEX_BY` ni `G.getPokemon` en código de runtime (PSR-10).
 
 ---
 
@@ -104,3 +104,6 @@ Contrato completo: **`docs/CYCLOPEDIA_REFERENCE.md`** (alineado a [Cyclopedia wi
 | PSR-7 | Purge `ps.*`, certificación |
 | PSR-8 | Purga datasets/módulos Pokémon del repo |
 | PSR-9 | SEO bestiario + runtime sin rutas legacy |
+| PSR-10 | Eventos horde/gold; sin G.DEX en runtime |
+| PSR-11 | i18n EN sin marcas Pokémon legacy |
+| PSR-12 | HTML/UI sin shiny/gacha/tickets |

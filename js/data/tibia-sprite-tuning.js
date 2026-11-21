@@ -1,6 +1,6 @@
 /* ============ tibia-sprite-tuning.js — AJUSTA TÚ (no se sobrescribe al importar) ============
  *
- * Modo Pokémon (por defecto): naturalSize: true
+ * Modo legacy sprites (por defecto): naturalSize: true
  *   · Tamaño en pantalla = w×h del meta × G.Sprites.PX (2) × scale de la entidad (como un dex).
  *   · Minotaur 32px se ve más chico que troll 64px — igual que en el cliente Tibia.
  *   · ax/ay y s (sombra) vienen del import (`tibia-creatures-meta.js`), medidos del PNG.

@@ -110,7 +110,7 @@ G.LevelUp = (() => {
       }
     }
 
-    // --- evoluciones Pokémon (legacy) ---
+    // --- evoluciones legacy (sin uso MVP) ---
     const waiting = {};
     if (!ms) {
       for (const m of pl.moves) {

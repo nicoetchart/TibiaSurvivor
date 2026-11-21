@@ -5,10 +5,10 @@
  *   zone  círculo (zonas de Tierra/Fuego/Veneno, explosiones, caídas de salto)
  *   beam  rayo recto desde el enemigo (Eléctrico, Psíquico, Dragón, Hielo)
  *
- * Cada ordenador dibuja los peligros y comprueba sólo SU Pokémon. En
+ * Cada ordenador dibuja los peligros y comprueba sólo SU jugador. En
  * cooperativo los crea el anfitrión y los manda con 'hz'.
  *
- * Los de Arceus (systems/judgment.js) quitan un % de la vida (pct) sin mirar
+ * Los de Judgment legacy quitan un % de la vida (pct) sin mirar
  * tipos ni defensa (pure), y la Sentencia cae como un pilar de luz (vis).
  */
 G.Hazards = (() => {
@@ -67,7 +67,7 @@ G.Hazards = (() => {
     }
   }
 
-  /** Avisos en el suelo (debajo de los Pokémon). */
+  /** Avisos en el suelo (debajo de los sprites). */
   function draw(ctx) {
     const blink = Math.sin(performance.now() / 60) > 0;
     for (const h of list) {

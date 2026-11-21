@@ -124,7 +124,7 @@ G.MUSIC.rift = {
   drums: { kick: 'X.x.X.x.X.x.X.xx', snare: '....X.......X..X', hat: 'xoxoxoxoxoxoxoxo' }
 };
 
-/* ---------------- La Sentencia de Arceus (minuto 30) ----------------
+/* ---------------- Judgment legacy (minuto 30) ----------------
  * Solemne y sin salida: Re menor con un Mi bemol (frigio) que oscurece,
  * campanas graves en cada compás y la melodía subiendo hasta el final. */
 G.MUSIC.judgment = {

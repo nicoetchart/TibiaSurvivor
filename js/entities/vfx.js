@@ -47,7 +47,7 @@ G.VFX = (() => {
       set(x, y, c) { x = Math.round(x); y = Math.round(y); if (x >= 0 && y >= 0 && x < w && y < h) g[y][x] = c; },
       get(x, y) { return x >= 0 && y >= 0 && x < w && y < h ? g[y][x] : null; },
       fill(fn) { for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const c = fn(x, y); if (c) g[y][x] = c; } },
-      // Contorno de 1 px alrededor de lo opaco, como en los sprites de PMD.
+      // Contorno de 1 px alrededor de lo opaco, estilo sheet original.
       outline() {
         const marks = [];
         for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {

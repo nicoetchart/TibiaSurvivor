@@ -1,4 +1,4 @@
-/* ============ judgment-stub.js — PSR-3 (DEC-034): sin Judgment/Arceus ============ */
+/* ============ judgment-stub.js — PSR-3 (DEC-034): evento Judgment desactivado ============ */
 G.Judgment = (() => {
   const noop = () => {};
   return {

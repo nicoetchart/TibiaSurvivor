@@ -53,13 +53,13 @@ G.MenuUI = (() => {
         return;
       }
     }
-    const shiny = false;
     G.UI.chrome(true);
     G.UI.show('scr-menu');
-    G.UI.sprite($('menu-partner'), mon.dex, { lively: true, scale: 4, hero: true, shiny });
-    $('menu-partner').style.setProperty('--stage-c', shiny ? '#9ae6ff' : G.U.TYPE_COLOR[mon.types[0]]);
-    $('menu-partner').classList.toggle('shiny', shiny);
-    $('menu-partner-name').innerHTML = mon.name + (shiny ? ' ' + G.Icons.html('shiny', 24) : '');
+    G.UI.sprite($('menu-partner'), mon.dex, { lively: true, scale: 4, hero: true, shiny: false });
+    const chip = (mon.types && mon.types[0]) ? G.U.TYPE_COLOR[mon.types[0]] : '#b48aff';
+    $('menu-partner').style.setProperty('--stage-c', chip);
+    $('menu-partner').classList.remove('shiny');
+    $('menu-partner-name').textContent = mon.name;
     $('menu-partner-info').innerHTML = neutral
       ? (() => {
           const v = G.Content.getVocation('master_sorcerer');
@@ -68,10 +68,6 @@ G.MenuUI = (() => {
           return (v ? v.name : 'Vocation') + ' · ' + zone;
         })()
       : G.UI.typeChips(mon.types) + ' ' + G.UI.stars(mon.rarity);
-  // Normal / shiny a mano, aquí mismo (en el móvil no se encontraba en la ficha).
-    const seg = $('menu-shiny');
-    if (seg) seg.classList.add('hidden');
-
     const st = s.stats;
     $('menu-stats').innerHTML = neutral
       ? `Runs <b style="color:#fff">${st.runs}</b> · Wins <b style="color:#fff">${st.wins || 0}</b><br>` +

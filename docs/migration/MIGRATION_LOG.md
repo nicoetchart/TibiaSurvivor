@@ -901,6 +901,72 @@ Mantenimiento; copy residual en docs históricos (`CAVERN_ARCHITECTURE_AUDIT.md`
 
 ---
 
+## 2026-11-19 — PSR-10
+
+### Fase
+PSR-10 — completed (runtime sin G.DEX; eventos Tibia)
+
+### Cambios
+
+| Área | Cambio |
+|------|--------|
+| `js/systems/events.js` | Solo horde/gold; sin Pokémon perdido ni ladrones |
+| `js/data/runtime-stubs.js` | Sin `G.DEX` / `G.DEX_BY` |
+| `js/game.js` | Sin `onRescue` / `onShinyCaught` |
+| `tools/validate-psr10.js` | Certificación |
+| `tools/make_seo_pages.py` | Tipos sin nota legacy Pokémon |
+
+### Próximo paso
+
+i18n/copy residual (`lang-en.js` histórico); docs de auditoría; certificación amplia (plan PSR-0 original).
+
+---
+
+## 2026-11-19 — PSR-11 / PSR-12
+
+### Fase
+PSR-11 — completed (i18n EN) · PSR-12 — completed (HTML/UI)
+
+### Cambios
+
+| Área | Cambio |
+|------|--------|
+| `tools/sanitize-lang-en-psr11.js` | Purga bloques colección/gacha/Arceus; neutraliza valores EN |
+| `tools/validate-psr11.js`, `validate-psr12.js` | Certificación |
+| `dev.html` | Sin `menu-shiny` ni `tickets-pill` |
+| `js/ui/menu.js`, `ui.js`, `spawner.js` | Copy y chrome MVP |
+
+### Próximo paso
+
+Comentarios históricos en `js/`; docs `CAVERN_*`; claves ES en `lang-en` que ya no se muestran (limpieza opcional).
+
+---
+
+## 2026-11-19 — PSR-13 / PSR-14
+
+### Fase
+
+PSR-13 — completed (runtime comments) · PSR-14 — completed (lang-en prune)
+
+### Cambios
+
+| Área | Cambio |
+|------|--------|
+| `tools/validate-psr13.js`, `validate-psr14.js` | Cadena desde PSR-12; sin marcas legacy en `js/` (salvo `lang-en`, `changelog`) |
+| `tools/prune-lang-en-tibia.js` | Quita bloques tipos/movimientos Pokémon en `lang-en.js` |
+| `js/**/*.js` (runtime) | Comentarios y nombres neutros; `ui.js` sin `tickets-pill` |
+| `js/core/tibia-sprites.js` | Query dev `sprites=legacy` (antes `pokemon`) |
+
+### Validación
+
+`node tools/validate-psr14.js` → build → export → SEO OK (`860` traducciones tras poda).
+
+### Próximo paso
+
+Podar claves ES huérfanas en `lang-en`; docs `CAVERN_*`; smoke manual F2.
+
+---
+
 <!-- Plantilla para entradas futuras
 
 ## YYYY-MM-DD — FASE N

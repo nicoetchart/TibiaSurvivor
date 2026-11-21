@@ -2,7 +2,7 @@
  *
  * De vez en cuando (pocas veces por partida) se abre una GRIETA cerca de un
  * jugador. Dura GRIETA_TTL segundos; si entras, te lleva (con todo el grupo)
- * a una arena cerrada en el Mundo Distorsión, contra un Pokémon LEGENDARIO.
+ * a una arena cerrada en el Mundo Distorsión, contra un jefe legendario.
  *
  *   ganas    el legendario suelta tickets (el ×10, la mitad de las veces) y monedas, y cada uno se lleva un
  *            VÍNCULO (fusiona movimientos, ver Player.fuse); a los pocos
@@ -21,7 +21,7 @@ G.Rift = (() => {
   // (0.14 hasta el 11-10-2026: más grietas para que se vean los vínculos)
   // Menos azar (12-10-2026): cada vez que no sale, la siguiente es más
   // probable (20 %, 40 %, 60 %, 80 %, 100 %): como mucho 2,5 min sin grieta.
-  // Desde 2 min antes de la Sentencia de Arceus (minuto 30) ya no se abren.
+  // Desde 2 min antes del evento Judgment legacy (minuto 30) ya no se abren.
   const CHECK = 30, CHANCE = 0.2, TTL = 45;
   const ARENA_R = 11, ARENA_TIME = 120, FROM = 75;
   let rift = null;          // { x, y, ttl, t }

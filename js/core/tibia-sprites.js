@@ -14,7 +14,7 @@ G.TibiaSprites = (() => {
   function resolveEnabled() {
     if (typeof location !== 'undefined') {
       if (/[?&]sprites=geo\b/.test(location.search)) return false;
-      if (/[?&]sprites=(off|pokemon)\b/.test(location.search)) return false;
+      if (/[?&]sprites=(off|legacy)\b/.test(location.search)) return false;
       if (/[?&]sprites=tibia\b/.test(location.search)) return true;
     }
     const tun = G.TIBIA_SPRITE_TUNING;

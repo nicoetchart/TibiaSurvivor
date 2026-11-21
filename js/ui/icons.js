@@ -127,7 +127,7 @@ G.Icons = (() => {
     wfog: { pal: { g: '#c9cfdc', d: '#8f98ab' }, rows: [
       '............', '............', '..gggggg....', '.g......gg..', '............', '....gggggg..',
       '..dd......d.', '............', '.ggggggg....', 'g.......gg..', '............', '............'] },
-    // Bolas del tragaperras del gacha (una por rareza).
+    // Iconos de rareza (legacy tragaperras).
     ball2: { pal: { r: '#3d7bff', s: '#2a56b8', w: '#cfe0ff', b: '#f4f4f4' }, rows: [
       '....kkkk....', '..kkrrrrkk..', '.krwrrrrrrk.', '.krwrrrrrsk.', 'krrrrkkrrssk', 'kkkkkbbkkkkk', 'kbbbkbbkbbbk', 'kbbbbkkbbbbk', '.kbbbbbbbbk.', '.kbbbbbbbbk.', '..kkbbbbkk..', '....kkkk....'] },
     ball3: { pal: { r: '#3a3a46', s: '#1d1d26', w: '#ffd23f', b: '#f4f4f4' }, rows: [

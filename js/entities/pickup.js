@@ -71,7 +71,7 @@ G.Pickups = (() => {
   /** Imán: todo vuela hacia el jugador más cercano. */
   function pullAll() { for (const o of list) o.pulled = true; }
 
-  /** @param plain  sólo la experiencia (los legendarios de la Sentencia de Arceus) */
+  /** @param plain  sólo la experiencia (jefes de evento Judgment legacy) */
   function dropXp(x, y, value, boss = false, legend = false, plain = false) {
     if (boss) {
       // Los jefes revientan en un montón de orbes grandes + recompensas.

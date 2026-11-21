@@ -5,7 +5,7 @@
  *   - Cada 5 min (y al volver a la pestaña) se mira version.json (lo sirve
  *     GitHub Pages: no cuesta nada).
  *   - Si NO está en partida: aviso "actualizando en 5 s…" y se recarga.
- *     Si está en el gacha, la tienda de mejoras, los ajustes o escribiendo en
+ *     Si está en tienda/ajustes o escribiendo en
  *     un campo, espera a que termine. En una sala de cooperativo, se recarga
  *     igual (decisión del 12-10-2026).
  *   - Si está EN PARTIDA: no se toca. Al acabar, la run se guarda como
@@ -39,7 +39,7 @@ G.Updater = (() => {
     if (!G.Game || G.Game.state !== 'ui') return false;                   // en partida o en el resumen
     if (['scr-settings'].some(id => document.getElementById(id) && G.UI.isOpen(id))) return false;
     const fx = document.getElementById('pull-fx');
-    if (fx && !fx.classList.contains('hidden')) return false;             // tirada del gacha en marcha
+    if (fx && !fx.classList.contains('hidden')) return false;             // animación legacy en marcha
     const a = document.activeElement;
     if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return false;   // escribiendo (contraseña, apodo...)
     return true;

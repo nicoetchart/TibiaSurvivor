@@ -111,7 +111,7 @@ G.RunUI = (() => {
       <div style="grid-column:1/-1"><span>${neutral ? 'Gold coins earned' : 'Coins earned'}</span>
         <b class="gold"><span class="coin"></span> +${r.coins}</b>
         <div style="font-size:14px;color:var(--muted)">${r.breakdown}</div></div>
-      ${!neutral && (r.t1 || r.t10) ? `<div style="grid-column:1/-1"><span>Tickets del gacha</span><b>
+      ${!neutral && (r.t1 || r.t10) ? `<div style="grid-column:1/-1"><span>Tickets</span><b>
         ${r.t1 ? G.Icons.html('ticket', 22) + ' +' + r.t1 + ' ' : ''}${r.t10 ? G.Icons.html('ticket10', 22) + ' +' + r.t10 + ' ×10' : ''}</b></div>` : ''}
       <div style="grid-column:1/-1"><span>${neutral ? 'Spells' : 'Moves'}</span><b style="font-size:17px">
         ${r.moves.map(m => `${G.Icons.html('move:' + m.id, 16)} ${m.name} Lv.${m.lvl}`).join(' · ') || '—'}</b></div>

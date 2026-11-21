@@ -15,13 +15,13 @@ G.Spawner = (() => {
   // se llega al tope, los que siguen saliendo son "élite" (más vida, daño y
   // experiencia), así la dificultad no baja.
   const CAP = 64, ELITE_FROM = 0.85;
-  // Menos Pokémon pero más fuertes (la pantalla no se satura): salen ~24% de
+  // Menos enemigos pero más fuertes (la pantalla no se satura): salen ~24% de
   // los de antes, cada uno con más vida, daño y experiencia.
   const DENSITY = 0.24, DMG_K = 2.4, XP_K = 5.6;
   // La resistencia extra crece con la run: al principio ×3,3 y hasta ×5
   // hacia el minuto 6, cuando ya tienes ataques para tumbarlos.
   const hpK = t => 3.3 + Math.min(1.7, t / 210);
-  /** MVP neutral: sin el ×3,3 legacy de Pokémon; sube despacio los primeros minutos. */
+  /** MVP neutral: sin el ×3,3 legacy; sube despacio los primeros minutos. */
   function hpMulRun(t) {
     if (G.Content && G.Content.mode === 'neutral') {
       return 1.08 + Math.min(0.95, t / 480);
@@ -163,9 +163,7 @@ G.Spawner = (() => {
     const e = new G.Enemy(b, x, y, scaled(G.Content.roster().bossScale(t), 1 * (players.length > 1 ? 1.4 : 1)), true);
     if (rollShiny(b.dex)) e.makeShiny();
     G.EnemyMgr.add(e);
-    const intro = G.Content.mode === 'neutral'
-      ? e.name + ' blocks the threshold!'
-      : 'A wild ' + e.name + (e.shiny ? ' shiny' : '') + ' appeared!';
+    const intro = e.name + ' blocks the threshold!';
     say(intro, 3.4);
     G.Camera.kick(1.1);
     G.Audio.sfx('boss');
@@ -199,7 +197,7 @@ G.Spawner = (() => {
     players = Array.isArray(who) ? who : [who];
     if (announceT > 0) announceT -= dt;
     // En la arena de la grieta no sale nada más (y el reloj de jefes espera).
-    // En la Sentencia de Arceus, sólo sus legendarios (systems/judgment.js).
+    // Evento Judgment legacy (stub): sólo legendarios del evento.
     if (G.Rift.inArena || G.Judgment.active) return;
     if (G.Game.runFrozen && G.Game.runFrozen()) return;
 
@@ -248,7 +246,7 @@ G.Spawner = (() => {
       if (G.Content.mode === 'neutral' && t < 200) surgeN *= 0.42 + 0.58 * (t / 200);
       const n = Math.min(scfg.cap - G.EnemyMgr.count, Math.round(surgeN));
       for (let i = 0; i < n; i++) spawnOne(target, t, base + G.U.rand(-0.55, 0.55));
-      say(G.Content.mode === 'neutral' ? 'Cave surge!' : 'Pokémon swarm!', 2.2);
+      say('Cave surge!', 2.2);
       G.Audio.sfx('surge');
     }
   }

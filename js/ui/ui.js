@@ -1,7 +1,6 @@
 /* ============ ui.js — utilidades comunes de la interfaz ============
  * - Mostrar / ocultar pantallas.
- * - Sprites animados de PMD dentro de <canvas> del DOM (menú, colección,
- *   gacha...). Se registran aquí y el bucle principal los anima con tick().
+ * - Sprites en <canvas> del DOM (menú, bestiario…); tick() en el bucle principal.
  * - Sonidos de interfaz (por delegación: cualquier botón suena solo).
  * - Panel de sonido, avisos (toast), monedas, chips de tipo, estrellas.
  */
@@ -37,12 +36,6 @@ G.UI = (() => {
   function refreshCoins() {
     const s = G.DB.save;
     $('coins').textContent = s ? s.coins.toLocaleString('en-US') : '0';
-    const neutral = G.Content && G.Content.mode === 'neutral';
-    $('tickets-pill').classList.toggle('hidden', neutral);
-    if (!neutral) {
-      const t = (s && s.tickets) || { t1: 0, t10: 0 };
-      $('tickets-pill').innerHTML = `${G.Icons.html('ticket', 18)} ${t.t1} &nbsp;${G.Icons.html('ticket10', 18)} ${t.t10}`;
-    }
     // Punto de sincronización: verde = guardado en la nube, amarillo = guardando,
     // rojo = sin conexión (se guarda en local y se sube al volver).
     const st = G.DB.guest ? 'guest' : G.DB.syncState;
@@ -212,13 +205,13 @@ G.UI = (() => {
     : null;
 
   /**
-   * Anima un Pokémon dentro de un <canvas>.
+   * Anima una criatura dentro de un <canvas>.
    * opts: { anim='Idle', dir=0, shiny, silhouette, lively (ataca de vez en
    *         cuando), spin (va girando), shadow=true,
    *         scale=2   tamaño de píxel FIJO (×2 como en el juego): todos los
-   *                   Pokémon de una vista salen con el mismo píxel, aunque
+   *                   Sprites de una vista salen con el mismo píxel, aunque
    *                   los gigantes no quepan enteros
-   *         hero      vista de un solo Pokémon: puede reducir la escala para
+   *         hero      vista de un solo sprite: puede reducir la escala para
    *                   que quepa, porque ahí no se compara con nada }
    */
   function sprite(cv, dex, opts = {}) {

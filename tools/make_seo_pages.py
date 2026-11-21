@@ -279,10 +279,9 @@ def types_page(lang):
     intro = ('<p class="lead">In the Tibia MVP, combat uses <b>elemental damage types</b> (physical, fire, ice, energy, earth, death, holy). '
              'Each creature lists weaknesses and resistances in the <b>bestiary</b>. Typical in-run values: '
              '<b>weak ×1.25</b>, <b>resist ×0.70</b>, <b>immune ×0</b> (no damage).</p>')
-    legacy = '<p class="note">Legacy Pokémon type charts are not exported for SEO; only Tibia damage types apply in the MVP.</p>'
     title, desc, c = f'{BRAND} damage types (Tibia MVP)', f'Damage types in {BRAND}: weakness, resistance and immunity for spells and creatures.', 'Use the right element'
     crumb = 'Damage types'
-    body = f'<article class="doc wide"><h1>{h1}</h1>{intro}{table}{legacy}{cta(pid, lang, c)}</article>'
+    body = f'<article class="doc wide"><h1>{h1}</h1>{intro}{table}{cta(pid, lang, c)}</article>'
     write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, crumb)]}))
 
 # ================= movimientos =================

@@ -1,5 +1,5 @@
-/* ============ enemy.js — Pokémon salvajes y su gestor ============
- * (x, y) son los PIES. Animaciones de Mundo Misterioso:
+/* ============ enemy.js — criaturas en run y EnemyMgr ============
+ * (x, y) son los PIES. Animaciones de sprite:
  *   Walk al moverse · Idle parado · Charge apuntando una embestida ·
  *   Attack al embestir o al golpearte · Shoot al disparar · Hurt al recibir ·
  *   Faint al caer (se queda en el suelo y se desvanece).
@@ -189,7 +189,7 @@
         if (this.shiny) { G.FX.burst(this.x, cy, '#ffe9a0', 30, 220); G.FX.ring(this.x, this.y, this.r, this.r * 7, '#9ae6ff', 0.7, 5); }
         return;
       }
-      // (Los legendarios de la Sentencia de Arceus sólo dan experiencia.)
+      // (Algunos jefes de evento legacy sólo dan experiencia.)
       if (this.boss && !this.judge) {
         G.Camera.kick(0.9);
         for (let i = 0; i < 10; i++) G.Pickups.drop('coin', this.x + G.U.rand(-40, 40), this.y + G.U.rand(-30, 30), 5);
@@ -198,7 +198,7 @@
       }
       G.Pickups.dropXp(this.x, this.y, this.xp, this.boss, !!this.legend, !!this.judge);
       if (this.golden && Math.random() < 0.35) G.Pickups.drop('coin', this.x + 6, this.y - 4, 3);
-      // Duende del tesoro (legacy Pokémon): sólo monedas.
+      // Duende del tesoro (legacy): sólo monedas.
       if (this.behavior === 'thief') {
         const n = 20;
         for (let i = 0; i < n; i++) G.Pickups.drop('coin', this.x + G.U.rand(-36, 36), this.y + G.U.rand(-26, 26), 5);
@@ -211,7 +211,6 @@
       if (this.shiny) {
         G.FX.burst(this.x, cy, '#ffe9a0', 30, 220);
         G.FX.ring(this.x, this.y, this.r, this.r * 7, '#9ae6ff', 0.7, 5);
-        if (G.onShinyCaught) G.onShinyCaught(this);
       }
       if (this.lastHitOwner && this.lastHitAid && G.MsTelemetry) {
         G.MsTelemetry.onKill(this.lastHitOwner, this.lastHitAid, this);
@@ -303,7 +302,7 @@
 
       // --- terreno ---
       let terrainMul = 1;
-      // (El legendario está en su casa: su arena no le afecta. Los de Arceus, tampoco.)
+      // (El jefe en su arena no se ve afectado por ciertos modos.)
       if (!this.flying && !this.legend && !this.judge && G.World.isLiquid(this.x, this.y)) {
         const le = G.World.liquidEffect(this.types);
         if (le.dmg) {
@@ -664,7 +663,7 @@
 
     summon() {
       this.minions = this.minions.filter(m => !m.dead && G.EnemyMgr.get(m.id));
-      // Con el tope general de enemigos (menos Pokémon en pantalla), con un pequeño margen.
+      // Con el tope general de enemigos en pantalla, con un pequeño margen.
       if (this.minions.length >= 4 || G.EnemyMgr.count > G.Spawner.CAP + 15) return;
       const dex = this.def.minion || this.dex;
       const monName = G.Content.creatureName(dex);

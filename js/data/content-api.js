@@ -23,7 +23,7 @@ G.Content = (() => {
     return null;
   }
 
-  /** Perfil de combate/HUD derivado de G.CREATURES (PSR-2: reemplaza G.DEX_BY). */
+  /** Perfil de combate/HUD derivado de G.CREATURES (PSR-2+). */
   function toRuntimeMon(creature) {
     if (!creature) return null;
     if (typeof creature === 'number' || (typeof creature === 'string' && !G.CREATURE_BY_ID[creature])) {
@@ -69,7 +69,7 @@ G.Content = (() => {
    * ¿Esta partida guardada usa el stack neutral? (DEC-019)
    * - partner null → onboarding vocación (neutral).
    * - partner en banda TS → neutral.
-   * - partner dex Pokémon → legacy.
+   * - partner: vocación / criatura jugador (99001).
    */
   function shouldUseNeutralSave(save) {
     if (!save) return false;

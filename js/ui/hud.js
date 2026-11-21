@@ -227,7 +227,7 @@ G.HUD = (() => {
       ctx.fillText('RIFT · ' + G.U.mmss(G.Rift.timeLeft), w / 2, boss ? 98 : 76);
     }
 
-    // Eventos: cuenta atrás, flecha al Pokémon perdido / a la marca y a los duendes.
+    // Eventos: cuenta atrás, flecha a objetivos de evento y a los duendes.
     G.Events.drawHud(ctx, w, h, pl, F);
 
     // Aviso propio al abrirse una grieta (no lo tapan los otros avisos).

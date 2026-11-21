@@ -20,7 +20,7 @@
  * Grieta: setArena() convierte una zona lejana del mapa en una arena redonda
  * cerrada por paredes, donde se lucha contra un legendario (systems/rift.js).
  *
- * Los Pokémon voladores, los fantasma y los jefes ignoran el terreno.
+ * Voladores, fantasma y jefes ignoran el terreno.
  *
  * Coordenadas: (x, y) de una entidad = sus PIES, en el plano del suelo.
  * Los chunks se separan en DATOS (baratos, siempre) e IMAGEN (horneada a
@@ -63,7 +63,7 @@ G.World = (() => {
 
   /**
    * Pasillo libre de la arena: donde aparecéis (sur) y el legendario (norte).
-   * Con `clear` en el tema, además un claro donde aterriza Arceus (5 al norte).
+   * Con `clear` en el tema, además un claro para evento Judgment legacy (5 al norte).
    */
   function arenaSafe(tx, ty) {
     const lx = tx - arena.tx, ly = ty - arena.ty;
@@ -281,7 +281,7 @@ G.World = (() => {
   function liquidKind() { return G.Tiles.BIOMES[biome].liquid; }
 
   /**
-   * Efecto del charco actual sobre un Pokémon de estos tipos:
+   * Efecto del charco actual sobre una criatura de estos tipos:
    *   { slow, dmg, every, color, slide }  (dmg en % de vida máxima)
    * Los de su tipo no sufren el suyo (Fuego en lava, Veneno en veneno...).
    */

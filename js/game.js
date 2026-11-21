@@ -1,18 +1,6 @@
 /* ============ game.js — flujo del juego y bucle principal ============
- *
- *   login ──> test de personalidad ──> menú ──> run ──> resumen ──> menú
- *                (sólo la 1ª vez)          │
- *                                          ├─ Pokémon (colección)
- *                                          ├─ Mejoras
- *                                          └─ Gacha
- *
- * Estados del bucle: 'ui' (menús, con el mundo de fondo), 'playing',
- * 'levelup', 'paused', 'over'.
- *
- * Cooperativo (G.Coop.active): el anfitrión lleva enemigos, objetos y
- * experiencia; cada uno su Pokémon. La pausa no para el juego, las cartas de
- * nivel esperan a que elijan todos y un compañero caído se levanta si otro
- * se queda a su lado. Ver net/coop.js.
+ * login ──> vocación (cuenta nueva) ──> menú ──> run ──> resumen ──> menú
+ * Estados: 'ui', 'playing', 'levelup', 'paused', 'over'.
  */
 G.Game = (() => {
   let cv, ctx, dpr = 1, w = 0, h = 0;
@@ -208,29 +196,6 @@ G.Game = (() => {
     if (save_) G.DB.commit('run');
   }
 
-  /** Has llevado a casa a un Pokémon perdido y se une a ti (events.js). */
-  G.onRescue = (dex, name) => {
-    if (G.Content && G.Content.mode === 'neutral') return;
-    if (!G.DB.save || !pl) return;
-    const isNew = !G.DB.owns(dex);
-    if (isNew) { G.DB.grant(dex, 'rescue'); G.DB.commit(true); }
-    else pl.coins += 150;
-    G.Spawner.say(isNew ? name + ' joins your team!' : name + ' thanks you! (+150 coins, already owned)', 4);
-    G.Audio.sfx('shinyGet');
-  };
-
-  /** Un shiny salvaje cae: te lo quedas (y la versión normal si no la tenías). */
-  G.onShinyCaught = e => {
-    if (G.Content && G.Content.mode === 'neutral') return;
-    if (!G.DB.save || !pl) return;
-    const isNew = G.DB.grantShiny(e.dex, 'wild');
-    G.DB.save.stats.shinies++;
-    G.DB.commit(true);
-    caught.push({ dex: e.dex, isNew });
-    G.Spawner.say(isNew ? 'You caught a shiny ' + e.name + '!' : 'Another shiny ' + e.name + '! (+300 coins)', 4);
-    if (!isNew) pl.coins += 300;
-    G.Audio.sfx('shinyGet');
-  };
 
   /** Tras derrotar al jefe final del MVP: pausa combate y cierra la run. */
   function scheduleVictory(delay = 2) {
@@ -325,7 +290,7 @@ G.Game = (() => {
    * ¿Partida limpia? Sólo cosas que ningún jugador legal puede hacer, con
    * márgenes enormes (el sistema del 10-10 daba falsos positivos):
    *   - el reloj de la partida va más deprisa que el real (trucos de velocidad)
-   *   - funciones de tu Pokémon sustituidas (así se hace uno invencible)
+   *   - funciones del jugador sustituidas (así se hace uno invencible)
    *   - vida, ataque, velocidad o recarga muy por encima de lo posible
    *   - se han usado las funciones de pruebas (saltar el reloj...)
    * Si algo salta, esa partida no sube al ranking (sin avisar) y nada más.
@@ -489,7 +454,7 @@ G.Game = (() => {
 
   function handleKeys() {
     if (G.SettingsUI.isOpen) { if (G.Input.tap('escape')) G.SettingsUI.close(); return; }
-    // La Sentencia de Arceus: Espacio, Intro o Esc saltan la animación (si se puede).
+    // Judgment legacy (stub): Espacio, Intro o Esc saltan la cinemática (si hay).
     if (G.Judgment.cinematic && state === 'playing') {
       if (['space', 'enter', 'escape'].some(k => G.Input.tap(k))) G.Judgment.skip();
       return;
@@ -684,8 +649,8 @@ G.Game = (() => {
     for (const e of extra) items.push({ y: e.y, ent: e });
     const rift = G.Rift.drawable();
     if (rift) items.push({ y: rift.y, ent: rift });
-    const arceus = pl && state !== 'ui' ? G.Judgment.drawable() : null;
-    if (arceus) items.push({ y: arceus.y, ent: arceus });
+    const judgmentEnt = pl && state !== 'ui' ? G.Judgment.drawable() : null;
+    if (judgmentEnt) items.push({ y: judgmentEnt.y, ent: judgmentEnt });
     if (pl && state !== 'ui') for (const d of G.Events.drawables()) items.push({ y: d.y, ent: d });
     items.sort((a, b) => a.y - b.y);
     for (const it of items) {
@@ -744,7 +709,7 @@ G.Game = (() => {
   // ---------------- fondo de los menús ----------------
 
   /**
-   * El mundo de verdad, con Pokémon salvajes paseando y la cámara a la deriva.
+   * Mundo decorativo de menú: criaturas paseando y cámara a la deriva.
    * Así el menú enseña desde el primer segundo cómo se ve el juego.
    */
   const Backdrop = (() => {

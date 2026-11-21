@@ -96,7 +96,7 @@ G.Sprites = (() => {
 
   const ANIMS = ['Idle', 'Walk', 'Attack', 'Shoot', 'Charge', 'Hurt', 'Faint'];
 
-  /** Precarga todas las animaciones de esos Pokémon. */
+  /** Precarga todas las animaciones de esos dex. */
   function preload(dexes, timeout = 8000, shiny = false) {
     const tibia = G.TibiaSprites && G.TibiaSprites.enabled
       ? G.TibiaSprites.preloadDexes(dexes, timeout) : Promise.resolve();
@@ -153,7 +153,7 @@ G.Sprites = (() => {
     return [5, 8, 12][G.U.clamp(s, 0, 2)] * PX * scale;
   }
 
-  /** Sombra elíptica bajo los pies, tamaño según el ShadowSize de PMD. */
+  /** Sombra elíptica bajo los pies, tamaño según ShadowSize del sheet. */
   function drawShadow(ctx, dex, x, y, scale = 1) {
     const rx = shadowRadiusAt(dex, scale);
     if (G.TibiaSprites && G.TibiaSprites.enabled && G.TibiaSprites.hasCreature(dex)) {
@@ -174,7 +174,7 @@ G.Sprites = (() => {
   // ---------------- Animator ----------------
 
   /**
-   * Reproduce las animaciones de un Pokémon.
+   * Reproduce las animaciones de una criatura.
    *   loop(anim)        animación de fondo (Idle / Walk); no reinicia si ya suena
    *   play(anim, opts)  animación de una vez (Attack, Shoot, Hurt...) que tapa
    *                     a la de fondo hasta que termina
@@ -279,7 +279,7 @@ G.Sprites = (() => {
       const dx = Math.round(x - m.ax * k), dy = Math.round(y - m.ay * k);
       const prev = ctx.globalAlpha;
       if (alpha < 1) ctx.globalAlpha = prev * alpha;
-      // Destello: blanco entero (enemigos) o medio blanco encima (tu Pokémon).
+      // Destello: blanco entero (enemigos) o medio blanco encima (jugador).
       if (!opts.flash || opts.softFlash) ctx.drawImage(s.img, sx, sy, m.w, m.h, dx, dy, m.w * k, m.h * k);
       if (opts.flash) {
         if (opts.softFlash) ctx.globalAlpha = prev * alpha * 0.55;

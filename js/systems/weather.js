@@ -61,14 +61,14 @@ G.Weather = (() => {
     return Math.min(1, cur.t / 3, (cur.dur - cur.t) / 3);
   }
 
-  /** ¿Le afecta el daño de arena/nieve a un Pokémon con estos tipos? */
+  /** ¿Le afecta el daño de arena/nieve a una criatura con estos tipos? */
   function hurts(types) {
     if (cosmeticOnly()) return false;
     const d = def();
     return !!(d && d.safe && !types.some(t => d.safe.includes(t)));
   }
 
-  /** Factor de velocidad (nieve) para un Pokémon con estos tipos. */
+  /** Factor de velocidad (nieve) para una criatura con estos tipos. */
   function speedFor(types) {
     if (cosmeticOnly()) return 1;
     const d = def();

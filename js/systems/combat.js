@@ -42,7 +42,7 @@ G.Combat = (() => {
       : Math.max(0.05, m.cd * pl.cdMul);
     pl.cast(m);
     // Vínculo: su icono destella en el HUD al lanzarse (uno que explota pegado al
-    // enemigo, como Ascuas tras Ataque Rápido, casi no se ve).
+    // enemigo en cadena muy rápida, casi no se ve).
     m.castAt = performance.now();
 
     run(pl, m);
@@ -1282,7 +1282,7 @@ G.Combat = (() => {
     }
   }
 
-  /** Lo de los campos que va en el suelo (debajo de los Pokémon). */
+  /** Lo de los campos que va en el suelo (debajo de los sprites). */
   function drawGroundFields(ctx) {
     const now = performance.now() / 1000;
     for (const f of fields) {

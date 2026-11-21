@@ -44,7 +44,7 @@ G.U = {
     return m + ':' + String(Math.floor(s % 60)).padStart(2, '0');
   },
 
-  /** Colores de tipo Pokémon (para proyectiles, tags y efectos). */
+  /** Colores de tipo elemental (proyectiles, tags y efectos). */
   TYPE_COLOR: {
     normal: '#b0a99f', fire: '#ff7b3d', water: '#4b9bff', grass: '#5fcb6a',
     electric: '#ffd33d', ice: '#7fe0e0', fighting: '#e0533d', poison: '#b45ec4',

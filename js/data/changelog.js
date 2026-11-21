@@ -2,6 +2,22 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-19', title: ['Copy', 'Copy'], chg: [
+    ['PSR-13: comentarios y cableado runtime sin marcas legacy; validate-psr13; ui sin tickets-pill.',
+     'PSR-13: runtime comments and wiring without legacy marks; validate-psr13; ui without tickets-pill.'],
+    ['PSR-14: lang-en sin bloques tipos/movimientos Pokémon; tools/prune-lang-en-tibia.js.',
+     'PSR-14: lang-en without Pokémon type/move blocks; tools/prune-lang-en-tibia.js.'],
+    ['PSR-11: lang-en sin Pokémon/gacha/Arceus en textos EN; saneador tools/sanitize-lang-en-psr11.js.',
+     'PSR-11: lang-en without Pokémon/gacha/Arceus in EN copy; sanitizer tools/sanitize-lang-en-psr11.js.'],
+    ['PSR-12: fuera menu-shiny y tickets-pill del HTML; menú y spawner sin copy legacy.',
+     'PSR-12: removed menu-shiny and tickets-pill from HTML; menu and spawner without legacy copy.'],
+  ] },
+  { d: '2026-11-19', title: ['Runtime', 'Runtime'], chg: [
+    ['PSR-10: fuera G.DEX/G.DEX_BY; eventos mid-run solo horda y hora dorada.',
+     'PSR-10: removed G.DEX/G.DEX_BY; mid-run events are horde and golden hour only.'],
+    ['Sin hooks onRescue/onShinyCaught; stubs mínimos en runtime-stubs.js.',
+     'No onRescue/onShinyCaught hooks; minimal runtime-stubs.js.'],
+  ] },
   { d: '2026-11-18', title: ['Identidad', 'Identity'], chg: [
     ['PSR-9: SEO en /bestiario/ y /en/bestiary/; redirect desde /pokedex/ y /shinies/; sin sprites Pokémon en runtime.',
      'PSR-9: SEO at /bestiario/ and /en/bestiary/; redirect from /pokedex/ and /shinies/; no Pokémon sprites in runtime.'],

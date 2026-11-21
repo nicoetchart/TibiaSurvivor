@@ -1,6 +1,6 @@
 /* ============ interact.js — altares, manantiales, cofres con candado y trampas ============
  * Los objetos los coloca world.js (raros, en el suelo libre); aquí está lo que
- * pasa al tocarlos. Todo se mira alrededor de TU Pokémon:
+ * pasa al tocarlos. Todo se mira alrededor del jugador:
  *
  *   altar     da un poder de 25 s (Furia, Rayo, Imán o Prisa) y se apaga
  *   spring    cura mientras estás encima; se agota y se recarga sola
@@ -40,7 +40,7 @@ G.Interact = (() => {
       switch (p.type) {
         case 'spring': spring(dt, pl, p, d2); break;
         case 'altar':
-          // Contando el tamaño de tu Pokémon: uno grande (Reshiram, Zekrom...) choca
+          // Contando el tamaño del sprite: criaturas grandes chocan
           // con el altar antes de llegar a 30 y no lo podía activar.
           if (!p.used && !pl.dead && d2 < Math.max(30, p.r + pl.r + 14) ** 2) usePower(pl, p);
           break;
