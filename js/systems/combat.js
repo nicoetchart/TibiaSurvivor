@@ -1632,7 +1632,11 @@ G.Combat = (() => {
       if (e.touchCd > 0 || e.behavior === 'thief') continue;
       e.touchCd = 0.55;
       e.strike(pl);
-      pl.hurt(e.dmg, e.atkType);
+      let touchDmg = e.dmg;
+      if (G.DailyBoost && G.DailyBoost.playerDamageMulForEnemy) {
+        touchDmg = Math.max(1, Math.round(touchDmg * G.DailyBoost.playerDamageMulForEnemy(e)));
+      }
+      pl.hurt(touchDmg, e.atkType);
       if (pl.hasItem('blueSphere')) e.hurt(15 + pl.level * 4, '#9aa6b5', e.x - pl.x, e.y - pl.y, 80);
       const [nx, ny] = G.U.norm(e.x - pl.x, e.y - pl.y);
       e.kx += nx * 150; e.ky += ny * 150;

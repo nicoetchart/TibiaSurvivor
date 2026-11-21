@@ -1,19 +1,14 @@
-/* ============ bestiary-ui.js — catálogo y detalle (BST-5) ============ */
+/* ============ bestiary-ui.js — catalog and detail (BST-5) ============ */
 G.BestiaryUI = (() => {
   const $ = G.UI.$;
   let selId = null;
   let fState = 'all';
   let fDiff = 'all';
   let fType = 'all';
+  let fOcc = 'all';
+  let fBossCat = 'all';
+  let searchQ = '';
   let tab = 'catalog';
-
-  const STATE_LABEL = {
-    unknown: 'Unknown',
-    discovered: 'Discovered',
-    stage_1: 'Stage I',
-    stage_2: 'Stage II',
-    completed: 'Complete'
-  };
 
   const DIFF_LABEL = {
     harmless: 'Harmless',
@@ -28,10 +23,10 @@ G.BestiaryUI = (() => {
 
   const SECTION_LABEL = { bestiary: 'Bestiary', bosstiary: 'Bosstiary' };
   const BOSS_CATEGORY_LABEL = { bane: 'Bane', archfoe: 'Archfoe', nemesis: 'Nemesis' };
-  const STAGE_LABEL = {
-    bestiary: { stage_1: 'Stage I', stage_2: 'Stage II', completed: 'Complete' },
-    bosstiary: { stage_1: 'Prowess', stage_2: 'Expertise', completed: 'Mastery' }
-  };
+
+  function stageName(st, section) {
+    return G.Bestiary.stageLabel(st, section);
+  }
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
@@ -58,75 +53,211 @@ G.BestiaryUI = (() => {
 
   function combatCreature(catalog) {
     const id = catalog.combatCreatureId || catalog.creatureId;
+    if (G.Cyclopedia && G.Cyclopedia.getDefinition) {
+      const def = G.Cyclopedia.getDefinition(id);
+      if (def) return def;
+    }
     return G.CREATURE_BY_ID && G.CREATURE_BY_ID[id] ? G.CREATURE_BY_ID[id] : null;
   }
 
+  /** Spawn stats (D7 hp_band) when roster matches creature data. */
+  function spawnStats(creatureId) {
+    const c = G.CREATURE_BY_ID && G.CREATURE_BY_ID[creatureId];
+    if (G.NeutralRoster && G.NeutralRoster.useHpBand && G.NeutralRoster.useHpBand() && c && G.NeutralRoster.defFor) {
+      return G.NeutralRoster.defFor(c);
+    }
+    return null;
+  }
+
   function catalogList() {
-    return G.Bestiary.listEntries();
+    if (tab === 'bosstiary') return G.Bestiary.listBossEntries();
+    return G.Bestiary.listEntries().filter(row => row.section !== 'bosstiary');
   }
 
   function passesFilters(row) {
     const st = entryState(row.creatureId, row);
-    if (fState === 'unknown' && st !== 'unknown') return false;
-    if (fState === 'discovered' && st !== 'discovered') return false;
-    if (fState === 'progress' && st !== 'stage_1' && st !== 'stage_2') return false;
-    if (fState === 'completed' && st !== 'completed') return false;
-    if (fDiff !== 'all' && row.difficulty !== fDiff) return false;
-    if (fType !== 'all' && row.section !== fType) return false;
+    if (fState !== 'all') {
+      if (fState === 'progress') {
+        if (st !== 'stage_1' && st !== 'stage_2') return false;
+      } else if (st !== fState) return false;
+    }
+    if (tab !== 'bosstiary' && fDiff !== 'all' && row.difficulty !== fDiff) return false;
+    if (tab !== 'bosstiary' && fType !== 'all' && row.section !== fType) return false;
+    if (tab === 'bosstiary' && row.section !== 'bosstiary') return false;
+    if (fBossCat !== 'all' && row.bossCategory !== fBossCat) return false;
+    if (fOcc !== 'all' && row.occurrence !== fOcc) return false;
+    if (searchQ) {
+      const q = searchQ;
+      const name = String(row.displayName || row.creatureId || '').toLowerCase();
+      const id = String(row.creatureId || '').toLowerCase();
+      if (!name.includes(q) && !id.includes(q)) return false;
+    }
     return true;
+  }
+
+  function isDailyBoostEntry(creatureId, section) {
+    if (!G.DailyBoost || !creatureId) return false;
+    if (section === 'bosstiary') return G.DailyBoost.isBossBoosted(creatureId);
+    return G.DailyBoost.isCreatureBoosted(creatureId);
   }
 
   function summaryStats() {
     const list = catalogList();
     let discovered = 0;
     let completed = 0;
+  let firstVictories = 0;
     for (const row of list) {
       const st = entryState(row.creatureId, row);
       if (st !== 'unknown') discovered++;
       if (st === 'completed') completed++;
+      if (tab === 'bosstiary') {
+        const prog = progressRow(row.creatureId);
+        if (prog.firstVictoryAt) firstVictories++;
+      }
     }
     return {
       total: list.length,
       discovered,
       completed,
-      points: G.Bestiary.getAvailablePoints()
+      firstVictories,
+      charmPoints: G.Bestiary.getAvailableCharmPoints(),
+      bossPoints: G.Bestiary.getAvailableBossPoints()
     };
+  }
+
+  function renderDailyPanel() {
+    const box = $('cyclopedia-daily');
+    if (!box) return;
+    if (!G.DailyBoost) {
+      box.innerHTML = '';
+      box.classList.add('hidden');
+      return;
+    }
+    const parts = [];
+    const cid = G.DailyBoost.getBoostedCreatureId && G.DailyBoost.getBoostedCreatureId();
+    const bid = G.DailyBoost.getBoostedBossId && G.DailyBoost.getBoostedBossId();
+    if (cid && G.DailyBoost.bannerCreatureText) {
+      parts.push(
+        `<button type="button" class="daily-card boost" data-daily-creature="${esc(cid)}">` +
+        `<b>Creature boost</b>${esc(G.DailyBoost.bannerCreatureText())}</button>`
+      );
+    }
+    if (bid && G.DailyBoost.bannerBossText) {
+      parts.push(
+        `<button type="button" class="daily-card boost" data-daily-boss="${esc(bid)}">` +
+        `<b>Boss boost</b>${esc(G.DailyBoost.bannerBossText())}</button>`
+      );
+    }
+    if (!parts.length) {
+      box.innerHTML = '';
+      box.classList.add('hidden');
+      return;
+    }
+    box.classList.remove('hidden');
+    box.innerHTML = parts.join('');
+    box.querySelectorAll('[data-daily-creature]').forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.getAttribute('data-daily-creature');
+        tab = 'catalog';
+        setTab('catalog');
+        if (id) select(id);
+      };
+    });
+    box.querySelectorAll('[data-daily-boss]').forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.getAttribute('data-daily-boss');
+        tab = 'bosstiary';
+        setTab('bosstiary');
+        if (id) select(id);
+      };
+    });
   }
 
   function renderSummary() {
     const s = summaryStats();
-    $('bestiary-summary').innerHTML =
-      `<span>Discovered <b>${s.discovered}</b> / ${s.total}</span>` +
-      `<span>Completed <b>${s.completed}</b></span>` +
-      `<span>Points <b class="gold">${s.points.toLocaleString('en-US')}</b></span>`;
+    const box = $('bestiary-summary');
+    if (tab === 'shop' || tab === 'charms') {
+      box.innerHTML = `<span>Charm points <b class="gold">${s.charmPoints.toLocaleString('en-US')}</b></span>`;
+      return;
+    }
+    if (tab === 'bosstiary') {
+      box.innerHTML =
+        `<span>Sighted <b>${s.discovered}</b> / ${s.total}</span>` +
+        `<span>Mastery <b>${s.completed}</b></span>` +
+        `<span>First victories <b>${s.firstVictories}</b></span>` +
+        `<span>Boss points <b class="gold">${s.bossPoints.toLocaleString('en-US')}</b></span>`;
+      return;
+    }
+    box.innerHTML =
+      `<span>Sighted <b>${s.discovered}</b> / ${s.total}</span>` +
+      `<span>Mastered <b>${s.completed}</b></span>` +
+      `<span>Charm points <b class="gold">${s.charmPoints.toLocaleString('en-US')}</b></span>`;
+  }
+
+  function statusFiltersForTab() {
+    const section = tab === 'bosstiary' ? 'bosstiary' : 'bestiary';
+    return [
+      { value: 'all', label: 'Status: All' },
+      { value: 'unknown', label: stageName('unknown', section) },
+      { value: 'discovered', label: stageName('discovered', section) },
+      { value: 'stage_1', label: stageName('stage_1', section) },
+      { value: 'stage_2', label: stageName('stage_2', section) },
+      { value: 'completed', label: stageName('completed', section) }
+    ];
   }
 
   function renderFilters() {
     const fb = $('bestiary-filters');
+    fb.className = 'filters filter-stack';
     fb.innerHTML = '';
-    const mk = (label, kind, value) => {
+    const mkRow = () => {
+      const row = document.createElement('div');
+      row.className = 'filter-row';
+      fb.appendChild(row);
+      return row;
+    };
+    const mk = (parent, label, kind, value) => {
       const c = document.createElement('button');
       c.type = 'button';
-      c.className = 'chip' + ((kind === 'state' && fState === value) || (kind === 'diff' && fDiff === value) || (kind === 'type' && fType === value) ? ' on' : '');
+      c.className = 'chip' + ((kind === 'state' && fState === value) || (kind === 'diff' && fDiff === value) ||
+        (kind === 'type' && fType === value) || (kind === 'occ' && fOcc === value) ||
+        (kind === 'bosscat' && fBossCat === value) ? ' on' : '');
       c.textContent = label;
       c.onclick = () => {
         if (kind === 'state') fState = value;
         else if (kind === 'diff') fDiff = value;
-        else fType = value;
+        else if (kind === 'type') fType = value;
+        else if (kind === 'occ') fOcc = value;
+        else if (kind === 'bosscat') fBossCat = value;
         open();
       };
-      fb.appendChild(c);
+      parent.appendChild(c);
     };
-    mk('Status: all', 'state', 'all');
-    mk('Unknown', 'state', 'unknown');
-    mk('Discovered', 'state', 'discovered');
-    mk('In progress', 'state', 'progress');
-    mk('Complete', 'state', 'completed');
-    mk('Difficulty: all', 'diff', 'all');
-    for (const d of G.Bestiary.DIFFICULTIES) mk(DIFF_LABEL[d] || d, 'diff', d);
-    mk('Category: all', 'type', 'all');
-    mk('Bestiary', 'type', 'bestiary');
-    mk('Bosstiary', 'type', 'bosstiary');
+
+    const rowStatus = mkRow();
+    for (const st of statusFiltersForTab()) mk(rowStatus, st.label, 'state', st.value);
+
+    if (tab === 'bosstiary') {
+      const rowCat = mkRow();
+      mk(rowCat, 'Category: all', 'bosscat', 'all');
+      const info = G.Bestiary.BOSS_CATEGORY_INFO || {};
+      for (const cat of G.Bestiary.BOSS_CATEGORIES) {
+        const lbl = (info[cat] && info[cat].label) || cat;
+        mk(rowCat, lbl, 'bosscat', cat);
+      }
+    } else {
+      const rowDiff = mkRow();
+      mk(rowDiff, 'Difficulty: all', 'diff', 'all');
+      for (const d of G.Bestiary.DIFFICULTIES) {
+        if (d === 'elite' || d === 'boss') continue;
+        mk(rowDiff, DIFF_LABEL[d] || d, 'diff', d);
+      }
+      const rowOcc = mkRow();
+      mk(rowOcc, 'Occurrence: all', 'occ', 'all');
+      for (const occ of G.CyclopediaEnums.OCCURRENCE) {
+        mk(rowOcc, G.Bestiary.occurrenceLabel(occ), 'occ', occ);
+      }
+    }
   }
 
   function renderGrid() {
@@ -142,10 +273,12 @@ G.BestiaryUI = (() => {
       const catFull = G.Bestiary.getCatalogEntry(row.creatureId);
       const legacy = catFull && catFull.legacyId;
       const cell = document.createElement('div');
-      cell.className = 'cell' + (known ? '' : ' locked') + (row.creatureId === selId ? ' on' : '');
+      const boosted = isDailyBoostEntry(row.creatureId, row.section);
+      cell.className = 'cell' + (known ? '' : ' locked') + (row.creatureId === selId ? ' on' : '') + (boosted ? ' boosted' : '');
       cell.tabIndex = 0;
-      if (row.section === 'bosstiary') cell.insertAdjacentHTML('beforeend', `<span class="badge-r" title="Bosstiary">${G.Icons.html('crown', 12)}</span>`);
-      if (legacy != null && G.GeoSprites) {
+      if (boosted) cell.insertAdjacentHTML('beforeend', '<span class="badge-r" title="Daily boost" style="color:var(--gold)">★</span>');
+      else if (row.section === 'bosstiary') cell.insertAdjacentHTML('beforeend', `<span class="badge-r" title="Bosstiary">${G.Icons.html('crown', 12)}</span>`);
+      if (legacy != null && G.TibiaSprites && G.TibiaSprites.hasCreature(legacy)) {
         cell.appendChild(G.UI.spriteCanvas(legacy, 92, 80, { scale: 2, silhouette: !known, shadow: known }));
       } else {
         cell.insertAdjacentHTML('beforeend', `<div class="ico-placeholder" style="height:80px"></div>`);
@@ -154,12 +287,15 @@ G.BestiaryUI = (() => {
       const next = nextThreshold(st, th);
       const progTxt = known && th ? `${prog.kills} / ${st === 'completed' ? th.final : next}` : '???';
       cell.insertAdjacentHTML('beforeend', `<b>${known ? esc(row.displayName || row.creatureId) : '???'}</b>` +
-        `<small>${STATE_LABEL[st] || st}${known ? ' · ' + progTxt : ''}</small>`);
+        `<small>${stageName(st, row.section)}${known ? ' · ' + progTxt : ''}</small>`);
       cell.onclick = () => select(row.creatureId);
       cell.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(row.creatureId); } };
       grid.appendChild(cell);
     }
-    if (!rows.length) grid.innerHTML = '<p class="sub" style="grid-column:1/-1">No entries match this filter.</p>';
+    if (!rows.length) {
+      grid.innerHTML = '<p class="sub" style="grid-column:1/-1">' +
+        (searchQ ? 'No entries match your search.' : 'No entries match this filter.') + '</p>';
+    }
   }
 
   function select(creatureId) {
@@ -190,6 +326,7 @@ G.BestiaryUI = (() => {
     const st = entryState(creatureId, catalog);
     const known = st !== 'unknown';
     const cr = combatCreature(catalog);
+    const sec = catalog.section || 'bestiary';
 
     if (known) {
       box.innerHTML = '';
@@ -201,16 +338,24 @@ G.BestiaryUI = (() => {
       box.appendChild(canvasWrap);
       const head = document.createElement('div');
       head.className = 'center';
-      const sec = catalog.section || 'bestiary';
       const tier = sec === 'bosstiary'
         ? (BOSS_CATEGORY_LABEL[catalog.bossCategory] || catalog.bossCategory || 'Boss')
         : (DIFF_LABEL[catalog.difficulty] || catalog.difficulty);
-      const stageNames = STAGE_LABEL[sec] || STAGE_LABEL.bestiary;
-      const stLabel = stageNames[st] || STATE_LABEL[st] || st;
+      const info = sec === 'bosstiary' && G.Bestiary.BOSS_CATEGORY_INFO
+        ? G.Bestiary.BOSS_CATEGORY_INFO[catalog.bossCategory] : null;
+      const stLabel = stageName(st, sec);
+      const boostLine = isDailyBoostEntry(creatureId, sec) && G.DailyBoost
+        ? `<div class="sub gold" style="margin-top:6px">` + esc(sec === 'bosstiary'
+          ? (G.DailyBoost.bannerBossText && G.DailyBoost.bannerBossText()) || ''
+          : (G.DailyBoost.bannerCreatureText && G.DailyBoost.bannerCreatureText()) || '') + '</div>'
+        : '';
       head.innerHTML = `<h3>${esc(catalog.displayName || creatureId)}</h3>` +
-        `<div class="sub">${SECTION_LABEL[sec] || sec} · ${tier}</div>` +
+        `<div class="sub">${SECTION_LABEL[sec] || sec} · ${tier}</div>` + boostLine +
+        (info && info.blurb ? `<div class="sub" style="margin-top:6px;max-width:320px">${esc(info.blurb)}</div>` : '') +
         `<div class="sub">${stLabel} · ${prog.kills} kills` +
-        (catalog.thresholds ? ` · goal ${catalog.thresholds.final}` : '') + '</div>';
+        (catalog.thresholds ? ` · goal ${catalog.thresholds.final}` : '') +
+        (sec === 'bosstiary' && prog.firstVictoryAt
+          ? ` · first win ${new Date(prog.firstVictoryAt).toLocaleDateString('en-US')}` : '') + '</div>';
       box.appendChild(head);
     } else {
       box.innerHTML = '<div class="center"><h3>???</h3><p class="sub">Creature not identified yet.</p></div>';
@@ -219,11 +364,11 @@ G.BestiaryUI = (() => {
 
     const addSection = (title, rows) => {
       if (!rows.length) return;
-      const sec = document.createElement('div');
-      sec.className = 'bestiary-detail-sec';
-      sec.innerHTML = `<h4>${title}</h4>` + rows.map(([k, v]) =>
+      const secEl = document.createElement('div');
+      secEl.className = 'bestiary-detail-sec';
+      secEl.innerHTML = `<h4>${title}</h4>` + rows.map(([k, v]) =>
         `<div class="stat"><span>${esc(k)}</span><span>${v}</span></div>`).join('');
-      box.appendChild(sec);
+      box.appendChild(secEl);
     };
 
     const s1 = [];
@@ -231,10 +376,16 @@ G.BestiaryUI = (() => {
       if (canReveal('stage1', 'description', catalog) && catalog.description) {
         s1.push(['Description', esc(catalog.description)]);
       }
-      if (canReveal('stage1', 'hp', catalog) && cr) s1.push(['Base HP', cr.hp]);
+      if (canReveal('stage1', 'occurrence', catalog) && catalog.occurrence) {
+        s1.push(['Occurrence', esc(G.Bestiary.occurrenceLabel(catalog.occurrence))]);
+      }
+      if (canReveal('stage1', 'hp', catalog) && cr) {
+        const sp = spawnStats(creatureId);
+        s1.push(['Base HP', sp && sp.hp != null ? sp.hp : cr.hp]);
+      }
       if (canReveal('stage1', 'xp', catalog)) s1.push(['Experience', 'Based on tier in run']);
-      if (canReveal('stage1', 'behavior', catalog) && cr && cr.behavior) {
-        const pat = (cr.behaviors && cr.behaviors.length > 1) ? cr.behaviors.join(' + ') : cr.behavior;
+      if (canReveal('stage1', 'behavior', catalog) && cr && (cr.primaryBehavior || cr.behavior)) {
+        const pat = cr.behaviors && cr.behaviors.length > 1 ? cr.behaviors.join(' + ') : (cr.primaryBehavior || cr.behavior);
         s1.push(['Behavior', pat]);
       }
     }
@@ -243,9 +394,12 @@ G.BestiaryUI = (() => {
     const s2 = [];
     if (stageUnlocked(st, 'stage_2')) {
       if (canReveal('stage2', 'damage', catalog) && cr) s2.push(['Threat', '×' + (cr.attack || 1).toFixed(2)]);
-      if (canReveal('stage2', 'speed', catalog) && cr) s2.push(['Speed', cr.speed]);
-      if (canReveal('stage2', 'abilities', catalog) && cr && cr.behavior) {
-        const pat = (cr.behaviors && cr.behaviors.length > 1) ? cr.behaviors.join(' + ') : cr.behavior;
+      if (canReveal('stage2', 'speed', catalog) && cr) {
+        const sp = spawnStats(creatureId);
+        s2.push(['Speed', sp && sp.spd != null ? sp.spd : (cr.speed != null ? cr.speed : '—')]);
+      }
+      if (canReveal('stage2', 'abilities', catalog) && cr && (cr.primaryBehavior || cr.behavior)) {
+        const pat = cr.behaviors && cr.behaviors.length > 1 ? cr.behaviors.join(' + ') : (cr.primaryBehavior || cr.behavior);
         s2.push(['Pattern', pat]);
       }
       if (canReveal('stage2', 'resistances', catalog)) {
@@ -279,28 +433,45 @@ G.BestiaryUI = (() => {
         s3.push(['Total kills', prog.kills]);
         if (prog.firstSeenAt) s3.push(['First kill', new Date(prog.firstSeenAt).toLocaleDateString('en-US')]);
       }
-      if (prog.rewarded) s3.push(['Points earned', catalog.rewardPoints]);
+      if (prog.rewarded) {
+        const ptLabel = sec === 'bosstiary' ? 'Boss points earned' : 'Charm points earned';
+        s3.push([ptLabel, catalog.rewardPoints]);
+      }
+      if (sec === 'bosstiary' && prog.firstVictoryAt) {
+        s3.push(['First victory', new Date(prog.firstVictoryAt).toLocaleString('en-US')]);
+      }
     }
     addSection('Mastery', s3);
   }
 
   function setTab(next) {
+    const prev = tab;
     tab = next;
+    if ((prev === 'catalog' && next === 'bosstiary') || (prev === 'bosstiary' && next === 'catalog')) {
+      fState = 'all';
+      fDiff = 'all';
+      fOcc = 'all';
+      fBossCat = 'all';
+    }
+    if (fState === 'progress') fState = 'all';
     const cat = $('bestiary-tab-catalog');
     const shop = $('bestiary-tab-shop');
     const charms = $('bestiary-tab-charms');
-    if (cat) cat.classList.toggle('hidden', tab !== 'catalog');
+    const showCatalog = tab === 'catalog' || tab === 'bosstiary';
+    if (cat) cat.classList.toggle('hidden', !showCatalog);
     if (shop) shop.classList.toggle('hidden', tab !== 'shop');
     if (charms) charms.classList.toggle('hidden', tab !== 'charms');
     const tabs = document.querySelectorAll('[data-bestiary-tab]');
     tabs.forEach(btn => btn.classList.toggle('on', btn.getAttribute('data-bestiary-tab') === tab));
     if (tab === 'shop') renderShop();
     else if (tab === 'charms') renderCharms();
-    else {
+    else if (showCatalog) {
       renderFilters();
       renderGrid();
       if (selId) renderDetail(selId);
     }
+    renderDailyPanel();
+    renderSummary();
   }
 
   function purchaseFail(reason) {
@@ -314,7 +485,7 @@ G.BestiaryUI = (() => {
     const box = $('bestiary-shop-list');
     if (!box) return;
     box.innerHTML = '';
-    const pts = G.Bestiary.getAvailablePoints();
+    const pts = G.Bestiary.getAvailableCharmPoints();
     const hdr = document.createElement('p');
     hdr.className = 'sub';
     hdr.style.margin = '0 0 12px';
@@ -391,7 +562,7 @@ G.BestiaryUI = (() => {
     const box = $('bestiary-charms-list');
     if (!box || !G.Bestiary.charmCatalog) return;
     box.innerHTML = '';
-    const pts = G.Bestiary.getAvailablePoints();
+    const pts = G.Bestiary.getAvailableCharmPoints();
     const equipped = new Set(G.Bestiary.listEquippedCharms());
     const hdr = document.createElement('p');
     hdr.className = 'sub';
@@ -410,7 +581,7 @@ G.BestiaryUI = (() => {
         `<div class="ic">${G.Icons.html('medal3', 32)}</div>` +
         `<div><b>${esc(c.name || c.id)}</b>` +
         `<span style="color:var(--muted);font-size:15px;display:block;margin-top:4px">${esc(c.description || '')}</span>` +
-        `<small class="sub">${esc(c.trigger)} · cd ${c.cooldownMs} ms</small></div>` +
+        `<small class="sub">${esc(c.trigger)} · cd ${c.cooldownMs} ms · ${esc(G.Bestiary.charmClassLabel(c))}</small></div>` +
         `<div class="upg-btns"></div>`;
       const btns = el.querySelector('.upg-btns');
       if (!unlocked) {
@@ -466,19 +637,39 @@ G.BestiaryUI = (() => {
     document.querySelectorAll('[data-bestiary-tab]').forEach(btn => {
       btn.onclick = () => setTab(btn.getAttribute('data-bestiary-tab') || 'catalog');
     });
+    const searchEl = $('bestiary-search');
+    if (searchEl) {
+      searchEl.addEventListener('input', () => {
+        searchQ = String(searchEl.value || '').trim().toLowerCase();
+        if (tab === 'catalog' || tab === 'bosstiary') renderGrid();
+      });
+    }
   }
 
   function open() {
+    openToCreature(selId);
+  }
+
+  function openToCreature(creatureId) {
+    if (G.DailyBoost && G.DailyBoost.syncSave && G.DB && G.DB.save) G.DailyBoost.syncSave(G.DB.save);
     if (!G.Bestiary || !G.DB.save) return;
+    if (creatureId) {
+      const row = G.Bestiary.getCatalogEntry(creatureId);
+      tab = row && row.section === 'bosstiary' ? 'bosstiary' : 'catalog';
+      selId = creatureId;
+    }
+    const searchEl = $('bestiary-search');
+    if (searchEl && searchQ) searchEl.value = searchQ;
     G.UI.show('scr-bestiary', true);
+    renderDailyPanel();
     renderSummary();
     setTab(tab);
-    if (tab === 'catalog') {
+    if (tab === 'catalog' || tab === 'bosstiary') {
       if (selId) renderDetail(selId);
       else $('bestiary-detail').innerHTML = '<p class="sub">Select a catalog entry.</p>';
     }
   }
 
   init();
-  return { open, init };
+  return { open, openToCreature, init };
 })();

@@ -12,7 +12,7 @@
  * Reimport: node tools/import_tibia_grouped.mjs --grouped <carpeta grouped>
  *
  * Criaturas: useTibiaSprites (omitir = ON con data-ui=tibia). Mapa: mapTiles.floors/walls.
- * ?sprites=geo / ?tiles=tibia para forzar en la URL.
+ * ?sprites=off para desactivar criaturas Tibia (sólo depuración).
  * Atajos ?dev: Ctrl+[ ] scaleMul · Ctrl+; ' footDy · Ctrl+\\
  */
 G.TIBIA_SPRITE_TUNING = {

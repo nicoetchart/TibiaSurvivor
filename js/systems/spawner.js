@@ -21,8 +21,17 @@ G.Spawner = (() => {
   // La resistencia extra crece con la run: al principio ×3,3 y hasta ×5
   // hacia el minuto 6, cuando ya tienes ataques para tumbarlos.
   const hpK = t => 3.3 + Math.min(1.7, t / 210);
-  /** MVP neutral: sin el ×3,3 legacy; sube despacio los primeros minutos. */
+  function hpBandMode() {
+    return G.Content && G.Content.mode === 'neutral' && G.MvpConfig && G.MvpConfig.SPAWN_MODE === 'hp_band';
+  }
+
+  /** MVP neutral hp_band (D7): sin multiplicador global de HP; legacy: curva suave. */
   function hpMulRun(t) {
+    if (hpBandMode()) {
+      const HB = G.MvpConfig.HP_BAND;
+      const r = HB && HB.hpMulResidual;
+      return Number.isFinite(r) ? r : 1;
+    }
     if (G.Content && G.Content.mode === 'neutral') {
       return 1.08 + Math.min(0.95, t / 480);
     }
@@ -49,7 +58,10 @@ G.Spawner = (() => {
     if (!E) { nextEliteAt = Infinity; return; }
     const lo = E.firstMinSec;
     const hi = E.firstMaxSec != null ? E.firstMaxSec : lo;
-    nextEliteAt = Math.floor(G.U.rand(lo, hi + 1));
+    let at = Math.floor(G.U.rand(lo, hi + 1));
+    const mul = G.DailyBoost && G.DailyBoost.eliteIntervalMul ? G.DailyBoost.eliteIntervalMul() : 1;
+    if (mul > 0 && mul < 1) at = Math.max(45, Math.round(at * mul));
+    nextEliteAt = at;
   }
 
   function scheduleEliteAfterSpawn(t) {
@@ -57,7 +69,9 @@ G.Spawner = (() => {
     if (!E) return;
     const base = E.intervalSec != null ? E.intervalSec : 150;
     const j = E.intervalJitterSec != null ? E.intervalJitterSec : 0;
-    const gap = j > 0 ? G.U.rand(base - j, base + j + 1) : base;
+    let gap = j > 0 ? G.U.rand(base - j, base + j + 1) : base;
+    const mul = G.DailyBoost && G.DailyBoost.eliteIntervalMul ? G.DailyBoost.eliteIntervalMul() : 1;
+    if (mul > 0 && mul < 1) gap = Math.max(60, Math.round(gap * mul));
     nextEliteAt = t + Math.max(60, gap);
   }
 
@@ -145,9 +159,13 @@ G.Spawner = (() => {
     const pt = freePoint(pl, angle == null ? Math.random() * 6.2832 : angle, isFlyer(def));
     if (!pt) return null;
     const shiny = rollShiny(def.dex);
-    const e = new G.Enemy(def, pt[0], pt[1], scaled(roster.scale(t), 1 * hpMulRun(t)));
+    const scHp = scaled(roster.scale(t), 1 * hpMulRun(t));
+    const e = new G.Enemy(def, pt[0], pt[1], scHp);
     e.dmg *= scfg.dmgK; e.xp = Math.round(e.xp * scfg.xpK);
-    if (G.EnemyMgr.count >= scfg.cap * scfg.eliteFrom) { e.maxHp = e.hp = Math.round(e.maxHp * 1.6); e.dmg *= 1.25; e.xp = Math.round(e.xp * 1.6); }
+    if (G.EnemyMgr.count >= scfg.cap * scfg.eliteFrom) {
+      if (hpBandMode()) { e.dmg *= 1.22; e.xp = Math.round(e.xp * 1.45); }
+      else { e.maxHp = e.hp = Math.round(e.maxHp * 1.6); e.dmg *= 1.25; e.xp = Math.round(e.xp * 1.6); }
+    }
     if (shiny) e.makeShiny();
     if (G.Events.golden) e.makeGolden();
     G.EnemyMgr.add(e);
@@ -183,13 +201,19 @@ G.Spawner = (() => {
     e.anim = new G.Sprites.Animator(e.dex, e.scale);
     e.r = G.Sprites.bodyRadius(e.dex, e.scale);
     e.bodyH = G.Sprites.bodyHeight(e.dex, e.scale);
-    e.maxHp = e.hp = Math.round(e.maxHp * 1.35);
-    e.dmg *= 1.2;
+    if (!hpBandMode()) {
+      e.maxHp = e.hp = Math.round(e.maxHp * 1.35);
+      e.dmg *= 1.2;
+    } else {
+      e.dmg *= 1.18;
+    }
     e.xp = Math.round(e.xp * 1.5);
     G.EnemyMgr.add(e);
+    const boostedBoss = G.DailyBoost && G.DailyBoost.isBossBoosted && def.bestiaryCreatureId &&
+      G.DailyBoost.isBossBoosted(def.bestiaryCreatureId);
     const intro = def.creatureId === 'black_knight'
-      ? 'Black Knight — NO MERCY!'
-      : 'Elite sentinel! Defeat it to earn a spell bond.';
+      ? (boostedBoss ? 'Daily Black Knight — NO MERCY!' : 'Black Knight — NO MERCY!')
+      : (boostedBoss ? `Daily boss: ${def.name || 'Elite'}!` : 'Elite sentinel! Defeat it to earn a spell bond.');
     say(intro, 3.4);
     G.Camera.kick(0.65);
     G.Audio.sfx('boss');

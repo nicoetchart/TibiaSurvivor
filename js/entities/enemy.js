@@ -205,7 +205,12 @@
         // Los jefes siempre sueltan un objeto equipable.
         G.Pickups.drop('item', this.x - 26, this.y - 10, G.Items.roll());
       }
-      G.Pickups.dropXp(this.x, this.y, this.xp, this.boss, !!this.legend, !!this.judge);
+      let xpDrop = this.xp;
+      if (G.DailyBoost && G.Bestiary) {
+        const cid = G.Bestiary.creatureIdForEnemy(this);
+        if (cid && G.DailyBoost.scaleXp) xpDrop = G.DailyBoost.scaleXp(cid, xpDrop);
+      }
+      G.Pickups.dropXp(this.x, this.y, xpDrop, this.boss, !!this.legend, !!this.judge);
       if (this.golden && Math.random() < 0.35) G.Pickups.drop('coin', this.x + 6, this.y - 4, 3);
       // Duende del tesoro (legacy): sólo monedas.
       if (this.hasBehavior('thief')) {
@@ -454,59 +459,55 @@
     // enfurece: más rápido, menos espera y a veces encadena dos ataques.
 
     isOrshabaal() {
-      return (this.def && this.def.creatureId === 'orshabaal')
-        || (G.CREATURE_BY_LEGACY && this.dex === 99016 && G.CREATURE_BY_LEGACY[99016] && G.CREATURE_BY_LEGACY[99016].id === 'orshabaal');
+      return !!(G.BossRegistry && G.BossRegistry.isNemesisBoss(this));
     }
 
     bossAttackType(id) {
       const map = this.ai && this.ai.attackTypes;
       if (map && map[id]) return map[id];
+      const reg = G.BossRegistry && this._bossRegistryId && G.BossRegistry.attackTypeFor(this._bossRegistryId, id, this.types);
+      if (reg) return reg;
       if (id === 'rain' && this.types.includes('fire')) return 'fire';
       if (id === 'beam' && this.types.includes('energy')) return 'energy';
       return this.atkType;
     }
 
     bossInit() {
-      if (this.isOrshabaal()) {
-        this.ai = {
-          melee: ['slam', 'dash', 'leap'],
-          ranged: ['rain', 'beam'],
-          attackTypes: { slam: 'physical', rain: 'fire', beam: 'energy' },
-          farLike: 0.22,
-          mode: 'close',
-          modeT: G.U.rand(6, 8),
-          cd: 1.45,
-          cast: null,
-          fury: false,
-          side: Math.random() < 0.5 ? -1 : 1,
-          fleeAt: 0.111,
-          fleeing: false,
-          selfHealCd: 1.5,
-          summonCd: 8
-        };
+      if (G.BossRegistry && G.BossRegistry.initBossAi(this)) return;
+      if (G.BossRegistry) {
+        this.ai = G.BossRegistry.buildProceduralKit(this);
         return;
       }
-      const T = this.types, has = (...xs) => xs.some(x => T.includes(x));
-      const melee = ['slam', G.U.hash(this.dex, 3, 7) < 0.5 ? 'dash' : 'leap'];
-      const pref = has('fire', 'ground', 'poison', 'rock', 'grass') ? 'rain'
-                 : has('electric', 'psychic', 'dragon', 'ice', 'steel') ? 'beam'
-                 : has('fairy', 'ghost', 'water', 'flying') ? 'nova' : 'volley';
-      const others = ['rain', 'beam', 'nova', 'volley'].filter(x => x !== pref);
-      const ranged = [pref, others[Math.floor(G.U.hash(this.dex, 5, 9) * 3) % 3]];
-      const far = this.hasBehavior('ranged');
-      this.ai = { melee, ranged, farLike: far ? 0.65 : 0.35, mode: far ? 'far' : 'close', modeT: G.U.rand(6, 8),
-                  cd: 1.6, cast: null, fury: false, side: Math.random() < 0.5 ? -1 : 1 };
+      this.ai = { melee: ['slam', 'dash'], ranged: ['volley', 'nova'], farLike: 0.35, mode: 'close',
+        modeT: G.U.rand(6, 8), cd: 1.6, cast: null, fury: false, side: Math.random() < 0.5 ? -1 : 1 };
     }
 
     bossSummonDemons() {
-      const max = 4;
+      const spec = G.BossRegistry && G.BossRegistry.summonSpec(this);
+      if (!spec) return;
+      const max = spec.maxActive || 4;
       this.minions = (this.minions || []).filter(m => !m.dead && G.EnemyMgr.get(m.id));
-      if (this.minions.length >= max || G.EnemyMgr.count > G.Spawner.CAP + 12) return;
-      const dex = this.def.minion || (G.CREATURE_BY_ID && G.CREATURE_BY_ID.orshabaal && G.CREATURE_BY_ID.orshabaal.minionLegacyId) || 99018;
+      const capBuf = spec.capBuffer != null ? spec.capBuffer : 12;
+      if (this.minions.length >= max || G.EnemyMgr.count > G.Spawner.CAP + capBuf) return;
+      const baseC = G.CREATURE_BY_ID && G.CREATURE_BY_ID[spec.minionCreatureId];
+      const dex = this.def.minion || (baseC && baseC.legacyId) || spec.minionLegacyFallback || 99018;
       const monName = G.Content.creatureName(dex);
-      const def = { dex, creatureId: 'demon', name: monName, hp: Math.round(this.def.hp * 0.22), spd: Math.round(this.def.spd * 0.95),
-                    dmg: Math.round(this.def.dmg * 0.55), xp: Math.max(1, Math.round(this.def.xp * 0.08)), behavior: 'chase', noBestiaryCredit: true };
-      const n = Math.min(2, max - this.minions.length);
+      const hpM = spec.hpMul != null ? spec.hpMul : 0.22;
+      const spdM = spec.spdMul != null ? spec.spdMul : 0.95;
+      const dmgM = spec.dmgMul != null ? spec.dmgMul : 0.55;
+      const xpM = spec.xpMul != null ? spec.xpMul : 0.08;
+      const def = {
+        dex,
+        creatureId: spec.minionCreatureId || 'demon',
+        name: monName,
+        hp: Math.round(this.def.hp * hpM),
+        spd: Math.round(this.def.spd * spdM),
+        dmg: Math.round(this.def.dmg * dmgM),
+        xp: Math.max(1, Math.round(this.def.xp * xpM)),
+        behavior: 'chase',
+        noBestiaryCredit: true
+      };
+      const n = Math.min(spec.perCast || 2, max - this.minions.length);
       for (let i = 0; i < n; i++) {
         const a = Math.random() * 6.2832;
         const m = new Enemy(def, this.x + Math.cos(a) * 36, this.y + Math.sin(a) * 28, this.sc || { hp: 1, spd: 1, dmg: 1 });
@@ -577,10 +578,11 @@
       this.ai.fury = true;
       this.spd *= 1.15;
       if (!this.judge) {
-        const msg = this.isOrshabaal()
-          ? G.U.pick(['YOU ARE DOOMED!', 'SOULS FOR ORSHABAAL!', 'ORSHABAAL IS BACK!'])
+        const banner = this.isOrshabaal();
+        const msg = G.BossRegistry && G.BossRegistry.enrageMessage
+          ? G.BossRegistry.enrageMessage(this)
           : this.name + ' is enraged!';
-        G.Spawner.say(msg, 2.6, !!this.isOrshabaal());
+        G.Spawner.say(msg, 2.6, banner);
       }
       G.FX.ring(this.x, this.y, this.r, this.r * 5, '#ff4a4a', 0.6, 5);
       G.Camera.kick(0.5);
@@ -920,6 +922,7 @@
     function add(e) {
       list.push(e);
       byId.set(e.id, e);
+      if (G.Bestiary && G.Bestiary.recordEncounter) G.Bestiary.recordEncounter(e);
       return e;
     }
     function get(id) { return byId.get(id); }

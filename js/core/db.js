@@ -14,8 +14,8 @@
 G.DB = (() => {
   const K_ACC = 'ts.accounts', K_SES = 'ts.session', K_SAVE = 'ts.save.';
   const PRODUCT = 'tibiasurvivor';
-  const SCHEMA_VERSION = 1;
-  const MAX_SCHEMA_VERSION = 1;
+  const SCHEMA_VERSION = 2;
+  const MAX_SCHEMA_VERSION = 2;
   const VERSION = 3;
   const START_COINS = 500;
 
@@ -152,6 +152,7 @@ G.DB = (() => {
       stats: { runs: 0, wins: 0, bestTime: 0, bestVictoryTime: 0, bestLevel: 0, totalKills: 0, pulls: 0, coinsEarned: 0, shinies: 0,
                bossesTotal: 0, riftWins: 0, evolutions: 0, missionsDone: 0, groupRuns: 0, bestGroupTime: 0 },
       bestiary: null,
+      cyclopedia: null,
       playerOutfit: null,
       unlockedOutfits: null
     };
@@ -189,6 +190,11 @@ G.DB = (() => {
     }
     s.tickets = Object.assign({ t1: 0, t10: 0 }, s.tickets);
     if (s.bestiary == null) s.bestiary = defaultBestiaryBlock();
+    const fromSchema = typeof s.schemaVersion === 'number' ? s.schemaVersion : 1;
+    if (fromSchema < SCHEMA_VERSION && G.Bestiary && G.Bestiary.migrateCyclopediaSave) {
+      G.Bestiary.migrateCyclopediaSave(s);
+    }
+    if (G.Bestiary && G.Bestiary.sanitizeSave) G.Bestiary.sanitizeSave(s);
     if (G.TibiaOutfits && G.TibiaOutfits.initSave) G.TibiaOutfits.initSave(s);
     if (s.playerOutfit == null) {
       s.playerOutfit = { type: 132, head: 0, body: 94, legs: 94, feet: 94, addons: 0 };

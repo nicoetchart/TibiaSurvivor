@@ -16,6 +16,9 @@ load('js/data/damage-types.js');
 load('js/data/mvp-config.js');
 load('js/data/creatures.js');
 load('js/data/bestiary.js');
+load('js/data/cyclopedia-enums.js');
+load('js/data/cyclopedia-registry.js');
+load('js/systems/daily-boost.js');
 load('js/systems/bestiary.js');
 
 const G = sandbox.G;
@@ -56,9 +59,11 @@ G.Bestiary.sanitizeSave(save);
 ok(save.bestiary.entries.unknown_keep && save.bestiary.entries.unknown_keep.kills === 1, 'unknown id preserved');
 
 const migrated = { product: 'tibiasurvivor', schemaVersion: 1, name: 'old', coins: 1, stats: {} };
+G.Bestiary.migrateCyclopediaSave(migrated);
 G.Bestiary.sanitizeSave(migrated);
 G.Bestiary.init(migrated);
 ok(migrated.bestiary && migrated.bestiary.entries, 'migrate-like empty bestiary');
+ok(migrated.cyclopedia && migrated.cyclopedia.version === 2, 'cyclopedia v2 on sanitize');
 
 const merged = G.Bestiary.getEntry('cat');
 ok(merged && merged.creatureId === 'cat' && merged.progress.kills === 0, 'getEntry merge');
@@ -71,6 +76,20 @@ ok(G.Bestiary.deriveStage(500, th, true) === 'completed', 'stage completed (Tibi
 
 G.Bestiary.init(save);
 G.Bestiary.beginRun('test-run');
+const spawn = {
+  id: 9000,
+  dex: 99002,
+  def: { creatureId: 'cat', dex: 99002 },
+  boss: false,
+  dead: false
+};
+ok(G.Bestiary.recordEncounter(spawn), 'record encounter');
+ok(save.bestiary.entries.cat.runsEncountered === 1, 'runsEncountered persisted');
+ok(G.Bestiary.getRunKills('cat') === 0, 'no run kills before defeat');
+ok(!G.Bestiary.recordEncounter(spawn), 'encounter idempotent same instance');
+const spawn2 = { id: 9002, dex: 99002, def: { creatureId: 'cat', dex: 99002 }, boss: false, dead: false };
+ok(G.Bestiary.recordEncounter(spawn2), 'spawn2 marks instance');
+ok(save.bestiary.entries.cat.runsEncountered === 1, 'runsEncountered once per run per id');
 const fake = {
   id: 9001,
   dex: 99002,
@@ -79,6 +98,7 @@ const fake = {
   dead: true
 };
 ok(G.Bestiary.tryCreditDefeat(fake), 'credit once');
+ok(G.Bestiary.getRunKills('cat') === 1, 'run kill tally');
 ok(fake._bestiaryCredited, 'bestiary credited flag');
 ok(save.bestiary.entries.cat && save.bestiary.entries.cat.kills === 1, 'kill persisted');
 ok(!G.Bestiary.tryCreditDefeat(fake), 'no double credit');
@@ -96,9 +116,10 @@ saveRecon.bestiary.entries.orshabaal = {
 };
 G.Bestiary.init(saveRecon);
 ok(saveRecon.bestiary.entries.orshabaal.rewarded, 'reconcile grants completion');
-ok(saveRecon.bestiary.currency.earned === bossPts, 'reconcile adds earned once');
+ok(saveRecon.cyclopedia && saveRecon.cyclopedia.bossPoints.earned === bossPts, 'reconcile boss points once');
+ok(saveRecon.cyclopedia.charmPoints.earned === 0, 'boss completion no charm points');
 G.Bestiary.init(saveRecon);
-ok(saveRecon.bestiary.currency.earned === bossPts, 'no double grant on re-init');
+ok(saveRecon.cyclopedia.bossPoints.earned === bossPts, 'no double grant on re-init');
 
 const savePts = { name: 'pts', bestiary: null };
 G.Bestiary.init(savePts);
@@ -114,8 +135,27 @@ for (let i = 0; i < 5; i++) {
 }
 ok(savePts.bestiary.entries.orshabaal.kills === 5, 'boss kills to completion');
 ok(savePts.bestiary.entries.orshabaal.rewarded, 'boss entry rewarded');
-ok(G.Bestiary.getRunPointsEarned() === bossPts, 'run points tracked');
-ok(G.Bestiary.getAvailablePoints() === bossPts, 'available balance');
+ok(G.Bestiary.getRunBossPointsEarned() === bossPts, 'run boss points tracked');
+ok(G.Bestiary.getAvailableBossPoints() === bossPts, 'boss points balance');
+ok(G.Bestiary.getAvailableCharmPoints() === 0, 'no charm from boss mastery');
+
+const migrate = { name: 'mig', bestiary: G.Bestiary.createDefaultSave() };
+migrate.bestiary.currency = { earned: 42, spent: 10 };
+G.Bestiary.sanitizeSave(migrate);
+ok(migrate.cyclopedia.charmPoints.earned === 42 && migrate.cyclopedia.charmPoints.spent === 10, 'legacy currency → charm');
+ok(migrate.bestiary.currency.earned === 42, 'legacy mirror');
+
+const saveFv = { name: 'fv', bestiary: G.Bestiary.createDefaultSave() };
+G.Bestiary.init(saveFv);
+G.Bestiary.beginRun('fv-run');
+ok(G.Bestiary.tryCreditDefeat({
+  id: 9200,
+  dex: 99017,
+  def: { creatureId: 'black_knight', dex: 99017, bestiaryCreatureId: 'black_knight' },
+  boss: true,
+  dead: true
+}), 'black knight credit');
+ok(saveFv.bestiary.entries.black_knight.firstVictoryAt != null, 'firstVictoryAt set');
 
 const saveBuy = { name: 'buy', bestiary: G.Bestiary.createDefaultSave() };
 saveBuy.bestiary.currency.earned = 50;

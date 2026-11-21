@@ -13,7 +13,6 @@ G.TibiaSprites = (() => {
   /** Query o G.TIBIA_SPRITE_TUNING.useTibiaSprites; si no, data-ui=tibia. */
   function resolveEnabled() {
     if (typeof location !== 'undefined') {
-      if (/[?&]sprites=geo\b/.test(location.search)) return false;
       if (/[?&]sprites=(off|legacy)\b/.test(location.search)) return false;
       if (/[?&]sprites=tibia\b/.test(location.search)) return true;
     }

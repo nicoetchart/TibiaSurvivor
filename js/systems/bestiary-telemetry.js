@@ -55,7 +55,9 @@ G.BestiaryTelemetry = (() => {
   function endRun(meta) {
     meta = meta || {};
     const runSec = Number.isFinite(meta.time) ? meta.time : 0;
-    const points = Math.max(0, Math.floor(meta.pointsEarned || 0));
+    const charmPts = Math.max(0, Math.floor(meta.charmPointsEarned != null ? meta.charmPointsEarned : (meta.pointsEarned || 0)));
+    const bossPts = Math.max(0, Math.floor(meta.bossPointsEarned || 0));
+    const points = charmPts + bossPts;
     const charmStats = G.BestiaryCharms && G.BestiaryCharms.getRunStats
       ? G.BestiaryCharms.getRunStats() : {};
     const advances = Array.isArray(meta.advances) ? meta.advances : [];
@@ -67,6 +69,8 @@ G.BestiaryTelemetry = (() => {
       playerKills: Math.max(0, Math.floor(meta.playerKills || 0)),
       bosses: Math.max(0, Math.floor(meta.bosses || 0)),
       pointsEarned: points,
+      charmPointsEarned: charmPts,
+      bossPointsEarned: bossPts,
       pointsPerHour: runSec > 0 ? Math.round((points / runSec) * 3600) : 0,
       killsByCreature: Object.assign({}, runKills),
       advances: advances.map(a => Object.assign({}, a)),
@@ -89,7 +93,7 @@ G.BestiaryTelemetry = (() => {
       kills: summary.killsByCreature[id]
     }));
     if (rows.length) console.table(rows);
-    else console.log('(sin bajas registradas en bestiario)');
+    else console.log('(no bestiary kills this run)');
     if (summary.advances && summary.advances.length) {
       console.log('hitos', summary.advances.length, '· catálogo completado', summary.catalogCompletedPct + '%');
     }

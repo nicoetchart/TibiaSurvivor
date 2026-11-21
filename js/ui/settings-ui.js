@@ -104,7 +104,7 @@ G.SettingsUI = (() => {
         + section('Credits')
         + `<ul class="credits">
              <li><b>Game code:</b> MIT license.</li>
-             <li><b>Creatures (fallback):</b> procedural geometric sprites (original code).</li>
+             <li><b>Creatures:</b> Tibia client-style sprites (exported PNG atlases).</li>
              <li><b>Client-style graphics:</b> exported PNG atlases (outfits, creatures, tiles, items, spells, VFX) for fan use; raw client archives are not shipped.</li>
              <li><b>Music and SFX:</b> original audio made for this project.</li>
              <li><b>UI font:</b> Crimson Pro (SIL Open Font License 1.1).</li>

@@ -2,9 +2,75 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-21', title: ['Cyclopedia', 'Cyclopedia'], chg: [
+    ['Menú: retratos del boost diario (criatura y boss) en panel aparte de las estadísticas.',
+     'Menu: daily boost creature and boss portraits in a panel separate from run stats.'],
+  ] },
+  { d: '2026-11-21', title: ['Cyclopedia', 'Cyclopedia'], fix: [
+    ['Filtros: estados por pestaña (Bestiary/Bosstiary); sin dificultad en Bosstiary ni Elite/Boss en Bestiary.',
+     'Filters: status chips per tab (Bestiary/Bosstiary); no difficulty on Bosstiary; Bestiary omits Elite/Boss difficulty.'],
+  ] },
+  { d: '2026-11-21', title: ['Cyclopedia (CYC-12)', 'Cyclopedia (CYC-12)'], chg: [
+    ['Save schemaVersion 2: bloque cyclopedia (puntos, daily), migración automática desde bestiary v1.',
+     'Save schemaVersion 2: cyclopedia block (points, daily), automatic migration from bestiary v1.'],
+  ] },
+  { d: '2026-11-21', title: ['Cyclopedia (CYC-11)', 'Cyclopedia (CYC-11)'], chg: [
+    ['Autoría: validate-cyclopedia, report de contenidos y plantilla de criatura; intake enlaza herramientas.',
+     'Authoring: validate-cyclopedia, content report, creature template; intake doc links tools.'],
+  ] },
+  { d: '2026-11-21', title: ['Cyclopedia (CYC-10)', 'Cyclopedia (CYC-10)'], chg: [
+    ['Cyclopedia UI: panel diario, búsqueda por nombre, resaltado boost y ficha con bonos del día.',
+     'Cyclopedia UI: daily boost panel, name search, boosted entries highlight, detail shows today’s bonuses.'],
+  ] },
+  { d: '2026-11-21', title: ['Cyclopedia (CYC-9)', 'Cyclopedia (CYC-9)'], chg: [
+    ['Boss potenciado diario: rotación Bane/Archfoe, bonus bosstiary y puntos; centinela antes; más daño recibido.',
+     'Daily boosted boss: Bane/Archfoe rotation, bosstiary and boss-point bonuses; earlier elite spawn; extra damage taken.'],
+  ] },
+  { d: '2026-11-21', title: ['Cyclopedia (CYC-8)', 'Cyclopedia (CYC-8)'], chg: [
+    ['Criatura potenciada diaria (UTC): save cyclopedia.daily, más spawn, XP y progreso de bestiario; aviso en menú y Cyclopedia.',
+     'Daily boosted creature (UTC): save cyclopedia.daily, extra spawn weight, XP and bestiary progress; banner in menu and Cyclopedia.'],
+  ] },
+  { d: '2026-11-21', title: ['Cyclopedia (CYC-7)', 'Cyclopedia (CYC-7)'], chg: [
+    ['Charms: 8 efectos Wilderness, anti-recursión, telemetría charm/boss en runs.',
+     'Charms: 8 Wilderness effects, anti-recursion guards, charm/boss telemetry per run.'],
+  ] },
+  { d: '2026-11-21', title: ['Cyclopedia (CYC-6)', 'Cyclopedia (CYC-6)'], chg: [
+    ['Bosstiary: pestaña propia, primera victoria, boss points; charm points separados en save.cyclopedia.',
+     'Bosstiary: dedicated tab, first victory flag, boss points; charm points in save.cyclopedia.'],
+  ] },
+  { d: '2026-11-21', title: ['Bestiary', 'Bestiary'], fix: [
+    ['Cyclopedia / bestiario: textos de jugador solo en inglés (etapas, filtros, toasts en run).',
+     'Cyclopedia / bestiary: player-facing copy in English only (stages, filters, run toasts).'],
+  ] },
+  { d: '2026-11-21', title: ['Cyclopedia (CYC-5)', 'Cyclopedia (CYC-5)'], chg: [
+    ['BossRegistry: definiciones Black Knight y Orshabaal; kit de ataques fuera de enemy.js.',
+     'BossRegistry: Black Knight and Orshabaal definitions; attack kit moved out of enemy.js.'],
+  ] },
+  { d: '2026-11-21', title: ['Cyclopedia (CYC-4)', 'Cyclopedia (CYC-4)'], chg: [
+    ['Bestiario: etapas Sighted/Tracked/Studied/Mastered, ocurrencia en datos y filtros; revelación por tier.',
+     'Bestiary: Sighted/Tracked/Studied/Mastered stages, occurrence data and filters; tier-based reveal.'],
+  ] },
+  { d: '2026-11-21', title: ['Cyclopedia (CYC-3)', 'Cyclopedia (CYC-3)'], chg: [
+    ['Bestiary: avistamiento al spawn (runsEncountered), bajas por run y resumen de caza.',
+     'Bestiary: sighting on spawn (runsEncountered), per-run kill tally and hunt summary.'],
+  ] },
+  { d: '2026-11-21', title: ['Cyclopedia (CYC-2)', 'Cyclopedia (CYC-2)'], chg: [
+    ['Spawn hp_band (D7): HP del bestiario en combate; presión de run por selección de criatura.',
+     'hp_band spawn (D7): bestiary HP in combat; run pressure via which creature spawns.'],
+  ] },
+  { d: '2026-11-21', title: ['Cyclopedia (CYC-1)', 'Cyclopedia (CYC-1)'], chg: [
+    ['Enums y facade G.Cyclopedia: taxonomía, getDefinition, validación de criaturas (sin cambios de combate).',
+     'Enums and G.Cyclopedia facade: taxonomy, getDefinition, creature validation (no combat changes).'],
+  ] },
   { d: '2026-11-21', title: ['Objetos', 'Items'], chg: [
     ['Al recoger el primer objeto equipable de la run: pantalla de elección (equipar o dejarlo), igual que al cambiar de objeto.',
      'First equippable pickup in a run: choice screen (equip or leave it), same as when swapping items.'],
+  ] },
+  { d: '2026-11-21', title: ['Arte', 'Art'], chg: [
+    ['Eliminados placeholders geométricos (`geo-sprites`); criaturas y UI usan solo sprites Tibia.',
+     'Removed geometric placeholders (`geo-sprites`); creatures and UI use Tibia sprites only.'],
+    ['Retirado `?sprites=geo`; `?sprites=off` queda para depuración.',
+     'Removed `?sprites=geo`; `?sprites=off` remains for debugging.'],
   ] },
   { d: '2026-11-20', title: ['Combate', 'Combat'], fix: [
     ['Al morir una criatura se cancelan sus avisos de ataque en el suelo (el bomber sigue explotando al completar la mecha).',

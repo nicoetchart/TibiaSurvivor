@@ -2,6 +2,9 @@
  * Un solo lugar para duración de run, bioma, curva de spawn y escalado.
  */
 G.MvpConfig = {
+  /** D7: hp_band = HP declarado + selección por banda; legacy_tier_scale = curva antigua. */
+  SPAWN_MODE: 'hp_band',
+
   /** Tope de tiempo: si el jefe sigue vivo, derrota por tiempo agotado (MS-8: ventana 10–15 min). */
   RUN_DURATION_SEC: 900,
   /** Índice en G.Tiles.BIOMES — 3 = Plains of Havoc (superficie Tibia). */
@@ -29,6 +32,20 @@ G.MvpConfig = {
 
   /** Jefe final del bioma (segundos de run). */
   FINAL_BOSS_AT: 600,
+
+  /**
+   * Presión de run por criatura (CYC-2). H_target sube de start → end; el spawner elige
+   * enemigos con HP declarado cercano. Ajustar al ampliar catálogo (D7).
+   */
+  HP_BAND: {
+    start: 16,
+    end: 40,
+    curvePow: 1.55,
+    deltaMin: 7,
+    deltaRatio: 0.38,
+    widenFactors: [1, 1.6, 2.4],
+    hpMulResidual: 1
+  },
 
   SPAWN: {
     base: 1.18,

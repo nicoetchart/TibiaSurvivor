@@ -8,6 +8,22 @@ G.Bestiary = (() => {
   const SECTIONS = ['bestiary', 'bosstiary'];
   const BOSS_CATEGORIES = ['bane', 'archfoe', 'nemesis'];
 
+  /** Bosstiary category copy (English). */
+  const BOSS_CATEGORY_INFO = {
+    bane: {
+      label: 'Bane',
+      blurb: 'Repeatable hunters; sentinel alerts and elite conversions during runs.'
+    },
+    archfoe: {
+      label: 'Archfoe',
+      blurb: 'Rare victories; special encounters (Rift when enabled).'
+    },
+    nemesis: {
+      label: 'Nemesis',
+      blurb: 'Run-closing bosses; highest danger and mastery thresholds.'
+    }
+  };
+
   /** Alineado con TibiaWiki Bestiary/Difficulties (criaturas ordinarias + very rare elite). */
   const DIFFICULTIES = ['harmless', 'trivial', 'easy', 'medium', 'hard', 'challenging', 'elite', 'boss'];
 
@@ -33,9 +49,58 @@ G.Bestiary = (() => {
   };
 
   const REVEAL_FIELDS = {
-    stage1: new Set(['hp', 'xp', 'behavior', 'description']),
+    stage1: new Set(['hp', 'xp', 'behavior', 'description', 'occurrence']),
     stage2: new Set(['damage', 'speed', 'abilities', 'resistances']),
     stage3: new Set(['drops', 'tips', 'statistics'])
+  };
+
+  /** CYC-4: ocurrencia por dificultad (fallback) + bandas de spawnWeight. */
+  const OCCURRENCE_BY_DIFFICULTY = {
+    harmless: 'common',
+    trivial: 'common',
+    easy: 'common',
+    medium: 'uncommon',
+    hard: 'uncommon',
+    challenging: 'rare',
+    elite: 'very_rare',
+    boss: 'very_rare'
+  };
+
+  const OCCURRENCE_WEIGHT_BANDS = [
+    { min: 1, occurrence: 'common' },
+    { min: 0.7, occurrence: 'uncommon' },
+    { min: 0.4, occurrence: 'rare' },
+    { min: 0.001, occurrence: 'very_rare' }
+  ];
+
+  const OCCURRENCE_SCALE = {
+    byDifficulty: OCCURRENCE_BY_DIFFICULTY,
+    weightBands: OCCURRENCE_WEIGHT_BANDS
+  };
+
+  const OCCURRENCE_LABEL = {
+    common: 'Common',
+    uncommon: 'Uncommon',
+    rare: 'Rare',
+    very_rare: 'Very rare'
+  };
+
+  /** D1 — internal stage keys → UI label (English). */
+  const STAGE_LABELS = {
+    bestiary: {
+      unknown: 'Unknown',
+      discovered: 'Sighted',
+      stage_1: 'Tracked',
+      stage_2: 'Studied',
+      completed: 'Mastered'
+    },
+    bosstiary: {
+      unknown: 'Unknown',
+      discovered: 'Sighted',
+      stage_1: 'Prowess',
+      stage_2: 'Expertise',
+      completed: 'Mastery'
+    }
   };
 
   const CATEGORY_ORDER = ['bestiary', 'bosstiary'];
@@ -112,19 +177,35 @@ G.Bestiary = (() => {
     }
   ];
 
-  /** Charms MVP: definidos; desbloqueo en BST-8. */
+  const CHARM_TRIGGERS = ['onHit', 'onHitTaken', 'onPickup'];
+  const CHARM_EFFECT_KINDS = new Set([
+    'bonusDamage', 'mitigateHit', 'moveSpeedBurst', 'vampiricHeal', 'crippleSlow',
+    'pickupXpBonus', 'magnetRadiusBurst', 'magicShieldBump'
+  ]);
+
+  /** Global charms use wilderness until per-class loadouts (D3) in a later phase. */
+  const CHARM_DEFAULT_CLASS = 'wilderness';
+
+  const CHARM_CLASS_LABEL = {
+    wilderness: 'Wilderness',
+    unknown: 'Unknown'
+  };
+
+  /** Charms — unlock with charm points; one equipped slot (CYC-7). */
   const CHARMS = [
     {
       id: 'wound',
       name: 'Persistent wound',
-      description: 'Low chance of bonus damage based on the enemy\'s health.',
+      description: 'Low chance of bonus damage based on the enemy\'s max HP (capped on bosses).',
       nameKey: 'charm.wound.name',
       descriptionKey: 'charm.wound.description',
+      bestiaryClass: 'wilderness',
       trigger: 'onHit',
       maxLevel: 1,
       cost: 20,
       procChance: 0.03,
       cooldownMs: 1000,
+      noRecursion: true,
       effect: {
         kind: 'bonusDamage',
         damageType: 'physical',
@@ -137,14 +218,16 @@ G.Bestiary = (() => {
     {
       id: 'parry',
       name: 'Steadfast parry',
-      description: 'Sometimes reduces damage taken.',
+      description: 'Sometimes reduces incoming hit damage.',
       nameKey: 'charm.parry.name',
       descriptionKey: 'charm.parry.description',
+      bestiaryClass: 'wilderness',
       trigger: 'onHitTaken',
       maxLevel: 1,
       cost: 25,
       procChance: 0.02,
       cooldownMs: 2000,
+      noRecursion: true,
       effect: { kind: 'mitigateHit', value: 0.35 },
       enabled: true
     },
@@ -154,15 +237,103 @@ G.Bestiary = (() => {
       description: 'Brief speed boost when you pick up loot.',
       nameKey: 'charm.stride.name',
       descriptionKey: 'charm.stride.description',
+      bestiaryClass: 'wilderness',
       trigger: 'onPickup',
       maxLevel: 1,
       cost: 18,
       procChance: 0.04,
       cooldownMs: 1500,
+      noRecursion: true,
       effect: { kind: 'moveSpeedBurst', value: 0.15, durationMs: 800 },
+      enabled: true
+    },
+    {
+      id: 'vampiric',
+      name: 'Vampiric touch',
+      description: 'Rarely heals you for a slice of your max HP on hit.',
+      nameKey: 'charm.vampiric.name',
+      descriptionKey: 'charm.vampiric.description',
+      bestiaryClass: 'wilderness',
+      trigger: 'onHit',
+      maxLevel: 1,
+      cost: 28,
+      procChance: 0.025,
+      cooldownMs: 1400,
+      noRecursion: true,
+      effect: { kind: 'vampiricHeal', scale: 'ownerMaxHp', value: 0.022 },
+      enabled: true
+    },
+    {
+      id: 'cripple',
+      name: 'Cripple',
+      description: 'Chance to slow the target after you strike.',
+      nameKey: 'charm.cripple.name',
+      descriptionKey: 'charm.cripple.description',
+      bestiaryClass: 'wilderness',
+      trigger: 'onHit',
+      maxLevel: 1,
+      cost: 24,
+      procChance: 0.035,
+      cooldownMs: 1100,
+      noRecursion: true,
+      effect: { kind: 'crippleSlow', value: 0.24, durationMs: 2000 },
+      enabled: true
+    },
+    {
+      id: 'scavenger',
+      name: 'Scavenger',
+      description: 'Bonus experience when you collect an XP orb.',
+      nameKey: 'charm.scavenger.name',
+      descriptionKey: 'charm.scavenger.description',
+      bestiaryClass: 'wilderness',
+      trigger: 'onPickup',
+      maxLevel: 1,
+      cost: 22,
+      procChance: 0.06,
+      cooldownMs: 400,
+      noRecursion: true,
+      effect: { kind: 'pickupXpBonus', value: 0.18 },
+      enabled: true
+    },
+    {
+      id: 'pulse',
+      name: 'Loot pulse',
+      description: 'Widens pickup radius briefly after collecting loot.',
+      nameKey: 'charm.pulse.name',
+      descriptionKey: 'charm.pulse.description',
+      bestiaryClass: 'wilderness',
+      trigger: 'onPickup',
+      maxLevel: 1,
+      cost: 20,
+      procChance: 0.05,
+      cooldownMs: 2000,
+      noRecursion: true,
+      effect: { kind: 'magnetRadiusBurst', value: 0.32, durationMs: 1400 },
+      enabled: true
+    },
+    {
+      id: 'bulwark',
+      name: 'Bulwark',
+      description: 'When struck, may add a small magic shield buffer (needs an active shield).',
+      nameKey: 'charm.bulwark.name',
+      descriptionKey: 'charm.bulwark.description',
+      bestiaryClass: 'wilderness',
+      trigger: 'onHitTaken',
+      maxLevel: 1,
+      cost: 30,
+      procChance: 0.018,
+      cooldownMs: 3200,
+      noRecursion: true,
+      effect: { kind: 'magicShieldBump', value: 0.09 },
       enabled: true
     }
   ];
+
+  function charmClassLabel(charm) {
+    if (!charm) return '—';
+    const c = charm.bestiaryClass || CHARM_DEFAULT_CLASS;
+    return CHARM_CLASS_LABEL[c] || c;
+  }
 
   function charmById(id) {
     return CHARMS.find(c => c.id === id) || null;
@@ -178,6 +349,46 @@ G.Bestiary = (() => {
 
   function isPlainObj(o) {
     return o && typeof o === 'object' && !Array.isArray(o);
+  }
+
+  function occurrenceFromWeight(weight) {
+    if (weight == null || !Number.isFinite(weight) || weight <= 0) return null;
+    for (const band of OCCURRENCE_WEIGHT_BANDS) {
+      if (weight >= band.min) return band.occurrence;
+    }
+    return 'very_rare';
+  }
+
+  function occurrenceScore(row) {
+    if (!row || row.role !== 'enemy') return null;
+    const w = row.spawnWeight == null ? 0 : Math.max(0, row.spawnWeight);
+    const tier = row.tier == null ? 0 : Math.max(0, Math.min(3, row.tier));
+    const unlockEarly = row.tierUnlockAt == null || row.tierUnlockAt <= 0 ? 0.15 : 0;
+    const eventGuaranteed = row.spawnWeight === 0 && row.boss ? 0.15 : 0;
+    const spawnPart = Math.min(1, w / 1.2) * 0.45;
+    const tierPart = (1 - tier / 3) * 0.25;
+    return spawnPart + tierPart + unlockEarly + eventGuaranteed;
+  }
+
+  /** Ocurrencia efectiva de una fila de criatura (declarada o derivada). */
+  function occurrenceForCreature(row) {
+    if (!row) return null;
+    const E = G.CyclopediaEnums;
+    if (row.occurrence && E && E.isValid('OCCURRENCE', row.occurrence)) return row.occurrence;
+    const fromWeight = occurrenceFromWeight(row.spawnWeight);
+    if (fromWeight) return fromWeight;
+    if (row.difficulty && OCCURRENCE_BY_DIFFICULTY[row.difficulty]) return OCCURRENCE_BY_DIFFICULTY[row.difficulty];
+    return null;
+  }
+
+  function occurrenceLabel(occurrence) {
+    return occurrence && OCCURRENCE_LABEL[occurrence] ? OCCURRENCE_LABEL[occurrence] : occurrence || '—';
+  }
+
+  function stageLabel(internalStage, section = 'bestiary') {
+    const sec = section === 'bosstiary' ? 'bosstiary' : 'bestiary';
+    const map = STAGE_LABELS[sec] || STAGE_LABELS.bestiary;
+    return map[internalStage] || internalStage;
   }
 
   function thresholdsForDifficulty(difficulty) {
@@ -268,6 +479,10 @@ G.Bestiary = (() => {
     return out;
   }
 
+  function listBossEntries(filters = {}) {
+    return listEntries(Object.assign({}, filters, { section: 'bosstiary' }));
+  }
+
   function listEntries(filters = {}) {
     let list = catalogRows().map(row => {
       const section = resolveSection(row.bestiary);
@@ -281,6 +496,7 @@ G.Bestiary = (() => {
         family: row.family || null,
         thresholds: resolveThresholds(row),
         rewardPoints: resolveRewardPoints(row),
+        occurrence: occurrenceForCreature(row),
         nameKey: row.nameKey || null,
         displayName: row.name || null
       };
@@ -315,14 +531,19 @@ G.Bestiary = (() => {
       tags: row.tags || [],
       thresholds: resolveThresholds(row),
       rewardPoints: resolveRewardPoints(row),
-      reveal: row.bestiary.reveal,
       tipKeys: row.bestiary.tipKeys || [],
       nameKey: row.nameKey || null,
       descriptionKey: row.descriptionKey || null,
       displayName: row.name || null,
       description: row.description || null,
       combatCreatureId: combat && combat.id ? combat.id : row.baseCreatureId || row.id,
-      legacyId: combat && combat.legacyId != null ? combat.legacyId : null
+      legacyId: combat && combat.legacyId != null ? combat.legacyId : null,
+      occurrence: occurrenceForCreature(row),
+      reveal: row.bestiary.reveal || {
+        stage1: ['hp', 'xp', 'behavior', 'description', 'occurrence'],
+        stage2: ['damage', 'speed', 'abilities', 'resistances'],
+        stage3: ['drops', 'tips', 'statistics']
+      }
     };
   }
 
@@ -368,7 +589,19 @@ G.Bestiary = (() => {
     validateThresholds(resolveThresholds(row), id, issues);
     const pts = resolveRewardPoints(row);
     if (!Number.isFinite(pts) || pts < 0) issues.push(`${id}: invalid reward points`);
-    validateReveal(b.reveal, id, issues);
+    if (!b.reveal) {
+      issues.push(`${id}: missing reveal`);
+    } else {
+      validateReveal(b.reveal, id, issues);
+    }
+    const occDeclared = row.occurrence;
+    const occDerived = occurrenceForCreature(row);
+    if (occDeclared && G.CyclopediaEnums && !G.CyclopediaEnums.isValid('OCCURRENCE', occDeclared)) {
+      issues.push(`${id}: invalid occurrence ${occDeclared}`);
+    }
+    if (occDeclared && occDerived && occDeclared !== occDerived && row.spawnWeight != null && row.spawnWeight > 0) {
+      issues.push(`${id}: occurrence ${occDeclared} differs from spawn-derived ${occDerived}`);
+    }
   const tips = b.tipKeys || [];
   for (const k of tips) {
     if (typeof k !== 'string' || !k) issues.push(`${id}: invalid tipKey`);
@@ -439,11 +672,24 @@ G.Bestiary = (() => {
 
   function validateCharms(issues) {
     const seen = new Set();
+    const E = G.CyclopediaEnums;
     for (const c of CHARMS) {
       if (seen.has(c.id)) issues.push(`duplicate charm id ${c.id}`);
       seen.add(c.id);
       if (!c.nameKey || !c.descriptionKey) issues.push(`charm ${c.id}: missing nameKey/descriptionKey`);
       if (!Number.isFinite(c.cost) || c.cost < 0) issues.push(`charm ${c.id}: invalid cost`);
+      if (!CHARM_TRIGGERS.includes(c.trigger)) issues.push(`charm ${c.id}: invalid trigger`);
+      const cls = c.bestiaryClass || CHARM_DEFAULT_CLASS;
+      if (E && !E.isValid('BESTIARY_CLASS', cls)) issues.push(`charm ${c.id}: invalid bestiaryClass ${cls}`);
+      const ef = c.effect;
+      if (!ef || !CHARM_EFFECT_KINDS.has(ef.kind)) issues.push(`charm ${c.id}: invalid effect.kind`);
+      if (ef && ef.kind === 'bonusDamage' && (!Number.isFinite(ef.bossCap) || ef.bossCap > ef.value)) {
+        issues.push(`charm ${c.id}: bossCap must be <= value for bonusDamage`);
+      }
+      if (c.enabled !== false && c.noRecursion !== true) issues.push(`charm ${c.id}: noRecursion must be true`);
+    }
+    if (CHARMS.filter(c => c.enabled !== false).length < 6) {
+      issues.push('charm catalog: expected at least 6 enabled charms (CYC-7)');
     }
   }
 
@@ -469,6 +715,9 @@ G.Bestiary = (() => {
     for (const c of CHARMS) {
       if (c.enabled === false) continue;
     }
+    if (G.Cyclopedia && G.Cyclopedia.appendValidationIssues) {
+      G.Cyclopedia.appendValidationIssues(issues);
+    }
     const ok = issues.length === 0;
     if (!ok && (strict || DEBUG.logValidation)) {
       console.error('[G.Bestiary] validation failed:', issues);
@@ -482,10 +731,21 @@ G.Bestiary = (() => {
     VERSION,
     SECTIONS,
     BOSS_CATEGORIES,
+    BOSS_CATEGORY_INFO,
+    listBossEntries,
     BOSSTIARY_THRESHOLDS,
     DIFFICULTIES,
     THRESHOLDS_BY_DIFFICULTY,
     REVEAL_FIELDS,
+    OCCURRENCE_SCALE,
+    OCCURRENCE_BY_DIFFICULTY,
+    OCCURRENCE_LABEL,
+    STAGE_LABELS,
+    occurrenceForCreature,
+    occurrenceFromWeight,
+    occurrenceScore,
+    occurrenceLabel,
+    stageLabel,
     EXTRA_ENTRIES,
     resolveSection,
     GLOBAL_UPGRADE_CAPS,
@@ -495,6 +755,11 @@ G.Bestiary = (() => {
     unlockById,
     upgradeCost,
     CHARMS,
+    CHARM_TRIGGERS,
+    CHARM_EFFECT_KINDS,
+    CHARM_DEFAULT_CLASS,
+    CHARM_CLASS_LABEL,
+    charmClassLabel,
     charmById,
     charmCatalog,
     DEBUG,

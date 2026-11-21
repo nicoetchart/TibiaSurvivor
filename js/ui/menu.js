@@ -24,10 +24,74 @@ G.MenuUI = (() => {
     };
   }
 
+  function legacyDexFor(creatureId) {
+    if (!creatureId) return null;
+    const cat = G.Bestiary && G.Bestiary.getCatalogEntry && G.Bestiary.getCatalogEntry(creatureId);
+    if (cat && cat.legacyId != null) return cat.legacyId;
+    const c = G.CREATURE_BY_ID && G.CREATURE_BY_ID[creatureId];
+    return c && c.legacyId != null ? c.legacyId : null;
+  }
+
+  function renderMenuDailyBoosts(neutral) {
+    const panel = $('menu-boost-panel');
+    const btnC = $('menu-boost-creature');
+    const btnB = $('menu-boost-boss');
+    const cvC = $('menu-boost-creature-cv');
+    const cvB = $('menu-boost-boss-cv');
+    if (!panel || !G.DailyBoost || !neutral) {
+      if (panel) panel.classList.add('hidden');
+      return;
+    }
+    const cid = G.DailyBoost.getBoostedCreatureId && G.DailyBoost.getBoostedCreatureId();
+    const bid = G.DailyBoost.getBoostedBossId && G.DailyBoost.getBoostedBossId();
+    const hasC = !!cid && legacyDexFor(cid);
+    const hasB = !!bid && legacyDexFor(bid);
+    if (!hasC && !hasB) {
+      panel.classList.add('hidden');
+      return;
+    }
+    panel.classList.remove('hidden');
+
+    const paint = (cv, creatureId, lively) => {
+      if (!cv) return;
+      const dex = legacyDexFor(creatureId);
+      if (dex == null) return;
+      const scale = (G.Bestiary && G.Bestiary.getCatalogEntry(creatureId) &&
+        G.Bestiary.getCatalogEntry(creatureId).section === 'bosstiary') ? 2.15 : 2;
+      G.UI.sprite(cv, dex, { scale, lively: !!lively, shadow: true, anim: 'Idle' });
+    };
+
+    if (btnC && cvC) {
+      btnC.classList.toggle('hidden', !hasC);
+      if (hasC) {
+        paint(cvC, cid, true);
+        const nm = $('menu-boost-creature-name');
+        if (nm) nm.textContent = G.DailyBoost.displayName(cid);
+        btnC.title = G.DailyBoost.displayName(cid);
+        btnC.onclick = () => {
+          if (G.BestiaryUI && G.BestiaryUI.openToCreature) G.BestiaryUI.openToCreature(cid);
+        };
+      }
+    }
+    if (btnB && cvB) {
+      btnB.classList.toggle('hidden', !hasB);
+      if (hasB) {
+        paint(cvB, bid, true);
+        const nm = $('menu-boost-boss-name');
+        if (nm) nm.textContent = G.DailyBoost.displayName(bid);
+        btnB.title = G.DailyBoost.displayName(bid);
+        btnB.onclick = () => {
+          if (G.BestiaryUI && G.BestiaryUI.openToCreature) G.BestiaryUI.openToCreature(bid);
+        };
+      }
+    }
+  }
+
   // ---------------- menú principal ----------------
 
   function open() {
     const s = G.DB.save;
+    if (G.DailyBoost && G.DailyBoost.syncSave && s) G.DailyBoost.syncSave(s);
     const neutral = G.Content.mode === 'neutral';
     document.querySelectorAll('#scr-menu [data-go="bestiary"], #scr-menu [data-go="outfit"]').forEach(b => {
       b.classList.toggle('hidden', !neutral);
@@ -82,6 +146,8 @@ G.MenuUI = (() => {
     const pend = G.Progress.pending();
     $('menu-goals-sub').textContent = pend ? pend + (pend === 1 ? ' reward to claim' : ' rewards to claim') : 'Missions, achievements and profile';
     $('menu-goals-sub').classList.toggle('gold', pend > 0);
+
+    renderMenuDailyBoosts(neutral);
 
     const bSub = $('menu-bestiary-sub');
     if (bSub && G.Bestiary && neutral) {

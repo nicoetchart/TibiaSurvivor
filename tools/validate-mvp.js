@@ -18,7 +18,10 @@ load('js/core/util.js');
 load('js/data/damage-types.js');
 load('js/data/mvp-config.js');
 load('js/data/creatures.js');
+load('js/data/bosses.js');
 load('js/data/bestiary.js');
+load('js/data/cyclopedia-enums.js');
+load('js/data/cyclopedia-registry.js');
 load('js/data/bestiary-tips.js');
 load('js/data/abilities.js');
 load('js/data/master-sorcerer-spells.js');
@@ -60,6 +63,12 @@ const bosses = enemies.filter(c => c.boss);
 if (enemies.length < 10 || enemies.length > 16) err(`enemy creature count ${enemies.length} (expect 10–15 types incl. boss)`);
 if (bosses.length !== 1) err(`boss count ${bosses.length} (expect 1)`);
 
+if (G.Cyclopedia) {
+  const catDef = G.Cyclopedia.getDefinition('cat');
+  if (!catDef || catDef.id !== 'cat' || !Number.isFinite(catDef.hp)) err('Cyclopedia.getDefinition(cat) failed');
+  const listed = G.Cyclopedia.listCreatures({ bestiaryOnly: true });
+  if (listed.length < 12) err(`Cyclopedia listCreatures bestiary ${listed.length}`);
+}
 if (G.Bestiary) {
   const v = G.Bestiary.validate(false);
   if (!v.ok) v.issues.forEach(msg => err(`Bestiary: ${msg}`));
@@ -127,9 +136,52 @@ if (!elite || !elite.elite) err('buildElite failed');
 const bossDef = G.NeutralRoster.BOSSES[0];
 if (!bossDef) err('no final boss in roster');
 
+if (G.MvpConfig.SPAWN_MODE === 'hp_band') {
+  const catC = G.CREATURE_BY_ID.cat;
+  const spawned = G.NeutralRoster.defFor(catC);
+  if (!spawned || spawned.hp !== 20) err(`hp_band: cat spawn hp ${spawned && spawned.hp} (expect 20 from data)`);
+  for (const sec of [0, 120, 450, 780]) {
+    const pick = G.NeutralRoster.pickAt(sec);
+    if (!pick) err(`hp_band: pickAt(${sec}) returned null`);
+    else {
+      const h = G.NeutralRoster.hTarget(sec);
+      const delta = G.NeutralRoster.bandDelta(sec) * 2.4;
+      if (Math.abs(pick.hp - h) > delta + 2) {
+        err(`hp_band: pickAt(${sec}) hp ${pick.hp} far from H_target ${h.toFixed(1)} (delta ${delta})`);
+      }
+    }
+  }
+  if (elite.hp !== 95) err(`hp_band: black knight sentinel hp ${elite.hp} (expect 95)`);
+  if (bossDef.hp !== 520) err(`hp_band: orshabaal hp ${bossDef.hp} (expect 520)`);
+}
+
 if (G.DEX_BY && Object.keys(G.DEX_BY).length) err('PSR-3: G.DEX_BY must stay empty (no pokedex boot)');
 if (!G.Moves || G.Moves.BY_ID !== G.Abilities.BY_ID) err('PSR-3: G.Moves must alias G.Abilities.BY_ID');
 if (G.Content.roster() !== G.NeutralRoster) err('PSR-3: Content.roster must be NeutralRoster');
+
+const bossVal = G.BossRegistry.validate();
+if (!bossVal.ok) err('CYC-5: boss registry: ' + bossVal.issues.join('; '));
+const orshKit = G.BossRegistry.getKit('orshabaal');
+if (!orshKit || !orshKit.melee || !orshKit.melee.includes('slam')) err('CYC-5: orshabaal kit melee');
+if (!orshKit.ranged || !orshKit.ranged.includes('beam')) err('CYC-5: orshabaal missing beam');
+const bkKit = G.BossRegistry.getKit('black_knight');
+if (!bkKit || bkKit.kit !== 'procedural') err('CYC-5: black_knight kit');
+if (G.BossRegistry.resolveBossId({ creatureId: 'orshabaal' }, 99016) !== 'orshabaal') err('CYC-5: resolve orshabaal');
+
+const bossEntries = G.Bestiary.listBossEntries();
+if (!bossEntries || bossEntries.length < 2) err('CYC-6: expected 2 bosstiary entries');
+const charmN = G.Bestiary.charmCatalog().filter(c => c.enabled !== false).length;
+if (charmN < 6) err(`CYC-7: expected >= 6 charms, got ${charmN}`);
+if (!G.Bestiary.BOSS_CATEGORY_INFO || !G.Bestiary.BOSS_CATEGORY_INFO.nemesis) err('CYC-6: boss category copy');
+
+const catEntry = G.Bestiary.getCatalogEntry('cat');
+if (!catEntry || catEntry.occurrence !== 'common') err(`CYC-4: cat occurrence ${catEntry && catEntry.occurrence}`);
+if (G.Bestiary.stageLabel('stage_1', 'bestiary') !== 'Tracked') err('CYC-4: bestiary stage_1 label');
+if (G.Bestiary.stageLabel('stage_1', 'bosstiary') !== 'Prowess') err('CYC-4: bosstiary stage_1 label');
+const rev = catEntry && catEntry.reveal && catEntry.reveal.stage1;
+if (!rev || !rev.includes('occurrence')) err('CYC-4: stage1 reveal missing occurrence');
+const v = G.Bestiary.validate();
+if (!v.ok) err('CYC-4: bestiary catalog validate failed: ' + v.issues.slice(0, 3).join('; '));
 const msId = G.MasterSorcerer && G.MasterSorcerer.spellPoolIds && G.MasterSorcerer.spellPoolIds()[0];
 if (!msId || !G.Moves.BY_ID[msId]) err('PSR-3: MS spells missing from G.Moves.BY_ID');
 

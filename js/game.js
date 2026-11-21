@@ -127,6 +127,10 @@ G.Game = (() => {
     if (G.Bestiary && G.Bestiary.applyRunBonuses) G.Bestiary.applyRunBonuses(pl);
     if (G.MsTelemetry) G.MsTelemetry.reset(pl);
     if (G.Bestiary && G.Bestiary.beginRun) G.Bestiary.beginRun('run-' + Math.floor(Math.random() * 1e9));
+    if (G.DailyBoost && G.DailyBoost.runStartBossHint && G.Spawner && G.Spawner.say) {
+      const hint = G.DailyBoost.runStartBossHint();
+      if (hint) setTimeout(() => G.Spawner.say(hint, 3.6), 600);
+    }
     if (G.BestiaryRunUI) G.BestiaryRunUI.onRunBegin();
     if (G.BestiaryCharms) G.BestiaryCharms.beginRun();
     if (G.BestiaryTelemetry) G.BestiaryTelemetry.beginRun();
@@ -267,7 +271,10 @@ G.Game = (() => {
         dead,
         playerKills: pl.kills,
         bosses: pl.bosses,
-        pointsEarned: G.Bestiary.getRunPointsEarned(),
+        pointsEarned: G.Bestiary.getRunPointsEarned() + (G.Bestiary.getRunBossPointsEarned
+          ? G.Bestiary.getRunBossPointsEarned() : 0),
+        charmPointsEarned: G.Bestiary.getRunPointsEarned(),
+        bossPointsEarned: G.Bestiary.getRunBossPointsEarned ? G.Bestiary.getRunBossPointsEarned() : 0,
         advances: G.Bestiary.getRunAdvances()
       });
     }

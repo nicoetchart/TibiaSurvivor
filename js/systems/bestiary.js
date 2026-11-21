@@ -5,12 +5,18 @@
   if (!G.Bestiary) return;
 
   const SAVE_VERSION = 1;
+  const CYCLOPEDIA_SAVE_VERSION = 2;
   const CHARM_EQUIP_SLOTS = 1;
 
   let profile = null;
   let runId = null;
   let runAdvances = [];
   let runPointsEarned = 0;
+  let runBossPointsEarned = 0;
+  /** CYC-3: kills por criatura en la partida actual (memoria). */
+  const runKills = new Map();
+  /** CYC-3: una entrada por creatureId por run (runsEncountered persistente). */
+  const runEncountered = new Set();
   const listeners = new Map();
 
   function on(type, fn) {
@@ -35,7 +41,20 @@
       rewarded: false,
       firstSeenAt: null,
       lastKilledAt: null,
-      runsEncountered: 0
+      runsEncountered: 0,
+      firstVictoryAt: null
+    };
+  }
+
+  function createDefaultCyclopedia() {
+    const daily = G.DailyBoost && G.DailyBoost.defaultDailyBlock
+      ? G.DailyBoost.defaultDailyBlock()
+      : { dayUtc: null, creatureId: null, bossId: null, historyCreatures: [], historyBosses: [] };
+    return {
+      version: CYCLOPEDIA_SAVE_VERSION,
+      charmPoints: { earned: 0, spent: 0 },
+      bossPoints: { earned: 0, spent: 0 },
+      daily
     };
   }
 
@@ -92,12 +111,110 @@
       rewarded,
       firstSeenAt: tsOrNull(e.firstSeenAt),
       lastKilledAt: tsOrNull(e.lastKilledAt),
+      firstVictoryAt: tsOrNull(e.firstVictoryAt),
       runsEncountered: intNonNeg(e.runsEncountered)
     };
   }
 
+  function normalizePointsWallet(w) {
+    const raw = w && typeof w === 'object' ? w : {};
+    let earned = intNonNeg(raw.earned);
+    let spent = intNonNeg(raw.spent);
+    if (spent > earned) spent = earned;
+    return { earned, spent };
+  }
+
+  function ensureCyclopedia(save) {
+    if (!save || typeof save !== 'object') return null;
+    if (!save.cyclopedia || typeof save.cyclopedia !== 'object') {
+      save.cyclopedia = createDefaultCyclopedia();
+    }
+    const c = save.cyclopedia;
+    c.version = CYCLOPEDIA_SAVE_VERSION;
+    c.charmPoints = normalizePointsWallet(c.charmPoints);
+    c.bossPoints = normalizePointsWallet(c.bossPoints);
+    const b = save.bestiary;
+    if (b && b.currency && !c._legacyCurrencyMerged) {
+      const legE = intNonNeg(b.currency.earned);
+      const legS = intNonNeg(b.currency.spent);
+      if (legE > c.charmPoints.earned) c.charmPoints.earned = legE;
+      if (legS > c.charmPoints.spent) c.charmPoints.spent = Math.min(legS, c.charmPoints.earned);
+      c._legacyCurrencyMerged = true;
+    }
+    return c;
+  }
+
+  function syncLegacyCharmCurrency(save) {
+    const c = save && save.cyclopedia;
+    const b = save && save.bestiary;
+    if (!c || !b) return;
+    b.currency = {
+      earned: intNonNeg(c.charmPoints.earned),
+      spent: Math.min(intNonNeg(c.charmPoints.spent), intNonNeg(c.charmPoints.earned))
+    };
+  }
+
+  function cyclopediaBlock() {
+    if (!profile) return null;
+    return ensureCyclopedia(profile);
+  }
+
+  function walletAvailable(wallet) {
+    if (!wallet) return 0;
+    return Math.max(0, intNonNeg(wallet.earned) - intNonNeg(wallet.spent));
+  }
+
+  function spendCharmPoints(amount) {
+    const c = cyclopediaBlock();
+    if (!c || amount <= 0) return false;
+    const next = intNonNeg(c.charmPoints.spent) + amount;
+    if (next > intNonNeg(c.charmPoints.earned)) return false;
+    c.charmPoints.spent = next;
+    syncLegacyCharmCurrency(profile);
+    return true;
+  }
+
+  function refundCharmPoints(amount, spentBefore) {
+    const c = cyclopediaBlock();
+    if (!c) return;
+    c.charmPoints.spent = intNonNeg(spentBefore);
+    syncLegacyCharmCurrency(profile);
+  }
+
+  /**
+   * CYC-12: bestiary v1 → cyclopedia v2 (currency, daily, marcador one-shot).
+   * Idempotente; recupera cyclopedia corrupto.
+   */
+  function migrateCyclopediaSave(save) {
+    if (!save || typeof save !== 'object') return false;
+    ensureBlock(save);
+    let c = save.cyclopedia;
+    const fromVer = c && typeof c === 'object' && !Array.isArray(c) && c.version != null
+      ? intNonNeg(c.version) : 0;
+    if (!c || typeof c !== 'object' || Array.isArray(c)) {
+      save.cyclopedia = createDefaultCyclopedia();
+      c = save.cyclopedia;
+    }
+    if (fromVer < CYCLOPEDIA_SAVE_VERSION) {
+      if (!c.daily || typeof c.daily !== 'object' || Array.isArray(c.daily)) {
+        c.daily = G.DailyBoost && G.DailyBoost.defaultDailyBlock
+          ? G.DailyBoost.defaultDailyBlock()
+          : { dayUtc: null, creatureId: null, bossId: null, historyCreatures: [], historyBosses: [] };
+      }
+      if (!c._migratedAt) {
+        c._migratedAt = Date.now();
+        c._migratedFromVersion = fromVer;
+      }
+    }
+    ensureCyclopedia(save);
+    if (G.DailyBoost && G.DailyBoost.syncSave) G.DailyBoost.syncSave(save);
+    save.cyclopedia.version = CYCLOPEDIA_SAVE_VERSION;
+    return true;
+  }
+
   /** Sanea save.bestiary; conserva IDs desconocidos en entries. */
   function sanitizeSave(save) {
+    migrateCyclopediaSave(save);
     const b = ensureBlock(save);
     if (!b) return;
     b.version = SAVE_VERSION;
@@ -119,11 +236,6 @@
       delete entries[fromId];
     }
     b.entries = entries;
-
-    let earned = intNonNeg(b.currency.earned);
-    let spent = intNonNeg(b.currency.spent);
-    if (spent > earned) spent = earned;
-    b.currency = { earned, spent };
 
     const validCharms = charmIds();
     const unlocked = [];
@@ -164,6 +276,23 @@
       unlocks.push(id);
     }
     b.unlocks = unlocks;
+
+    const c = save.cyclopedia;
+    if (c && b.currency) {
+      const legE = intNonNeg(b.currency.earned);
+      const legS = intNonNeg(b.currency.spent);
+      if (!c._legacyCurrencyMerged) {
+        c.charmPoints.earned = legE;
+        c.charmPoints.spent = Math.min(legS, legE);
+        c._legacyCurrencyMerged = true;
+      } else if (legE > intNonNeg(c.charmPoints.earned) || legS !== intNonNeg(c.charmPoints.spent)) {
+        c.charmPoints.earned = Math.max(intNonNeg(c.charmPoints.earned), legE);
+        c.charmPoints.spent = Math.min(legS, c.charmPoints.earned);
+      }
+      c.charmPoints = normalizePointsWallet(c.charmPoints);
+      syncLegacyCharmCurrency(save);
+    }
+    if (G.DailyBoost && G.DailyBoost.syncSave) G.DailyBoost.syncSave(save);
   }
 
   function init(save) {
@@ -174,6 +303,7 @@
     ensureBlock(save);
     sanitizeSave(save);
     profile = save;
+    if (G.DailyBoost && G.DailyBoost.syncSave) G.DailyBoost.syncSave(save);
     reconcilePendingRewards(true);
   }
 
@@ -223,10 +353,21 @@
     }));
   }
 
+  function getAvailableCharmPoints() {
+    const c = cyclopediaBlock();
+    if (!c) return 0;
+    return walletAvailable(c.charmPoints);
+  }
+
+  function getAvailableBossPoints() {
+    const c = cyclopediaBlock();
+    if (!c) return 0;
+    return walletAvailable(c.bossPoints);
+  }
+
+  /** Charm points balance (shop, charms). */
   function getAvailablePoints() {
-    const b = progressBlock();
-    if (!b) return 0;
-    return Math.max(0, intNonNeg(b.currency.earned) - intNonNeg(b.currency.spent));
+    return getAvailableCharmPoints();
   }
 
   function getUpgradeLevel(upgradeId) {
@@ -289,13 +430,26 @@
   }
 
   function emitPointsChanged(reason, extra = {}) {
-    const b = progressBlock();
-    if (!b) return;
+    const c = cyclopediaBlock();
+    if (!c) return;
     emit('bestiary:points-changed', Object.assign({
       delta: 0,
-      earned: intNonNeg(b.currency.earned),
-      spent: intNonNeg(b.currency.spent),
-      available: getAvailablePoints(),
+      currency: 'charm',
+      earned: intNonNeg(c.charmPoints.earned),
+      spent: intNonNeg(c.charmPoints.spent),
+      available: getAvailableCharmPoints(),
+      reason
+    }, extra));
+  }
+
+  function emitBossPointsChanged(reason, extra = {}) {
+    const c = cyclopediaBlock();
+    if (!c) return;
+    emit('bestiary:boss-points-changed', Object.assign({
+      delta: 0,
+      earned: intNonNeg(c.bossPoints.earned),
+      spent: intNonNeg(c.bossPoints.spent),
+      available: getAvailableBossPoints(),
       reason
     }, extra));
   }
@@ -310,16 +464,15 @@
     const cost = G.Bestiary.upgradeCost(def, cur);
     const avail = getAvailablePoints();
     if (cost > avail) return { ok: false, reason: 'funds', cost, available: avail };
-    const spentBefore = intNonNeg(b.currency.spent);
-    b.currency.spent = spentBefore + cost;
-    if (b.currency.spent > b.currency.earned) {
-      b.currency.spent = spentBefore;
+    const c = cyclopediaBlock();
+    const spentBefore = intNonNeg(c.charmPoints.spent);
+    if (!spendCharmPoints(cost)) {
       return { ok: false, reason: 'funds', cost, available: avail };
     }
     b.upgrades[upgradeId] = cur + 1;
     sanitizeSave(profile);
     if (!flush(true)) {
-      b.currency.spent = spentBefore;
+      refundCharmPoints(0, spentBefore);
       b.upgrades[upgradeId] = cur;
       sanitizeSave(profile);
       return { ok: false, reason: 'persist' };
@@ -344,16 +497,15 @@
     const cost = intNonNeg(def.cost);
     const avail = getAvailablePoints();
     if (cost > avail) return { ok: false, reason: 'funds', cost, available: avail };
-    const spentBefore = intNonNeg(b.currency.spent);
-    b.currency.spent = spentBefore + cost;
-    if (b.currency.spent > b.currency.earned) {
-      b.currency.spent = spentBefore;
+    const c = cyclopediaBlock();
+    const spentBefore = intNonNeg(c.charmPoints.spent);
+    if (!spendCharmPoints(cost)) {
       return { ok: false, reason: 'funds', cost, available: avail };
     }
     b.unlocks.push(unlockId);
     sanitizeSave(profile);
     if (!flush(true)) {
-      b.currency.spent = spentBefore;
+      refundCharmPoints(0, spentBefore);
       b.unlocks = b.unlocks.filter(id => id !== unlockId);
       sanitizeSave(profile);
       return { ok: false, reason: 'persist' };
@@ -392,16 +544,15 @@
     const cost = intNonNeg(def.cost);
     const avail = getAvailablePoints();
     if (cost > avail) return { ok: false, reason: 'funds', cost, available: avail };
-    const spentBefore = intNonNeg(b.currency.spent);
-    b.currency.spent = spentBefore + cost;
-    if (b.currency.spent > b.currency.earned) {
-      b.currency.spent = spentBefore;
+    const c = cyclopediaBlock();
+    const spentBefore = intNonNeg(c.charmPoints.spent);
+    if (!spendCharmPoints(cost)) {
       return { ok: false, reason: 'funds', cost, available: avail };
     }
     b.charms.unlocked.push(charmId);
     sanitizeSave(profile);
     if (!flush(true)) {
-      b.currency.spent = spentBefore;
+      refundCharmPoints(0, spentBefore);
       b.charms.unlocked = b.charms.unlocked.filter(id => id !== charmId);
       sanitizeSave(profile);
       return { ok: false, reason: 'persist' };
@@ -487,10 +638,62 @@
     return true;
   }
 
-  function pushRunAdvance(kind, creatureId, kills, stage, points = 0) {
+  function pushRunAdvance(kind, creatureId, kills, stage, points = 0, extra = null) {
     const row = { kind, creatureId, kills, stage, at: Date.now() };
     if (points > 0) row.points = points;
+    if (extra && typeof extra === 'object') Object.assign(row, extra);
     runAdvances.push(row);
+  }
+
+  function bumpRunKill(creatureId) {
+    if (!creatureId) return 0;
+    const n = (runKills.get(creatureId) || 0) + 1;
+    runKills.set(creatureId, n);
+    return n;
+  }
+
+  function getRunKills(creatureId) {
+    return creatureId ? intNonNeg(runKills.get(creatureId)) : 0;
+  }
+
+  function getRunKillTotals() {
+    const out = {};
+    for (const [id, n] of runKills) out[id] = intNonNeg(n);
+    return out;
+  }
+
+  function canRecordEncounter(e) {
+    if (!e || e._bestiaryEncountered) return false;
+    if (e.remote) return false;
+    if (e.def && e.def.noBestiaryCredit) return false;
+    if (G.Game && G.Game.state === 'ui') return false;
+    const creatureId = creatureIdForEnemy(e);
+    if (!creatureId || !getCatalogEntry(creatureId)) return false;
+    return true;
+  }
+
+  /** CYC-3: primer avistamiento en esta run → runsEncountered++ (persistido). */
+  function recordEncounter(e) {
+    if (!canRecordEncounter(e)) return false;
+    const creatureId = creatureIdForEnemy(e);
+    e._bestiaryEncountered = true;
+    if (runEncountered.has(creatureId)) return true;
+    runEncountered.add(creatureId);
+    const entry = ensureProgressEntry(creatureId);
+    if (!entry) return false;
+    const now = Date.now();
+    entry.runsEncountered = intNonNeg(entry.runsEncountered) + 1;
+    if (entry.firstSeenAt == null) entry.firstSeenAt = now;
+    flush(false);
+    emit('bestiary:creature-encountered', {
+      creatureId,
+      runsEncountered: entry.runsEncountered,
+      runId: runId || null
+    });
+    pushRunAdvance('encountered', creatureId, getRunKills(creatureId), null, 0, {
+      killsThisRun: getRunKills(creatureId)
+    });
+    return true;
   }
 
   /**
@@ -505,24 +708,44 @@
     entry.rewarded = true;
     const b = progressBlock();
     if (!b) return 0;
-    if (points > 0) b.currency.earned = intNonNeg(b.currency.earned) + points;
+    const isBoss = catalog.section === 'bosstiary';
+    const c = cyclopediaBlock();
+    if (points > 0 && c) {
+      const wallet = isBoss ? c.bossPoints : c.charmPoints;
+      wallet.earned = intNonNeg(wallet.earned) + points;
+      syncLegacyCharmCurrency(profile);
+    }
     if (!silent) {
-      if (points > 0) runPointsEarned += points;
+      if (points > 0) {
+        if (isBoss) runBossPointsEarned += points;
+        else runPointsEarned += points;
+      }
       emit('bestiary:entry-completed', {
         creatureId,
         kills: entry.kills,
         points,
+        section: catalog.section || 'bestiary',
         runId: opts.runId || runId || null
       });
-      emit('bestiary:points-changed', {
-        creatureId,
-        delta: points,
-        earned: b.currency.earned,
-        spent: intNonNeg(b.currency.spent),
-        available: getAvailablePoints(),
-        reason: 'entry_completed'
+      if (isBoss) {
+        emitBossPointsChanged('entry_completed', {
+          creatureId,
+          delta: points
+        });
+      } else {
+        emit('bestiary:points-changed', {
+          creatureId,
+          delta: points,
+          currency: 'charm',
+          earned: c.charmPoints.earned,
+          spent: intNonNeg(c.charmPoints.spent),
+          available: getAvailableCharmPoints(),
+          reason: 'entry_completed'
+        });
+      }
+      pushRunAdvance('points', creatureId, entry.kills, 'completed', points, {
+        pointCurrency: isBoss ? 'boss' : 'charm'
       });
-      pushRunAdvance('points', creatureId, entry.kills, 'completed', points);
     }
     return points;
   }
@@ -552,36 +775,77 @@
 
     const prevKills = entry.kills;
     const prevStage = deriveStage(prevKills, catalog.thresholds, prevKills > 0 || entry.firstSeenAt != null);
+    const isBosstiary = catalog.section === 'bosstiary';
 
-    entry.kills = prevKills + 1;
+    let killCredits = 1;
+    if (G.DailyBoost) {
+      if (isBosstiary && G.DailyBoost.extraBossKillCredits) {
+        killCredits += G.DailyBoost.extraBossKillCredits(payload.creatureId);
+      } else if (G.DailyBoost.extraKillCredits) {
+        killCredits += G.DailyBoost.extraKillCredits(payload.creatureId);
+      }
+    }
+    entry.kills = prevKills + killCredits;
     if (entry.firstSeenAt == null) entry.firstSeenAt = now;
     entry.lastKilledAt = now;
+    if (isBosstiary && prevKills === 0 && entry.firstVictoryAt == null) {
+      entry.firstVictoryAt = now;
+      emit('bestiary:boss-first-victory', {
+        creatureId: payload.creatureId,
+        bossCategory: catalog.bossCategory,
+        runId: payload.runId
+      });
+      pushRunAdvance('first_victory', payload.creatureId, entry.kills, null, 0, { killsThisRun: getRunKills(payload.creatureId) });
+    }
 
     const nextStage = deriveStage(entry.kills, catalog.thresholds, true);
+    const killsThisRun = bumpRunKill(payload.creatureId);
 
     emit('bestiary:kill-recorded', {
       creatureId: payload.creatureId,
       kills: entry.kills,
+      killsThisRun,
       instanceId: payload.instanceId,
       runId: payload.runId
     });
 
-    if (prevKills === 0) {
+    if (prevKills === 0 && !runEncountered.has(payload.creatureId)) {
       emit('bestiary:creature-discovered', { creatureId: payload.creatureId, runId: payload.runId });
-      pushRunAdvance('discovered', payload.creatureId, entry.kills, nextStage);
+      pushRunAdvance('discovered', payload.creatureId, entry.kills, nextStage, 0, { killsThisRun });
     }
+    pushRunAdvance('kill', payload.creatureId, entry.kills, nextStage, 0, { killsThisRun });
 
     if (prevStage !== nextStage && nextStage !== 'discovered' && nextStage !== 'unknown') {
       emit('bestiary:stage-completed', {
         creatureId: payload.creatureId,
         stage: nextStage,
+        section: catalog.section || 'bestiary',
         kills: entry.kills,
+        killsThisRun,
         runId: payload.runId
       });
-      pushRunAdvance(nextStage, payload.creatureId, entry.kills, nextStage);
+      pushRunAdvance(nextStage, payload.creatureId, entry.kills, nextStage, 0, { killsThisRun });
     }
 
     grantEntryReward(payload.creatureId, entry, catalog, { runId: payload.runId });
+
+    if (isBosstiary && G.DailyBoost && G.DailyBoost.bonusBossPointsOnKill) {
+      const bonus = G.DailyBoost.bonusBossPointsOnKill(payload.creatureId);
+      const c = cyclopediaBlock();
+      if (bonus > 0 && c) {
+        c.bossPoints.earned = intNonNeg(c.bossPoints.earned) + bonus;
+        syncLegacyCharmCurrency(profile);
+        runBossPointsEarned += bonus;
+        emitBossPointsChanged('daily_boost_kill', {
+          creatureId: payload.creatureId,
+          delta: bonus
+        });
+        pushRunAdvance('boss_boost', payload.creatureId, entry.kills, nextStage, bonus, {
+          killsThisRun,
+          pointCurrency: 'boss'
+        });
+      }
+    }
 
     flush(false);
     if (inst) inst._bestiaryCredited = true;
@@ -609,11 +873,17 @@
     runId = id || ('run-' + Date.now().toString(36) + '-' + Math.floor(Math.random() * 1e6));
     runAdvances = [];
     runPointsEarned = 0;
+    runBossPointsEarned = 0;
+    runKills.clear();
+    runEncountered.clear();
   }
 
   function endRun() {
     runAdvances = [];
     runPointsEarned = 0;
+    runBossPointsEarned = 0;
+    runKills.clear();
+    runEncountered.clear();
     runId = null;
   }
 
@@ -623,6 +893,10 @@
 
   function getRunPointsEarned() {
     return runPointsEarned;
+  }
+
+  function getRunBossPointsEarned() {
+    return runBossPointsEarned;
   }
 
   /** Solo con ?dev en la URL: fija kills y aplica recompensa si corresponde. */
@@ -644,6 +918,9 @@
     SAVE_VERSION,
     CHARM_EQUIP_SLOTS,
     createDefaultSave,
+    createDefaultCyclopedia,
+    migrateCyclopediaSave,
+    CYCLOPEDIA_SAVE_VERSION,
     defaultProgressEntry: defaultEntry,
     sanitizeSave,
     init,
@@ -651,6 +928,8 @@
     getProgressEntry,
     listProgressEntries,
     getAvailablePoints,
+    getAvailableCharmPoints,
+    getAvailableBossPoints,
     ensureProgressEntry,
     getCatalogEntry,
     getEntry,
@@ -659,12 +938,16 @@
     emit,
     deriveStage,
     creatureIdForEnemy,
+    recordEncounter,
     tryCreditDefeat,
     onEnemyDefeated,
     beginRun,
     endRun,
+    getRunKills,
+    getRunKillTotals,
     getRunAdvances,
     getRunPointsEarned,
+    getRunBossPointsEarned,
     grantEntryReward,
     reconcilePendingRewards,
     devSetKills,

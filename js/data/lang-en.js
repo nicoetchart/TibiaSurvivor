@@ -71,5 +71,5 @@ G.I18n.add({
   '+2 saltos': '+2 jumps', '+1 mina': '+1 mine', '+3 disparos': '+3 shots',
   '+3 disparos y +1 perforación': '+3 shots and +1 pierce', 'El juego ha fallado: tu partida se ha guardado hasta aquí': 'The game crashed: your run has been saved up to this point', 'Novedades': 'What\'s new',
   'Hay una versión nueva del juego: actualizando en {x} s…': 'A new version of the game is out: updating in {x} s…', 'Golpe Crítico': 'Critical Hit', '+3% de críticos (x1,5 de daño)': '+3% critical chance (x1.5 damage)',
-  'Cambio de cartas': 'Card reroll', '+1 cambio de cartas de nivel por run': '+1 level-up card reroll per run', 'Veto': 'Ban',
+  'Cambio de cartas': 'Card reroll', '+1 cambio de cartas de nivel por run': '+1 level-up card reroll per run',   'Veto': 'Ban',
 });

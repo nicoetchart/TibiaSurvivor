@@ -1,6 +1,5 @@
-/* ============ sprites.js — animador de sprites (PNG propio o geo) ============
- * TibiaSurvivor MVP: criaturas 99001–99099 usan G.GeoSprites (sin PNG).
- * Arte: TibiaSprites, GeoSprites o geo (PSR-9: sin hojas PNG legacy).
+/* ============ sprites.js — animador de sprites (Tibia PNG) ============
+ * Criaturas 99001–99099: G.TibiaSprites + assets/tibia/creatures|outfits.
  *
  *   columnas = fotogramas · filas = 8 direcciones
  *   0 Down · 1 DownRight · 2 Right · 3 UpRight · 4 Up · 5 UpLeft · 6 Left · 7 DownLeft
@@ -70,7 +69,6 @@ G.Sprites = (() => {
       const tm = G.TibiaSprites.frameMetaForDex(dex, anim);
       if (tm) return tm;
     }
-    if (G.GeoSprites && G.GeoSprites.isGeo(dex)) return G.GeoSprites.frameMeta(anim);
     const m = meta(dex);
     if (!m) return null;
     const name = animName(dex, anim, shiny);
@@ -252,10 +250,6 @@ G.Sprites = (() => {
     draw(ctx, x, y, opts = {}) {
       if (G.TibiaSprites && G.TibiaSprites.enabled && G.TibiaSprites.hasCreature(this.dex)) {
         if (G.TibiaSprites.drawCreatureFrame(ctx, this.dex, x, y, this.scale, this.cur, this.frame, this.dir, opts)) return;
-      }
-      if (G.GeoSprites && G.GeoSprites.isGeo(this.dex)) {
-        G.GeoSprites.draw(ctx, this.dex, x, y, this.scale, this.cur, this.frame, opts);
-        return;
       }
       let m = animMeta(this.dex, this.cur, this.shiny);
       let s = sheet(this.dex, this.cur, this.shiny);
