@@ -2,6 +2,10 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-19', title: ['QA', 'QA'], fix: [
+    ['Smoke Fase 6: tiempos 600/900 s; G.Game.debugTick; 17/17 PASS con MS-9.',
+     'Phase 6 smoke: 600/900s timings; G.Game.debugTick; 17/17 PASS with MS-9.'],
+  ] },
   { d: '2026-11-19', title: ['Copy', 'Copy'], chg: [
     ['PSR-15: lang-en podado a claves referenciadas; fuera test personalidad y bloques legacy.',
      'PSR-15: lang-en pruned to referenced keys; removed personality test and legacy blocks.'],

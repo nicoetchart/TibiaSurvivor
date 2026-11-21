@@ -177,7 +177,8 @@ async function main() {
   else fail('elite-spawn', 'no elite flag enemy');
 
   await page.evaluate(() => {
-    G.Game.debugTime(545);
+    const bossAt = (G.MvpConfig && G.MvpConfig.FINAL_BOSS_AT) || 600;
+    G.Game.debugTime(bossAt + 8);
     for (let i = 0; i < 120; i++) G.Spawner.update(0.05, [G.Game.player], G.Game.st.time);
   });
   const boss = await page.evaluate(() => {
@@ -193,12 +194,25 @@ async function main() {
     for (let i = 0; i < 60; i++) G.EnemyMgr.update(0.05, [G.Game.player]);
   });
   await sleep(2500);
-  const victory = await page.evaluate(() => ({
+  const victory = await page.evaluate(() => {
+    if (G.Game.state === 'levelup') {
+      const card = G.LevelUp.offer(G.Game.player)[0];
+      if (card) card.apply(G.Game.player);
+      G.Game.debugResume();
+    }
+    return {
+      state: G.Game.state,
+      wins: G.DB.save.stats && G.DB.save.stats.wins
+    };
+  });
+  await sleep(800);
+  const victory2 = await page.evaluate(() => ({
     state: G.Game.state,
     wins: G.DB.save.stats && G.DB.save.stats.wins
   }));
-  if (victory.state === 'over') pass('victory-screen', `wins=${victory.wins}`);
-  else fail('victory-screen', JSON.stringify(victory));
+  const v = victory2.state === 'over' ? victory2 : victory;
+  if (v.state === 'over') pass('victory-screen', `wins=${v.wins}`);
+  else fail('victory-screen', JSON.stringify(v));
 
   await page.evaluate(() => {
     G.UI.hideAll();
@@ -226,14 +240,18 @@ async function main() {
     G.UI.hideAll();
     G.Game.toUI();
     G.Game.startRun();
-    G.Game.debugTime(725);
+    const limit = (G.MvpConfig && G.MvpConfig.RUN_DURATION_SEC) || 900;
+    G.Game.debugTime(limit - 2);
+    G.Game.debugTick(0.08, 40);
   });
-  await sleep(2500);
+  await sleep(500);
   const timeout = await page.evaluate(() => ({
     state: G.Game.state,
-    time: G.Game.st.time
+    time: G.Game.st.time,
+    limit: G.MvpConfig && G.MvpConfig.RUN_DURATION_SEC
   }));
-  if (timeout.state === 'over' && timeout.time >= 720) pass('defeat-timeout', JSON.stringify(timeout));
+  const lim = timeout.limit || 900;
+  if (timeout.state === 'over' && timeout.time >= lim - 1) pass('defeat-timeout', JSON.stringify(timeout));
   else fail('defeat-timeout', JSON.stringify(timeout));
 
   const tsKeys = await page.evaluate(() =>

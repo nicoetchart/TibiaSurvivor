@@ -817,6 +817,11 @@ G.Game = (() => {
     init, startRun, everyone, levelXp, flash, offerBond, scheduleVictory, runFrozen,
     /** Para pruebas: salta el reloj de la run. */
     debugTime(t) { tampered = true; time = t; },
+    /** Smoke / dev: avanza el bucle de partida (timeout, victoria, etc.). */
+    debugTick(dt = 0.05, n = 1) {
+      tampered = true;
+      for (let i = 0; i < n; i++) update(dt);
+    },
     /** Para grabar vídeos: cámara lenta (0,5 = mitad de velocidad). */
     debugSpeed(k) { if (k > 1) tampered = true; speedK = k; },
     togglePause,
