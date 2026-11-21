@@ -153,19 +153,32 @@ G.RunUI = (() => {
     G.UI.show('scr-over');
   }
 
-  /** Has encontrado un objeto llevando ya otro: ¿con cuál te quedas? */
+  /** Objeto en el suelo: equiparlo, dejarlo o cambiar el que llevas. */
   function showItemChoice(cur, next, cb) {
-    if (G.Icons.bust) { G.Icons.bust(cur); G.Icons.bust(next); }
-    if (G.TibiaSprites && G.TibiaSprites.preloadItems) G.TibiaSprites.preloadItems([cur, next], 4000);
+    if (G.Icons.bust) {
+      if (cur) G.Icons.bust(cur);
+      G.Icons.bust(next);
+    }
+    const preload = cur ? [cur, next] : [next];
+    if (G.TibiaSprites && G.TibiaSprites.preloadItems) G.TibiaSprites.preloadItems(preload, 4000);
     const box = $('item-cards');
     box.innerHTML = '';
-    [[cur, 'Quedarme con'], [next, 'Cambiar a']].forEach(([id, verb], i) => {
-      const it = G.Items.BY[id];
+    const opts = cur
+      ? [[cur, 'Quedarme con', true], [next, 'Cambiar a', true]]
+      : [[next, 'Equipar', true], [null, 'Dejarlo', false]];
+    opts.forEach(([id, verb, showItem], i) => {
       const el = document.createElement('div');
       el.className = 'card' + (i === 1 ? ' evo' : '');
-      el.innerHTML = `<div class="ico">${G.Icons.html(id, 36)}</div>
-        <div class="txt"><div class="nm">${verb} ${it.name}</div><div class="ds">${it.desc}</div></div>
-        <div class="key">${i + 1}</div>`;
+      if (showItem) {
+        const it = G.Items.BY[id];
+        el.innerHTML = `<div class="ico">${G.Icons.html(id, 36)}</div>
+          <div class="txt"><div class="nm">${verb} ${it.name}</div><div class="ds">${it.desc}</div></div>
+          <div class="key">${i + 1}</div>`;
+      } else {
+        el.innerHTML = `<div class="ico" style="opacity:.35;font-size:22px">—</div>
+          <div class="txt"><div class="nm">${verb}</div><div class="ds">Seguir sin llevar objeto.</div></div>
+          <div class="key">${i + 1}</div>`;
+      }
       el.onclick = () => { G.UI.hide('scr-item'); cb(id); };
       box.appendChild(el);
     });

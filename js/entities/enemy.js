@@ -29,8 +29,8 @@
       const rt = G.Content && G.Content.toRuntimeMon(def.creatureId || def.dex);
       this.name = def.name || (rt && rt.name) || (G.Content && G.Content.creatureName(def.dex)) || 'Creature';
       this.x = x; this.y = y;
-      this.boss = boss;
-      this.scale = boss ? bossScale(def.dex) : 1;
+      this.boss = boss || !!(def && def.boss);
+      this.scale = this.boss ? bossScale(def.dex) : 1;
       this.anim = new G.Sprites.Animator(def.dex, this.scale);
       this.r = G.Sprites.bodyRadius(def.dex, this.scale);
       this.bodyH = G.Sprites.bodyHeight(def.dex, this.scale);
@@ -40,7 +40,8 @@
       this.spd = def.spd * sc.spd;
       this.dmg = def.dmg * sc.dmg;
       this.xp = def.xp;
-      this.behavior = def.behavior;
+      this.behaviors = (def.behaviors && def.behaviors.length) ? def.behaviors.slice() : [def.behavior || 'chase'];
+      this.behavior = def.behavior || this.behaviors[0];
 
       const dexRow = rt || (G.Content && G.Content.toRuntimeMon(def.dex));
       const types = (dexRow && dexRow.types) || [];
@@ -172,8 +173,16 @@
       this.electrifiedT = Math.max(this.electrifiedT, dur);
     }
 
-    die() {
+    /** Ataque con aviso en el suelo (se cancela si la criatura cae antes). */
+    addHazard(h) { return G.Hazards.add(Object.assign({ eid: this.id }, h)); }
+
+    die(opts) {
       if (this.dead) return;
+      if (!opts || !opts.keepHazards) {
+        G.Hazards.cancelFor(this.id);
+        if (this.ai) this.ai.cast = null;
+        this.jump = null;
+      }
       const burning = this.burn > 0;
       this.dead = true;
       this.fade = 0.9;
@@ -199,7 +208,7 @@
       G.Pickups.dropXp(this.x, this.y, this.xp, this.boss, !!this.legend, !!this.judge);
       if (this.golden && Math.random() < 0.35) G.Pickups.drop('coin', this.x + 6, this.y - 4, 3);
       // Duende del tesoro (legacy): sólo monedas.
-      if (this.behavior === 'thief') {
+      if (this.hasBehavior('thief')) {
         const n = 20;
         for (let i = 0; i < n; i++) G.Pickups.drop('coin', this.x + G.U.rand(-36, 36), this.y + G.U.rand(-26, 26), 5);
         G.FX.ring(this.x, this.y, this.r, this.r * 5, '#ffd23f', 0.6, 4);
@@ -317,7 +326,7 @@
       let [dx, dy] = G.U.norm(pl.x - this.x, pl.y - this.y);
       const dist = G.U.dist(this.x, this.y, pl.x, pl.y);
       // Duende del tesoro: huye de ti (en zigzag) en cuanto te acercas.
-      if (this.behavior === 'thief') {
+      if (this.hasBehavior('thief')) {
         this.zig = (this.zig || 0) + dt;
         const near = dist < 300, a = Math.atan2(-dy, -dx) + Math.sin(this.zig * 2.2) * 0.7;
         const k = near ? 1 : 0.35;
@@ -332,7 +341,7 @@
         return;
       }
       // Corredor: va a donde VAS a estar (te corta el paso si sólo huyes).
-      if (this.behavior === 'runner' && pl._vx != null) {
+      if (this.hasBehavior('runner') && pl._vx != null) {
         const lead = G.U.clamp(dist / Math.max(60, spd), 0, 1.4);
         [dx, dy] = G.U.norm(pl.x + pl._vx * lead - this.x, pl.y + pl._vy * lead - this.y);
         if (G.Camera.sees(this.x, this.y, 0) && Math.random() < dt * 10) G.FX.px(this.x - dx * 8 + G.U.rand(-4, 4), this.y, '#e8dcc0', { vy: -12, life: 0.35 });
@@ -341,18 +350,18 @@
       // --- personalidad (escudos, saltos, explosión) ---
       if (this.shieldT > 0 && (this.shieldT -= dt) <= 0) this.shield = 0;
       if (this.jump) { this.updateJump(dt); return; }
-      if (this.behavior === 'bomber' && this.phase === 'fuse') {
+      if (this.hasBehavior('bomber') && this.phase === 'fuse') {
         this.pt -= dt;
         this.flash = Math.floor(this.pt * 10) % 2 ? 0.05 : 0;
-        if (this.pt <= 0) { this.hp = 0; this.die(); }
+        if (this.pt <= 0) { this.hp = 0; this.die({ keepHazards: true }); }
         this.anim.loop('Idle');
         return;
       }
-      if (this.behavior === 'bomber' && dist < this.r + pl.r + 26) { this.startFuse(); return; }
-      if (this.behavior === 'shielder' || this.behavior === 'jumper') {
+      if (this.hasBehavior('bomber') && dist < this.r + pl.r + 26) { this.startFuse(); return; }
+      if (this.hasBehavior('shielder') || this.hasBehavior('jumper')) {
         this.skillCd -= dt;
         if (this.skillCd <= 0) {
-          if (this.behavior === 'shielder') { this.skillCd = 6; this.castShields(); }
+          if (this.hasBehavior('shielder')) { this.skillCd = 6; this.castShields(); }
           else if (dist < 250) { this.skillCd = G.U.rand(5, 7); this.startJump(pl); return; }
           else this.skillCd = 0.5;
         }
@@ -376,7 +385,7 @@
 
       if (this.boss) {
         [vx, vy, animBase] = this.bossMove(dt, pl, dist, dx, dy, spd);
-      } else if (this.behavior === 'charger') {
+      } else if (this.hasBehavior('charger')) {
         this.pt -= dt;
         if (this.phase === 'walk') {
           if (dist < 200 && this.pt <= 0) {
@@ -444,7 +453,39 @@
     // dispara. Todo avisa en el suelo. Por debajo de la mitad de vida se
     // enfurece: más rápido, menos espera y a veces encadena dos ataques.
 
+    isOrshabaal() {
+      return (this.def && this.def.creatureId === 'orshabaal')
+        || (G.CREATURE_BY_LEGACY && this.dex === 99016 && G.CREATURE_BY_LEGACY[99016] && G.CREATURE_BY_LEGACY[99016].id === 'orshabaal');
+    }
+
+    bossAttackType(id) {
+      const map = this.ai && this.ai.attackTypes;
+      if (map && map[id]) return map[id];
+      if (id === 'rain' && this.types.includes('fire')) return 'fire';
+      if (id === 'beam' && this.types.includes('energy')) return 'energy';
+      return this.atkType;
+    }
+
     bossInit() {
+      if (this.isOrshabaal()) {
+        this.ai = {
+          melee: ['slam', 'dash', 'leap'],
+          ranged: ['rain', 'beam'],
+          attackTypes: { slam: 'physical', rain: 'fire', beam: 'energy' },
+          farLike: 0.22,
+          mode: 'close',
+          modeT: G.U.rand(6, 8),
+          cd: 1.45,
+          cast: null,
+          fury: false,
+          side: Math.random() < 0.5 ? -1 : 1,
+          fleeAt: 0.111,
+          fleeing: false,
+          selfHealCd: 1.5,
+          summonCd: 8
+        };
+        return;
+      }
       const T = this.types, has = (...xs) => xs.some(x => T.includes(x));
       const melee = ['slam', G.U.hash(this.dex, 3, 7) < 0.5 ? 'dash' : 'leap'];
       const pref = has('fire', 'ground', 'poison', 'rock', 'grass') ? 'rain'
@@ -452,9 +493,30 @@
                  : has('fairy', 'ghost', 'water', 'flying') ? 'nova' : 'volley';
       const others = ['rain', 'beam', 'nova', 'volley'].filter(x => x !== pref);
       const ranged = [pref, others[Math.floor(G.U.hash(this.dex, 5, 9) * 3) % 3]];
-      const far = this.behavior === 'ranged';
+      const far = this.hasBehavior('ranged');
       this.ai = { melee, ranged, farLike: far ? 0.65 : 0.35, mode: far ? 'far' : 'close', modeT: G.U.rand(6, 8),
                   cd: 1.6, cast: null, fury: false, side: Math.random() < 0.5 ? -1 : 1 };
+    }
+
+    bossSummonDemons() {
+      const max = 4;
+      this.minions = (this.minions || []).filter(m => !m.dead && G.EnemyMgr.get(m.id));
+      if (this.minions.length >= max || G.EnemyMgr.count > G.Spawner.CAP + 12) return;
+      const dex = this.def.minion || (G.CREATURE_BY_ID && G.CREATURE_BY_ID.orshabaal && G.CREATURE_BY_ID.orshabaal.minionLegacyId) || 99018;
+      const monName = G.Content.creatureName(dex);
+      const def = { dex, creatureId: 'demon', name: monName, hp: Math.round(this.def.hp * 0.22), spd: Math.round(this.def.spd * 0.95),
+                    dmg: Math.round(this.def.dmg * 0.55), xp: Math.max(1, Math.round(this.def.xp * 0.08)), behavior: 'chase', noBestiaryCredit: true };
+      const n = Math.min(2, max - this.minions.length);
+      for (let i = 0; i < n; i++) {
+        const a = Math.random() * 6.2832;
+        const m = new Enemy(def, this.x + Math.cos(a) * 36, this.y + Math.sin(a) * 28, this.sc || { hp: 1, spd: 1, dmg: 1 });
+        G.EnemyMgr.add(m);
+        this.minions.push(m);
+        G.FX.burst(m.x, m.y - 8, '#ff7b3d', 8, 90);
+      }
+      this.anim.play('Charge');
+      G.FX.ring(this.x, this.y, 8, 60, '#ff4a4a', 0.45, 3);
+      if (G.Camera.sees(this.x, this.y, 0)) G.Audio.sfx('boss');
     }
 
     bossMove(dt, pl, dist, dx, dy, spd) {
@@ -462,6 +524,28 @@
       const ai = this.ai;
       if (!ai.fury && this.hp < this.maxHp * 0.5) this.enrage();
       const k = ai.fury ? 1.25 : 1;
+      const [ddx, ddy] = G.U.norm(pl.x - this.x, pl.y - this.y);
+      if (ai.fleeAt != null && this.hp / this.maxHp < ai.fleeAt) {
+        ai.fleeing = true;
+        ai.selfHealCd -= dt;
+        if (ai.selfHealCd <= 0) {
+          ai.selfHealCd = G.U.rand(2.8, 4.2);
+          this.hp = Math.min(this.maxHp, this.hp + this.maxHp * G.U.rand(0.06, 0.11));
+          G.FX.ring(this.x, this.y, this.r, this.r * 4, '#7dffb0', 0.55, 4);
+          G.FX.burst(this.x, this.y - this.bodyH * 0.5, '#7dffb0', 12, 140);
+          if (G.Camera.sees(this.x, this.y, 0)) G.Audio.sfx('heal');
+        }
+        if (ai.cast) return this.bossCast(dt, pl);
+        return [-ddx * spd * k * 1.4, -ddy * spd * k * 1.4, 'Walk'];
+      }
+      ai.fleeing = false;
+      if (ai.summonCd != null) {
+        ai.summonCd -= dt;
+        if (ai.summonCd <= 0 && !ai.cast) {
+          ai.summonCd = G.U.rand(11, 15);
+          this.bossSummonDemons();
+        }
+      }
       if (ai.cast) return this.bossCast(dt, pl);
       ai.modeT -= dt; ai.cd -= dt * k;
       // Alterna siempre: en su distancia favorita está más rato (7-9 s) que en la otra (4-5 s).
@@ -471,7 +555,6 @@
         ai.side = -ai.side;
       }
       let vx = dx * spd * k * 1.1, vy = dy * spd * k * 1.1;
-      const [ddx, ddy] = G.U.norm(pl.x - this.x, pl.y - this.y);
       if (ai.mode === 'far') {
         if (dist < 170) { vx = -ddx * spd; vy = -ddy * spd; }
         else if (dist < 300) { vx = -ddy * spd * 0.55 * ai.side; vy = ddx * spd * 0.55 * ai.side; }   // te rodea
@@ -493,32 +576,37 @@
     enrage() {
       this.ai.fury = true;
       this.spd *= 1.15;
-      if (!this.judge) G.Spawner.say(this.name + ' is enraged!', 2.4);
+      if (!this.judge) {
+        const msg = this.isOrshabaal()
+          ? G.U.pick(['YOU ARE DOOMED!', 'SOULS FOR ORSHABAAL!', 'ORSHABAAL IS BACK!'])
+          : this.name + ' is enraged!';
+        G.Spawner.say(msg, 2.6, !!this.isOrshabaal());
+      }
       G.FX.ring(this.x, this.y, this.r, this.r * 5, '#ff4a4a', 0.6, 5);
       G.Camera.kick(0.5);
       G.Audio.sfx('boss');
     }
 
     bossStart(id, pl) {
-      const ai = this.ai, f = ai.fury ? 0.8 : 1, type = this.atkType;
+      const ai = this.ai, f = ai.fury ? 0.8 : 1, type = this.bossAttackType(id);
       const col = G.U.TYPE_COLOR[type] || '#ff7a9e';
       const ang = Math.atan2(pl.y - this.y, pl.x - this.x);
       const c = ai.cast = { id, t: 0, wind: 0.6 * f, after: 0.35, ang };
       switch (id) {
         case 'slam':       // pisotón: onda alrededor
           c.wind = 0.85 * f;
-          G.Hazards.add({ kind: 'zone', x: this.x, y: this.y, r: 96 + this.r, delay: c.wind, dmg: this.dmg * 1.3, type, color: col });
+          this.addHazard({ kind: 'zone', x: this.x, y: this.y, r: 96 + this.r, delay: c.wind, dmg: this.dmg * 1.3, type, color: col });
           this.anim.play('Charge', { speed: 1.2 });
           break;
         case 'dash':       // embestida en línea recta
           c.wind = 0.75 * f; c.len = 330; c.dur = 0.32;
-          G.Hazards.add({ kind: 'beam', x: this.x, y: this.y, angle: ang, len: c.len + this.r, w: this.r * 2 + 16,
+          this.addHazard({ kind: 'beam', x: this.x, y: this.y, angle: ang, len: c.len + this.r, w: this.r * 2 + 16,
                           delay: c.wind + c.dur, dmg: this.dmg * 1.2, type, color: col });
           this.anim.play('Charge', { speed: 1.3 });
           break;
         case 'leap':       // salto y caída sobre ti
           this.jump = { sx: this.x, sy: this.y, tx: pl.x, ty: pl.y, t: -0.5 * f, dur: 0.65 };
-          G.Hazards.add({ kind: 'zone', x: pl.x, y: pl.y, r: 82, delay: 0.5 * f + 0.65, dmg: this.dmg * 1.25, type, color: col });
+          this.addHazard({ kind: 'zone', x: pl.x, y: pl.y, r: 82, delay: 0.5 * f + 0.65, dmg: this.dmg * 1.25, type, color: col });
           this.anim.play('Charge', { speed: 1.4 });
           ai.cast = null; ai.cd = G.U.rand(1.4, 2) + 0.6;
           break;
@@ -526,7 +614,7 @@
           const n = ai.fury ? 6 : 4;
           for (let i = 0; i < n; i++) {
             const a = i ? Math.random() * 6.2832 : 0, d = i ? G.U.rand(40, 120) : 0;
-            G.Hazards.add({ kind: 'zone', x: pl.x + Math.cos(a) * d, y: pl.y + Math.sin(a) * d * 0.8, r: 50,
+            this.addHazard({ kind: 'zone', x: pl.x + Math.cos(a) * d, y: pl.y + Math.sin(a) * d * 0.8, r: 50,
                             delay: 1.05 + i * 0.12, dmg: this.shotDmg() * 1.15, type, color: col });
           }
           c.wind = 0.5; this.anim.play('Shoot');
@@ -535,7 +623,7 @@
         case 'beam': {     // rayos en abanico
           const n = ai.fury ? 5 : 3, sp = ai.fury ? 0.42 : 0.5;
           for (let i = 0; i < n; i++) {
-            G.Hazards.add({ kind: 'beam', x: this.x, y: this.y, angle: ang + (i - (n - 1) / 2) * sp, len: 400, w: 26,
+            this.addHazard({ kind: 'beam', x: this.x, y: this.y, angle: ang + (i - (n - 1) / 2) * sp, len: 400, w: 26,
                             delay: 1.0, dmg: this.shotDmg() * 1.2, type, color: col });
           }
           c.wind = 1.0; c.after = 0.25; this.anim.play('Charge', { speed: 1.1 });
@@ -578,7 +666,21 @@
       return [0, 0, 'Idle'];
     }
 
-    keepsDistance() { return ['ranged', 'fan', 'beamer', 'zoner', 'healer', 'summoner'].includes(this.behavior); }
+    hasBehavior(b) { return this.behaviors.includes(b); }
+
+    keepsDistance() {
+      const d = ['ranged', 'fan', 'beamer', 'zoner', 'healer', 'summoner'];
+      return this.behaviors.some(x => d.includes(x));
+    }
+
+    /** ¿Hay aliados heridos al alcance de la cura? */
+    alliesNeedHeal() {
+      for (const e of G.EnemyMgr.queryCircle(this.x, this.y, 150)) {
+        if (e.dead || e.hp >= e.maxHp) continue;
+        return true;
+      }
+      return false;
+    }
 
     shotDmg() { return (this.def.shotDmg || 10) * (this.dmg / this.def.dmg); }
 
@@ -602,10 +704,10 @@
       G.FX.ring(this.x, this.y - G.LIFT, 4, 14, '#ff7a9e', 0.2, 2);
     }
 
-    /** Lo que hace cada personalidad cuando le toca (anfitrión / solitario). */
-    special(pl, dx, dy) {
+    /** Un patrón de ataque concreto (puede combinarse con otros en behaviors). */
+    castBehavior(id, pl, dx, dy) {
       const col = G.U.TYPE_COLOR[this.atkType] || '#ff7a9e';
-      switch (this.behavior) {
+      switch (id) {
         case 'fan': {
           const n = Math.min(4, this.def.fanN || 4);
           const spread = n <= 3 ? 0.48 : 0.56;
@@ -614,15 +716,14 @@
           break;
         }
         case 'beamer':
-          // Rayo con aviso: primero se ve la franja en el suelo.
-          G.Hazards.add({ kind: 'beam', x: this.x, y: this.y, angle: Math.atan2(dy, dx), len: 360, w: 22,
+          this.addHazard({ kind: 'beam', x: this.x, y: this.y, angle: Math.atan2(dy, dx), len: 360, w: 22,
                           delay: 1.0, dmg: this.shotDmg() * 1.05, type: this.atkType, color: col });
           this.anim.play('Charge', { speed: 1.2 });
           break;
         case 'zoner': {
           const n = G.U.randInt(1, this.def.zones || 3);
           for (let i = 0; i < n; i++) {
-            G.Hazards.add({ kind: 'zone', x: pl.x + (i ? G.U.rand(-70, 70) : 0), y: pl.y + (i ? G.U.rand(-55, 55) : 0), r: 44,
+            this.addHazard({ kind: 'zone', x: pl.x + (i ? G.U.rand(-70, 70) : 0), y: pl.y + (i ? G.U.rand(-55, 55) : 0), r: 44,
                             delay: 1.2, dmg: this.shotDmg() * 0.95, type: this.atkType, color: col });
           }
           this.anim.play('Shoot');
@@ -632,6 +733,17 @@
         case 'summoner': this.summon(); break;
         default: this.shoot(dx, dy);
       }
+    }
+
+    /** Lo que hace cada personalidad cuando le toca (anfitrión / solitario). */
+    special(pl, dx, dy) {
+      if (this.hasBehavior('healer') && this.alliesNeedHeal()) { this.healAround(); return; }
+      if (this.hasBehavior('summoner')) { this.summon(); return; }
+      const atk = ['zoner', 'beamer', 'fan', 'ranged'];
+      for (const b of atk) {
+        if (this.hasBehavior(b)) { this.castBehavior(b, pl, dx, dy); return; }
+      }
+      this.castBehavior(this.behavior, pl, dx, dy);
     }
 
     healAround() {
@@ -682,14 +794,14 @@
 
     startFuse() {
       this.phase = 'fuse'; this.pt = 1.0;
-      G.Hazards.add({ kind: 'zone', x: this.x, y: this.y, r: 62, delay: 1.0, dmg: this.dmg * 1.4, type: this.atkType, color: '#ff7b3d' });
+      this.addHazard({ kind: 'zone', x: this.x, y: this.y, r: 62, delay: 1.0, dmg: this.dmg * 1.4, type: this.atkType, color: '#ff7b3d' });
     }
 
     startJump(pl) {
       const tx = pl.x, ty = pl.y;
       this.jump = { sx: this.x, sy: this.y, tx, ty, t: -0.45, dur: 0.6 };
       this.anim.play('Charge', { speed: 1.4 });
-      G.Hazards.add({ kind: 'zone', x: tx, y: ty, r: 50, delay: 1.05, dmg: this.dmg * 1.2, type: this.atkType,
+      this.addHazard({ kind: 'zone', x: tx, y: ty, r: 50, delay: 1.05, dmg: this.dmg * 1.2, type: this.atkType,
                       color: G.U.TYPE_COLOR[this.atkType] || '#ff7a9e' });
     }
 
@@ -765,7 +877,12 @@
 
       // Apoyos: icono encima, para saber a quién ir primero.
       const SUP = { healer: 'heart', shielder: 'shield', summoner: 'friends' };
-      if (SUP[this.behavior]) G.Icons.draw(ctx, SUP[this.behavior], Math.round(this.x - 6), Math.round(this.y - this.bodyH - (this.hp < this.maxHp ? 26 : 18)), 12);
+      let supN = 0;
+      for (const b of this.behaviors) {
+        if (!SUP[b]) continue;
+        G.Icons.draw(ctx, SUP[b], Math.round(this.x - 6 + supN * 14), Math.round(this.y - this.bodyH - (this.hp < this.maxHp ? 26 : 18)), 12);
+        supN++;
+      }
 
       if (this.elite && !this.boss && this.hp >= this.maxHp * 0.98) {
         ctx.save();

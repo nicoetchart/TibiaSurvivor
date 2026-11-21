@@ -23,7 +23,8 @@ G.NeutralRoster = (() => {
   }
 
   function defFor(c) {
-    const behavior = c.behavior || 'chase';
+    const behaviors = (c.behaviors && c.behaviors.length) ? c.behaviors.slice() : [c.behavior || 'chase'];
+    const behavior = c.behavior || behaviors[0];
     const tier = Math.min(c.tier || 0, TIER_STATS.length - 1);
     const base = TIER_STATS[tier];
     const atkK = c.attack || 1;
@@ -32,6 +33,7 @@ G.NeutralRoster = (() => {
       creatureId: c.id,
       name: c.name,
       behavior,
+      behaviors,
       hp: Math.round(base.hp * (behavior === 'tank' ? 1.45 : behavior === 'runner' ? 0.72 : 1) * atkK),
       spd: Math.round(base.spd * (behavior === 'tank' ? 0.82 : behavior === 'runner' ? 1.55 : 1)),
       dmg: Math.max(4, Math.round(base.dmg * (behavior === 'tank' ? 1.15 : 1) * atkK)),
@@ -48,20 +50,22 @@ G.NeutralRoster = (() => {
       summoner: 6.5,
       jumper: 3.8 - ti * 0.1
     };
-    if (CD[behavior]) {
-      d.shotDmg = Math.round(d.dmg * (behavior === 'fan' ? 0.62 : 0.78));
-      d.shotCd = +CD[behavior].toFixed(2);
-      d.range = (behavior === 'beamer' ? 250 : behavior === 'healer' || behavior === 'summoner' ? 220
-        : behavior === 'fan' ? 168 : 185) + ti * 8;
+    const SHOT_ATK = ['ranged', 'fan', 'beamer', 'zoner'];
+    const shotBeh = behaviors.find(b => SHOT_ATK.includes(b)) || behaviors.find(b => CD[b]);
+    if (shotBeh && CD[shotBeh]) {
+      d.shotDmg = Math.round(d.dmg * (shotBeh === 'fan' ? 0.62 : 0.78));
+      d.shotCd = +CD[shotBeh].toFixed(2);
+      d.range = (shotBeh === 'beamer' ? 250 : shotBeh === 'healer' || shotBeh === 'summoner' ? 220
+        : shotBeh === 'fan' ? 168 : 185) + ti * 8;
     }
-    if (behavior === 'summoner') {
+    if (behaviors.includes('summoner')) {
       const min = c.minionLegacyId || 99002;
       d.minion = min;
     }
-    if (behavior === 'fan') d.fanN = ti < 1 ? 3 : 4;
-    if (behavior === 'zoner') d.zones = ti < 1 ? 1 : ti < 2 ? 2 : 3;
-    if (behavior === 'bomber') { d.spd = Math.round(d.spd * 1.2); d.hp = Math.round(d.hp * 0.85); }
-    if (behavior === 'runner') { d.hp = Math.round(d.hp * 0.75); d.dmg = Math.round(d.dmg * 0.9); }
+    if (behaviors.includes('fan')) d.fanN = ti < 1 ? 3 : 4;
+    if (behaviors.includes('zoner')) d.zones = ti < 1 ? 1 : ti < 2 ? 2 : 3;
+    if (behaviors.includes('bomber')) { d.spd = Math.round(d.spd * 1.2); d.hp = Math.round(d.hp * 0.85); }
+    if (behaviors.includes('runner')) { d.hp = Math.round(d.hp * 0.75); d.dmg = Math.round(d.dmg * 0.9); }
     return d;
   }
 
@@ -104,17 +108,15 @@ G.NeutralRoster = (() => {
   let eliteCache = null;
   function buildElite() {
     if (eliteCache) return eliteCache;
-    const c = G.CREATURE_BY_ID && G.CREATURE_BY_ID.minotaur;
+    const c = G.CREATURE_BY_ID && G.CREATURE_BY_ID.black_knight;
     if (!c) return null;
     const d = defFor(c);
-    d.name = 'Minotaur Guard';
-    d.behavior = 'shielder';
-    d.hp = Math.round(d.hp * 2.4);
-    d.dmg = Math.round(d.dmg * 1.45);
+    d.hp = Math.round(c.hp * 1.35);
+    d.dmg = Math.round(d.dmg * 1.25);
     d.xp = 85;
     d.elite = true;
-    d.bestiaryCreatureId = 'minotaur_guard';
-    d.dex = 99017;
+    d.boss = true;
+    d.bestiaryCreatureId = 'black_knight';
     eliteCache = d;
     return d;
   }
@@ -122,16 +124,13 @@ G.NeutralRoster = (() => {
   let bossCache = null;
   function buildBoss() {
     if (bossCache) return bossCache;
-    const c = G.CREATURE_BY_ID && G.CREATURE_BY_ID.demon;
+    const c = G.CREATURE_BY_ID && G.CREATURE_BY_ID.orshabaal;
     if (!c) return null;
     const d = defFor(c);
     d.hp = Math.round(c.hp * 1.35);
     d.dmg = Math.round(d.dmg * 1.35);
     d.xp = 220;
-    d.shotDmg = Math.round(d.dmg * 0.65);
-    d.shotCd = 1.4;
-    d.range = 240;
-    d.fanN = 5;
+    d.minion = c.minionLegacyId || 99018;
     bossCache = d;
     return d;
   }

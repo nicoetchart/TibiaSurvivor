@@ -47,36 +47,7 @@ G.Bestiary = (() => {
    * Boss con catálogo separado de la criatura base (variante de run).
    * Datos de combate auxiliares en G.CREATURES (bestiary deshabilitado allí).
    */
-  const EXTRA_ENTRIES = [
-    {
-      id: 'minotaur_guard',
-      baseCreatureId: 'minotaur',
-      name: 'Minotaur Guard',
-      description: 'Armored labyrinth sentinel; run elite (Bosstiary entry).',
-      nameKey: 'creature.minotaur_guard.name',
-      descriptionKey: 'creature.minotaur_guard.description',
-      family: 'humanoid',
-      difficulty: 'medium',
-      tags: ['melee', 'ground'],
-      weaknesses: ['ice', 'death'],
-      resistances: ['fire', 'holy', 'physical'],
-      bestiary: {
-        enabled: true,
-        section: 'bosstiary',
-        bossCategory: 'archfoe',
-        thresholds: null,
-        rewardPoints: null,
-        reveal: {
-          stage1: ['hp', 'xp', 'behavior', 'description'],
-          stage2: ['damage', 'speed', 'abilities', 'resistances'],
-          stage3: ['drops', 'tips', 'statistics']
-        },
-        tipKeys: ['bestiary.minotaur_guard.tip1'],
-        /** En runtime, instancias con sentinelElite mapean a este id (BST-3). */
-        runtimeFlag: 'sentinelElite'
-      }
-    }
-  ];
+  const EXTRA_ENTRIES = [];
 
   const GLOBAL_UPGRADE_CAPS = {
     maxPickupRadiusPct: 25,

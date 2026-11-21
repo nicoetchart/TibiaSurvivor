@@ -163,7 +163,9 @@ G.Spawner = (() => {
     const e = new G.Enemy(b, x, y, scaled(G.Content.roster().bossScale(t), 1 * (players.length > 1 ? 1.4 : 1)), true);
     if (rollShiny(b.dex)) e.makeShiny();
     G.EnemyMgr.add(e);
-    const intro = e.name + ' blocks the threshold!';
+    const intro = (b.creatureId === 'orshabaal')
+      ? 'Orshabaal — YOU ARE DOOMED!'
+      : e.name + ' blocks the threshold!';
     say(intro, 3.4);
     G.Camera.kick(1.1);
     G.Audio.sfx('boss');
@@ -185,7 +187,10 @@ G.Spawner = (() => {
     e.dmg *= 1.2;
     e.xp = Math.round(e.xp * 1.5);
     G.EnemyMgr.add(e);
-    say('Elite sentinel! Defeat it to earn a spell bond.', 3.4);
+    const intro = def.creatureId === 'black_knight'
+      ? 'Black Knight — NO MERCY!'
+      : 'Elite sentinel! Defeat it to earn a spell bond.';
+    say(intro, 3.4);
     G.Camera.kick(0.65);
     G.Audio.sfx('boss');
     G.FX.ring(e.x, e.y, e.r, e.r * 4, '#b48aff', 0.55, 4);
@@ -283,6 +288,30 @@ G.Spawner = (() => {
   /** Invitado en cooperativo: sólo corre el reloj del aviso. */
   function tickBanner(dt) { if (announceT > 0) announceT -= dt; }
 
+  /** ?dev: centinela Bosstiary al iniciar. */
+  function devSpawnEliteAtStart(pl) {
+    const buildElite = G.Content.roster().buildElite;
+    const ed = buildElite ? buildElite() : null;
+    if (!ed || sentinelAlive()) return false;
+    if (spawnElite(pl || anchor(), 0, ed)) {
+      nextEliteAt = Infinity;
+      return true;
+    }
+    return false;
+  }
+
+  /** ?dev: jefe final al iniciar (no repite el spawn programado por tiempo). */
+  function devSpawnBossAtStart(pl) {
+    const bosses = G.Content.roster().BOSSES;
+    if (!bosses || !bosses.length || G.EnemyMgr.bossAlive()) return false;
+    const b = bosses[bossIdx];
+    if (!b) return false;
+    spawnBoss(pl || anchor(), 0, b);
+    bossIdx++;
+    return true;
+  }
+
   return { reset, update, ahead, burst, tickBanner, banner, say, rate, SHINY_RATE, CAP, spawnElite,
+           devSpawnEliteAtStart, devSpawnBossAtStart,
            debugForceShiny(n = 1) { forceShiny = n; } };
 })();

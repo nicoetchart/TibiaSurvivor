@@ -35,8 +35,8 @@ const normalWeights = G.CREATURES
   .filter(c => c.role === 'enemy' && !c.boss && c.bestiary && c.bestiary.enabled);
 const weightSum = normalWeights.reduce((a, c) => a + (c.spawnWeight || 1), 0);
 
-const bosstiarySentinel = G.Bestiary.getCatalogEntry('minotaur_guard');
-const boss = G.Bestiary.getCatalogEntry('demon');
+const bosstiarySentinel = G.Bestiary.getCatalogEntry('black_knight');
+const boss = G.Bestiary.getCatalogEntry('orshabaal');
 
 for (const row of catalog) {
   const entry = G.Bestiary.getCatalogEntry(row.creatureId);
@@ -70,7 +70,7 @@ for (const row of catalog) {
   }
 }
 
-if (!bosstiarySentinel || !boss) err('missing bosstiary sentinel (minotaur_guard) or final boss (demon) catalog entry');
+if (!bosstiarySentinel || !boss) err('missing bosstiary sentinel (black_knight) or final boss (orshabaal) catalog entry');
 
 const ptsPerHourAtBoss = boss.rewardPoints * (3600 / runSec);
 if (ptsPerHourAtBoss > 120) note(`boss points/hour heuristic ${ptsPerHourAtBoss.toFixed(1)} (watch economy)`);

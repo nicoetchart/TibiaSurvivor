@@ -184,7 +184,7 @@ Each run lasts about <b>{RUN_MIN} minutes</b> up to the final boss.</p>
 <ul class="feat">
 <li><b>{N_CRE} creatures</b> in the <a href="{lk('bestiary')}">bestiary</a> (orcs, undead, demons…).</li>
 <li><b>{N_SPELL} Master Sorcerer spells and passives</b> with Tibia-style icons.</li>
-<li><a href="{lk('legends')}"><b>Elite sentinel</b></a> (Minotaur Guard) and <b>Demon</b> boss at the end of the run.</li>
+<li><a href="{lk('legends')}"><b>Elite sentinel</b></a> (Black Knight) and <b>Orshabaal</b> (Nemesis) at the end of the run.</li>
 <li><a href="{lk('types')}"><b>Damage types</b></a>: weaknesses and resistances per creature.</li>
 <li>Coins, permanent upgrades, run <a href="{lk('items')}">items</a> and <a href="{lk('achievements')}">missions / achievements</a>.</li>
 <li>Installable as an app from the browser.</li>
@@ -261,7 +261,7 @@ def legends(lang):
              f'and, if you last until the end, the session <b>boss</b>.</p>')
     h2a, h2b = 'Elite sentinels', 'Final run boss'
     tip = '<p>Use the right element (check the bestiary) and dodge telegraphed ground markers.</p>'
-    title, desc, c = f'Elite and boss in {BRAND}', f'Elite sentinel and Demon boss in {RUN_MIN}-minute {BRAND} runs.', 'Survive to the boss'
+    title, desc, c = f'Elite and boss in {BRAND}', f'Elite sentinel and Orshabaal Nemesis in {RUN_MIN}-minute {BRAND} runs.', 'Survive to the boss'
     crumb = 'Elite & boss'
     body = f'<article class="doc wide"><h1>{esc(h1)}</h1>{intro}<h2>{h2a}</h2><ul class="dexgrid">{el or "<li>—</li>"}</ul>{tip}<h2>{h2b}</h2><ul class="dexgrid">{bo or "<li>—</li>"}</ul>{cta(pid, lang, c)}</article>'
     write(pid, lang, page(pid, lang, title, desc, body, {'@context': 'https://schema.org', '@graph': [crumbs(pid, lang, crumb)]}))

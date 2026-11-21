@@ -14,7 +14,7 @@
 G.Hazards = (() => {
   let list = [];
 
-  /** h: { kind, x, y, r | angle, len, w, delay, dmg, type, color, pct?, pure?, vis? } */
+  /** h: { kind, x, y, r | angle, len, w, delay, dmg, type, color, eid?, pct?, pure?, vis? } */
   function add(h, fromNet = false) {
     const o = Object.assign({ t: 0, hit: false, end: 0.3 }, h);
     list.push(o);
@@ -22,6 +22,15 @@ G.Hazards = (() => {
   }
 
   function clear() { list = []; }
+
+  /** Quita avisos pendientes de una criatura (p. ej. al morir). */
+  function cancelFor(eid) {
+    if (eid == null) return;
+    for (let i = list.length - 1; i >= 0; i--) {
+      const h = list[i];
+      if (h.eid === eid && !h.hit) list.splice(i, 1);
+    }
+  }
 
   function inside(h, x, y, r) {
     if (h.kind === 'zone') return G.U.dist2(x, y, h.x, h.y) < (h.r + r * 0.6) ** 2;
@@ -101,5 +110,5 @@ G.Hazards = (() => {
     }
   }
 
-  return { add, clear, update, draw, inside, get all() { return list; }, get count() { return list.length; } };
+  return { add, clear, cancelFor, update, draw, inside, get all() { return list; }, get count() { return list.length; } };
 })();

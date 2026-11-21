@@ -16,7 +16,7 @@ const META_OUT = path.join(ROOT, 'js', 'data', 'tibia-creatures-meta.js');
 const MANIFEST_OUT = path.join(ROOT, 'assets', 'tibia', 'manifest.json');
 const LOCAL_CFG = path.join(ROOT, 'tools', 'tibia-client.local.json');
 
-const MVP_LOOKTYPES = [276, 32, 31, 74, 45, 15, 27, 6, 25, 29, 44, 40, 18, 17, 73, 35];
+const MVP_LOOKTYPES = [276, 32, 31, 74, 45, 15, 27, 6, 25, 29, 44, 40, 18, 17, 73, 35, 131, 201];
 /** Plantilla de outfit en appearances (138 = cuerpo MS; colores vía export agrupado). */
 const MVP_OUTFIT_TYPES = [128, 132, 138];
 
@@ -198,7 +198,8 @@ async function main() {
       pd: idle.pd || 1,
       layers: idle.layers || 1
     };
-    const composite = metaKey.startsWith('out_') && layout.layers >= 2 && layout.ph >= 2;
+    /** Criaturas humanoides (p. ej. Black Knight) usan plantilla + máscara como outfits. */
+    const composite = layout.layers >= 2 && layout.ph >= 2;
     meta[metaKey] = {
       kind: metaKey.startsWith('out_') ? 'outfit' : 'lookType',
       tileW: walkCopy.tileW,

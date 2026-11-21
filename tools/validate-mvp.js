@@ -70,12 +70,12 @@ if (G.Bestiary) {
     err('Cyclopedia catalog missing bestiary or bosstiary section');
   }
   const bossCats = catalog.filter(e => e.section === 'bosstiary').map(e => e.bossCategory);
-  if (bossCats.includes('archfoe') && bossCats.includes('nemesis')) { /* MVP: minotaur_guard + demon */ }
+  if (bossCats.includes('bane') && bossCats.includes('nemesis')) { /* MVP: black_knight + orshabaal */ }
   else if (bossCats.length < 2) err('Expected two bosstiary bosses in MVP catalog');
   const playable = new Set(
     G.CREATURES.filter(c => c.role === 'enemy' && c.bestiary && c.bestiary.enabled).map(c => c.id)
   );
-  playable.add('minotaur_guard');
+  playable.add('black_knight');
   const catalogIds = new Set(catalog.map(e => e.creatureId));
   for (const id of playable) {
     if (!catalogIds.has(id)) err(`Bestiary missing catalog entry for playable ${id}`);

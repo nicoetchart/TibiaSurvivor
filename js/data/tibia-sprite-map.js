@@ -21,13 +21,15 @@ G.TIBIA_SPRITE_MAP = {
     99008: { kind: 'lookType', lookType: 27 },    // Wolf
     99009: { kind: 'lookType', lookType: 6 },     // Orc Shaman
     99010: { kind: 'lookType', lookType: 25 },    // Minotaur
-    99017: { kind: 'lookType', lookType: 29 },    // Minotaur Guard (centinela élite)
+    /** plantilla+máscara (colores cliente — caballero negro) */
+    99017: { kind: 'lookType', lookType: 131, outfit: { type: 131, head: 95, body: 95, legs: 95, feet: 95, addons: 3 } },
     99011: { kind: 'lookType', lookType: 44 },    // Wasp
     99012: { kind: 'lookType', lookType: 40 },    // Fire Devil
     99013: { kind: 'lookType', lookType: 18 },    // Ghoul
     99014: { kind: 'lookType', lookType: 17 },    // Bonelord
     99015: { kind: 'lookType', lookType: 73 },    // Hero
-    99016: { kind: 'lookType', lookType: 35 }     // Demon
+    99016: { kind: 'lookType', lookType: 201 },    // Orshabaal
+    99018: { kind: 'lookType', lookType: 35 }     // Demon (minion)
   },
 
   /** Claves usadas en juego → PNG en assets/tibia/items/ o clientId en items-32.png. */

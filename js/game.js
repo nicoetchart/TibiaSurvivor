@@ -161,6 +161,10 @@ G.Game = (() => {
     deathT = 0;
 
     state = 'playing';
+    if (/[?&]dev\b/.test(location.search)) {
+      if (G.Spawner.devSpawnEliteAtStart) G.Spawner.devSpawnEliteAtStart(pl);
+      if (G.Spawner.devSpawnBossAtStart) G.Spawner.devSpawnBossAtStart(pl);
+    }
   }
 
   function quitRun() { endRun(false); }
@@ -374,14 +378,14 @@ G.Game = (() => {
     if (laterItems.length) offerItem(laterItems.shift());
   }
 
-  /** Has cogido un objeto: si no llevas ninguno te lo pones; si no, eliges. */
+  /** Has cogido un objeto: eliges si lo equipas (aunque no lleves ninguno). */
   function offerItem(id) {
     if (!pl || !G.Items.BY[id]) return;
     if (state === 'levelup' || G.UI.isOpen('scr-levelup')) { laterItems.push(id); return; }
     let mine = false;            // esta elección es la que ha parado el juego
     const take = got => {
       openItem = null;
-      if (got !== pl.item) {
+      if (got && got !== pl.item) {
         pl.equip(got);
         G.Spawner.say('You hold ' + G.Items.BY[got].name + '!', 2.6, true);
         G.Progress.event('item', { id: got });
@@ -390,7 +394,15 @@ G.Game = (() => {
       if (state === 'choice') state = 'playing';
       afterLevelUp();
     };
-    if (!pl.item) { take(id); return; }
+    if (!pl.item) {
+      if (state === 'playing' || state === 'held') {
+        mine = true;
+        state = 'choice';
+      }
+      openItem = { cur: null, next: id, take, get mine() { return mine; } };
+      G.RunUI.showItemChoice(null, id, take);
+      return;
+    }
     if (pl.item === id) { G.Spawner.say('You already hold ' + G.Items.BY[id].name, 2, true); return; }
     // Se para el juego mientras eliges; en grupo, para todos (como con las
     // fusiones). Antes en grupo seguía y te pegaban mientras elegías.

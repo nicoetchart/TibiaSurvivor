@@ -85,9 +85,9 @@ ok(!G.Bestiary.tryCreditDefeat(fake), 'no double credit');
 ok(G.Bestiary.getRunAdvances().length >= 1, 'run advance recorded');
 G.Bestiary.endRun();
 
-const bossPts = G.Bestiary.getCatalogEntry('demon').rewardPoints;
+const bossPts = G.Bestiary.getCatalogEntry('orshabaal').rewardPoints;
 const saveRecon = { name: 'recon', bestiary: G.Bestiary.createDefaultSave() };
-saveRecon.bestiary.entries.demon = {
+saveRecon.bestiary.entries.orshabaal = {
   kills: 5,
   rewarded: false,
   firstSeenAt: 1,
@@ -95,7 +95,7 @@ saveRecon.bestiary.entries.demon = {
   runsEncountered: 0
 };
 G.Bestiary.init(saveRecon);
-ok(saveRecon.bestiary.entries.demon.rewarded, 'reconcile grants completion');
+ok(saveRecon.bestiary.entries.orshabaal.rewarded, 'reconcile grants completion');
 ok(saveRecon.bestiary.currency.earned === bossPts, 'reconcile adds earned once');
 G.Bestiary.init(saveRecon);
 ok(saveRecon.bestiary.currency.earned === bossPts, 'no double grant on re-init');
@@ -107,13 +107,13 @@ for (let i = 0; i < 5; i++) {
   G.Bestiary.tryCreditDefeat({
     id: 9100 + i,
     dex: 99016,
-    def: { creatureId: 'demon', dex: 99016 },
+    def: { creatureId: 'orshabaal', dex: 99016 },
     boss: true,
     dead: true
   });
 }
-ok(savePts.bestiary.entries.demon.kills === 5, 'boss kills to completion');
-ok(savePts.bestiary.entries.demon.rewarded, 'boss entry rewarded');
+ok(savePts.bestiary.entries.orshabaal.kills === 5, 'boss kills to completion');
+ok(savePts.bestiary.entries.orshabaal.rewarded, 'boss entry rewarded');
 ok(G.Bestiary.getRunPointsEarned() === bossPts, 'run points tracked');
 ok(G.Bestiary.getAvailablePoints() === bossPts, 'available balance');
 

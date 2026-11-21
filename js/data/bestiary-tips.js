@@ -56,13 +56,13 @@ G.BESTIARY_TIPS = {
     es: 'Tanque lento: necesita muchos golpes; usa daño sostenido, no bursts cortos.',
     en: 'Slow tank: takes many hits; use sustained damage, not short bursts.'
   },
-  'bestiary.demon.tip1': {
-    es: 'Jefe infernal: reserva defensas para embestidas y ráfagas del minuto final.',
-    en: 'Infernal boss: save defensives for charges and late-minute bursts.'
+  'bestiary.orshabaal.tip1': {
+    es: 'Némesis: débil a hielo y sagrado; inmune a fuego y tierra. Cúrale rápido al rojo (huye y se cura) y prioriza sus demonios.',
+    en: 'Nemesis: weak to ice and holy; immune to fire and earth. Burn him down when low (he flees and heals) and clear his demons.'
   },
-  'bestiary.minotaur_guard.tip1': {
-    es: 'Very Rare: escuda a aliados; bórralo antes de cargar contra el jefe.',
-    en: 'Very Rare: shields allies; delete it before you push the boss.'
+  'bestiary.black_knight.tip1': {
+    es: 'Bane: sagrado rompe; inmune a hielo y tierra. Esquiva cargas y golpes en el suelo.',
+    en: 'Bane: holy breaks him; immune to ice and earth. Dodge charges and telegraphed slams.'
   }
 };
 

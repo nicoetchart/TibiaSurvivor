@@ -233,7 +233,10 @@ G.BestiaryUI = (() => {
       }
       if (canReveal('stage1', 'hp', catalog) && cr) s1.push(['Base HP', cr.hp]);
       if (canReveal('stage1', 'xp', catalog)) s1.push(['Experience', 'Based on tier in run']);
-      if (canReveal('stage1', 'behavior', catalog) && cr && cr.behavior) s1.push(['Behavior', cr.behavior]);
+      if (canReveal('stage1', 'behavior', catalog) && cr && cr.behavior) {
+        const pat = (cr.behaviors && cr.behaviors.length > 1) ? cr.behaviors.join(' + ') : cr.behavior;
+        s1.push(['Behavior', pat]);
+      }
     }
     addSection('Identification', s1);
 
@@ -241,7 +244,10 @@ G.BestiaryUI = (() => {
     if (stageUnlocked(st, 'stage_2')) {
       if (canReveal('stage2', 'damage', catalog) && cr) s2.push(['Threat', '×' + (cr.attack || 1).toFixed(2)]);
       if (canReveal('stage2', 'speed', catalog) && cr) s2.push(['Speed', cr.speed]);
-      if (canReveal('stage2', 'abilities', catalog) && cr && cr.behavior) s2.push(['Pattern', cr.behavior]);
+      if (canReveal('stage2', 'abilities', catalog) && cr && cr.behavior) {
+        const pat = (cr.behaviors && cr.behaviors.length > 1) ? cr.behaviors.join(' + ') : cr.behavior;
+        s2.push(['Pattern', pat]);
+      }
       if (canReveal('stage2', 'resistances', catalog)) {
         const DT = G.DamageTypes;
         const dmg = cr && cr.damageTypes && cr.damageTypes.length

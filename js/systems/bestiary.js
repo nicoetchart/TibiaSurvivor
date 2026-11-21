@@ -106,6 +106,18 @@
       if (typeof id !== 'string' || !id) continue;
       entries[id] = sanitizeEntry(b.entries[id]);
     }
+    for (const [fromId, toId] of [['demon', 'orshabaal'], ['minotaur_guard', 'black_knight']]) {
+      if (!entries[fromId]) continue;
+      const from = entries[fromId];
+      const to = entries[toId] || defaultEntry();
+      to.kills = Math.max(to.kills, from.kills);
+      to.rewarded = to.rewarded || from.rewarded;
+      if (from.firstSeenAt && (!to.firstSeenAt || from.firstSeenAt < to.firstSeenAt)) to.firstSeenAt = from.firstSeenAt;
+      if (from.lastKilledAt && (!to.lastKilledAt || from.lastKilledAt > to.lastKilledAt)) to.lastKilledAt = from.lastKilledAt;
+      to.runsEncountered = Math.max(to.runsEncountered, from.runsEncountered);
+      entries[toId] = to;
+      delete entries[fromId];
+    }
     b.entries = entries;
 
     let earned = intNonNeg(b.currency.earned);
@@ -451,7 +463,7 @@
 
   function creatureIdForEnemy(e) {
     if (!e) return null;
-    if (e.sentinelElite) return (e.def && e.def.bestiaryCreatureId) || 'minotaur_guard';
+    if (e.sentinelElite) return (e.def && e.def.bestiaryCreatureId) || 'black_knight';
     if (e.def && e.def.bestiaryCreatureId) return e.def.bestiaryCreatureId;
     if (e.def && e.def.creatureId) return e.def.creatureId;
     if (G.CREATURE_BY_LEGACY && e.dex != null) {
@@ -582,7 +594,7 @@
     const payload = {
       creatureId,
       instanceId: e.id,
-      isElite: !!(e.sentinelElite || e.def && e.def.bestiaryCreatureId === 'minotaur_guard'),
+      isElite: !!(e.sentinelElite || e.def && e.def.bestiaryCreatureId === 'black_knight'),
       isBoss: !!e.boss,
       sourceKind: e.lastHitAid || 'unknown',
       runId: runId || null,

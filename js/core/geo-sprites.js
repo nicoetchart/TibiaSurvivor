@@ -23,19 +23,21 @@ G.GeoSprites = (() => {
 
   function look(dex) {
     const c = G.Content && G.Content.getCreature && G.Content.getCreature(dex);
+    const beh = (c && c.behaviors && c.behaviors.length) ? c.behaviors : (c && c.behavior ? [c.behavior] : []);
+    const hasBeh = b => beh.includes(b);
     const type = (c && c.damageTypes && c.damageTypes[0]) || 'physical';
     const color = (G.DamageTypes && G.DamageTypes.COLOR[type]) || '#c8cdd8';
     let shape = 'orb';
     if (c && c.role === 'player') shape = 'caster';
-    else if (c && c.behavior === 'tank') shape = 'block';
-    else if (c && c.behavior === 'ranged') shape = 'diamond';
-    else if (c && c.behavior === 'charger') shape = 'wedge';
-    else if (c && c.behavior === 'runner') shape = 'needle';
-    else if (c && c.behavior === 'healer') shape = 'cross';
-    else if (c && c.behavior === 'shielder') shape = 'hex';
-    else if (c && c.behavior === 'summoner') shape = 'ring';
-    else if (c && (c.behavior === 'fan' || c.behavior === 'beamer')) shape = 'star';
-    else if (c && (c.behavior === 'zoner' || c.behavior === 'jumper')) shape = 'tri';
+    else if (hasBeh('tank')) shape = 'block';
+    else if (hasBeh('charger')) shape = 'wedge';
+    else if (hasBeh('runner')) shape = 'needle';
+    else if (hasBeh('healer')) shape = 'cross';
+    else if (hasBeh('ranged')) shape = 'diamond';
+    else if (hasBeh('shielder')) shape = 'hex';
+    else if (hasBeh('summoner')) shape = 'ring';
+    else if (hasBeh('fan') || hasBeh('beamer')) shape = 'star';
+    else if (hasBeh('zoner') || hasBeh('jumper')) shape = 'tri';
     else if (c && c.boss) shape = 'hex';
     return { shape, color };
   }

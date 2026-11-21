@@ -55,8 +55,8 @@ Los **puntos** al completar la entrada en MVP son un único bono (`rewardPoints`
 ### MVP actual (sujeto a cambio de diseño)
 | id | section | bossCategory | Notas |
 |----|---------|--------------|-------|
-| `minotaur_guard` | bosstiary | `archfoe` | Centinela de élite de la run (EXTRA_ENTRIES + mapeo `sentinelElite`) |
-| `demon` | bosstiary | `nemesis` | Jefe final de la run (`boss: true` en `creatures.js`) |
+| `black_knight` | bosstiary | `bane` | Centinela de élite de la run (`boss: true`, lookType 131) |
+| `orshabaal` | bosstiary | `nemesis` | Jefe final de la run (`boss: true` en `creatures.js`) |
 
 ### Campos obligatorios por boss
 - `bestiary.enabled: true`

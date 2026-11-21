@@ -2232,6 +2232,286 @@ G.TIBIA_CREATURES_META = {
     "idleStrip": "4161-4164.png",
     "walkStrip": "4165-4196.png"
   },
+  "lt_131": {
+    "kind": "lookType",
+    "tileW": 64,
+    "tileH": 64,
+    "pw": 4,
+    "drawMul": 1,
+    "s": 2,
+    "layout": {
+      "pw": 4,
+      "ph": 3,
+      "pd": 2,
+      "layers": 2
+    },
+    "composite": true,
+    "anchor": {
+      "ax": 54,
+      "ay": 58
+    },
+    "a": {
+      "Idle": {
+        "w": 64,
+        "h": 64,
+        "n": 1,
+        "d": [
+          10
+        ],
+        "ax": 54,
+        "ay": 58,
+        "r": 4,
+        "pw": 4,
+        "ph": 6,
+        "strip": true,
+        "stripKind": "idle"
+      },
+      "Walk": {
+        "w": 64,
+        "h": 64,
+        "n": 8,
+        "d": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "ax": 54,
+        "ay": 58,
+        "r": 4,
+        "pw": 4,
+        "ph": 48,
+        "strip": true,
+        "stripKind": "walk"
+      },
+      "Attack": {
+        "w": 64,
+        "h": 64,
+        "n": 3,
+        "d": [
+          5,
+          5,
+          5
+        ],
+        "ax": 54,
+        "ay": 58,
+        "r": 4,
+        "pw": 4,
+        "ph": 48,
+        "strip": true,
+        "stripKind": "walk"
+      },
+      "Shoot": {
+        "w": 64,
+        "h": 64,
+        "n": 3,
+        "d": [
+          5,
+          5,
+          5
+        ],
+        "ax": 54,
+        "ay": 58,
+        "r": 4,
+        "pw": 4,
+        "ph": 48,
+        "strip": true,
+        "stripKind": "walk"
+      },
+      "Charge": {
+        "w": 64,
+        "h": 64,
+        "n": 2,
+        "d": [
+          5,
+          5
+        ],
+        "ax": 54,
+        "ay": 58,
+        "r": 4,
+        "pw": 4,
+        "ph": 48,
+        "strip": true,
+        "stripKind": "walk"
+      },
+      "Hurt": {
+        "w": 64,
+        "h": 64,
+        "n": 1,
+        "d": [
+          10
+        ],
+        "ax": 54,
+        "ay": 58,
+        "r": 4,
+        "pw": 4,
+        "ph": 6,
+        "strip": true,
+        "stripKind": "idle"
+      },
+      "Faint": {
+        "w": 64,
+        "h": 64,
+        "n": 1,
+        "d": [
+          10
+        ],
+        "ax": 54,
+        "ay": 58,
+        "r": 4,
+        "pw": 4,
+        "ph": 6,
+        "strip": true,
+        "stripKind": "idle"
+      }
+    },
+    "idleStrip": "6963-7004.png",
+    "walkStrip": "7005-7004.png"
+  },
+  "lt_201": {
+    "kind": "lookType",
+    "tileW": 64,
+    "tileH": 64,
+    "pw": 4,
+    "drawMul": 1,
+    "s": 2,
+    "layout": {
+      "pw": 4,
+      "ph": 1,
+      "pd": 1,
+      "layers": 1
+    },
+    "composite": false,
+    "anchor": {
+      "ax": 43,
+      "ay": 58
+    },
+    "a": {
+      "Idle": {
+        "w": 64,
+        "h": 64,
+        "n": 1,
+        "d": [
+          10
+        ],
+        "ax": 43,
+        "ay": 58,
+        "r": 4,
+        "pw": 4,
+        "ph": 1,
+        "strip": true,
+        "stripKind": "idle"
+      },
+      "Walk": {
+        "w": 64,
+        "h": 64,
+        "n": 8,
+        "d": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "ax": 43,
+        "ay": 58,
+        "r": 4,
+        "pw": 4,
+        "ph": 8,
+        "strip": true,
+        "stripKind": "walk"
+      },
+      "Attack": {
+        "w": 64,
+        "h": 64,
+        "n": 3,
+        "d": [
+          5,
+          5,
+          5
+        ],
+        "ax": 43,
+        "ay": 58,
+        "r": 4,
+        "pw": 4,
+        "ph": 8,
+        "strip": true,
+        "stripKind": "walk"
+      },
+      "Shoot": {
+        "w": 64,
+        "h": 64,
+        "n": 3,
+        "d": [
+          5,
+          5,
+          5
+        ],
+        "ax": 43,
+        "ay": 58,
+        "r": 4,
+        "pw": 4,
+        "ph": 8,
+        "strip": true,
+        "stripKind": "walk"
+      },
+      "Charge": {
+        "w": 64,
+        "h": 64,
+        "n": 2,
+        "d": [
+          5,
+          5
+        ],
+        "ax": 43,
+        "ay": 58,
+        "r": 4,
+        "pw": 4,
+        "ph": 8,
+        "strip": true,
+        "stripKind": "walk"
+      },
+      "Hurt": {
+        "w": 64,
+        "h": 64,
+        "n": 1,
+        "d": [
+          10
+        ],
+        "ax": 43,
+        "ay": 58,
+        "r": 4,
+        "pw": 4,
+        "ph": 1,
+        "strip": true,
+        "stripKind": "idle"
+      },
+      "Faint": {
+        "w": 64,
+        "h": 64,
+        "n": 1,
+        "d": [
+          10
+        ],
+        "ax": 43,
+        "ay": 58,
+        "r": 4,
+        "pw": 4,
+        "ph": 1,
+        "strip": true,
+        "stripKind": "idle"
+      }
+    },
+    "idleStrip": "4161-4164.png",
+    "walkStrip": "4165-4196.png"
+  },
   "out_128": {
     "kind": "outfit",
     "tileW": 64,

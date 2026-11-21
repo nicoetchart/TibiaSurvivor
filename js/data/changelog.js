@@ -2,6 +2,34 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-21', title: ['Objetos', 'Items'], chg: [
+    ['Al recoger el primer objeto equipable de la run: pantalla de elección (equipar o dejarlo), igual que al cambiar de objeto.',
+     'First equippable pickup in a run: choice screen (equip or leave it), same as when swapping items.'],
+  ] },
+  { d: '2026-11-20', title: ['Combate', 'Combat'], fix: [
+    ['Al morir una criatura se cancelan sus avisos de ataque en el suelo (el bomber sigue explotando al completar la mecha).',
+     'When a creature dies, its ground telegraphs are cancelled (bomber still detonates when the fuse completes).'],
+  ] },
+  { d: '2026-11-20', title: ['Criaturas', 'Creatures'], chg: [
+    ['Varios patrones por criatura (`behaviors`): Orc Shaman cura y dispara si no hay aliados heridos.',
+     'Multiple patterns per creature (`behaviors`): Orc Shaman heals and shoots when no injured allies.'],
+    ['Jefe final: Demon → Orshabaal (Bosstiary Nemesis; hielo/sagrado, inv. fuego/tierra; rayo energía, lluvia de fuego, demonios, huida y cura).',
+     'Final boss: Demon → Orshabaal (Bosstiary Nemesis; ice/holy weak, fire/earth immune; energy beam, fire rain, demons, flee and heal).'],
+    ['?dev: Orshabaal aparece al iniciar la partida (para probar el jefe sin esperar al minuto final).',
+     '?dev: Orshabaal spawns at run start (boss testing without waiting for the final minute).'],
+    ['Sprites Tibia: import lookType 201 (Orshabaal) en creatures/ y meta.',
+     'Tibia sprites: import lookType 201 (Orshabaal) into creatures/ and meta.'],
+    ['Centinela élite: Minotaur Guard → Black Knight (Bosstiary Bane, lookType 131, boss AI). `boss: true` en datos = kit de jefe; `finalBoss` solo Orshabaal (victoria).',
+     'Elite sentinel: Minotaur Guard → Black Knight (Bosstiary Bane, lookType 131, boss AI). `boss: true` on data = boss kit; `finalBoss` only on Orshabaal (victory).'],
+    ['?dev: Black Knight al iniciar partida junto a Orshabaal.',
+     '?dev: Black Knight at run start alongside Orshabaal.'],
+    ['Sprite Black Knight (lookType 131): composite plantilla+máscara y colores en sprite-map; melee sin ranged en datos.',
+     'Black Knight sprite (lookType 131): template+mask composite with outfit colors; melee-only data (no ranged behavior).'],
+    ['Orshabaal: behavior melee en datos; IA de jefe prioriza cuerpo a cuerpo (hechizos sigue en kit custom).',
+     'Orshabaal: melee behavior in data; boss AI prefers close combat (custom kit still has spells).'],
+    ['Black Knight: sprite con addons 1+2 (`addons: 3`), como en el cliente Tibia.',
+     'Black Knight: sprite with both addons (`addons: 3`), matching the Tibia client.'],
+  ] },
   { d: '2026-11-19', title: ['QA', 'QA'], fix: [
     ['Smoke Fase 6: tiempos 600/900 s; G.Game.debugTick; 17/17 PASS con MS-9.',
      'Phase 6 smoke: 600/900s timings; G.Game.debugTick; 17/17 PASS with MS-9.'],
