@@ -190,6 +190,41 @@ G.NeutralRoster = (() => {
     return pickNearestToTarget(t);
   }
 
+  /** ?dev HUD: banda activa que usaría pickInHpBand (misma cascada widenFactors). */
+  function spawnBandDebug(t) {
+    if (!useHpBand()) return null;
+    const h = hTarget(t);
+    const d0 = bandDelta(t);
+    const HB = hpBandCfg();
+    const widens = Array.isArray(HB.widenFactors) ? HB.widenFactors : [1, 1.6, 2.4];
+    for (const mul of widens) {
+      const band = defsInBand(t, mul);
+      if (band.length) {
+        const delta = Math.round(d0 * mul);
+        return {
+          h,
+          delta,
+          lo: Math.round(h - delta),
+          hi: Math.round(h + delta),
+          widenMul: mul,
+          pool: band.length,
+          fallback: false
+        };
+      }
+    }
+    const mul = widens[widens.length - 1];
+    const delta = Math.round(d0 * mul);
+    return {
+      h,
+      delta,
+      lo: Math.round(h - delta),
+      hi: Math.round(h + delta),
+      widenMul: mul,
+      pool: 0,
+      fallback: true
+    };
+  }
+
   function available(t) {
     const maxTier = maxTierAt(t);
     return enemies().filter(c => (c.tier || 0) <= maxTier).map(defFor);
@@ -197,8 +232,8 @@ G.NeutralRoster = (() => {
 
   function rollRun() {
     bossCache = null;
-    eliteCache = null;
-    eliteCacheId = null;
+    baneBossCache = null;
+    baneBossCacheId = null;
     return { cast: (cfg().ENEMY_UNLOCK || []).map(u => ({ from: u.from, list: available(u.from) })) };
   }
 
@@ -230,10 +265,10 @@ G.NeutralRoster = (() => {
     return { hp: 1 + t / D.bossHpScale, dmg: 1 + t / D.bossDmgScale, spd: 1 + Math.min(0.2, t / 2000) };
   }
 
-  let eliteCache = null;
-  let eliteCacheId = null;
+  let baneBossCache = null;
+  let baneBossCacheId = null;
 
-  function eliteCreatureId() {
+  function baneBossCreatureId() {
     const boosted = G.DailyBoost && G.DailyBoost.getBoostedBossId && G.DailyBoost.getBoostedBossId();
     if (boosted && G.CREATURE_BY_ID && G.CREATURE_BY_ID[boosted] &&
         G.DailyBoost.isBossEligible && G.DailyBoost.isBossEligible(boosted)) {
@@ -242,7 +277,7 @@ G.NeutralRoster = (() => {
     return 'black_knight';
   }
 
-  function buildEliteDef(id) {
+  function buildBaneBossDef(id) {
     const c = G.CREATURE_BY_ID && G.CREATURE_BY_ID[id];
     if (!c) return null;
     const d = defFor(c);
@@ -251,24 +286,24 @@ G.NeutralRoster = (() => {
       d.dmg = Math.round(d.dmg * 1.25);
     }
     d.xp = 85;
-    d.elite = true;
     d.boss = true;
+    d.baneBoss = true;
     d.bestiaryCreatureId = id;
     d.creatureId = id;
     return d;
   }
 
-  function buildElite() {
-    let id = eliteCreatureId();
-    if (eliteCache && eliteCacheId === id) return eliteCache;
-    let d = buildEliteDef(id);
+  function buildBaneBoss() {
+    let id = baneBossCreatureId();
+    if (baneBossCache && baneBossCacheId === id) return baneBossCache;
+    let d = buildBaneBossDef(id);
     if (!d && id !== 'black_knight') {
       id = 'black_knight';
-      d = buildEliteDef(id);
+      d = buildBaneBossDef(id);
     }
     if (!d) return null;
-    eliteCache = d;
-    eliteCacheId = id;
+    baneBossCache = d;
+    baneBossCacheId = id;
     return d;
   }
 
@@ -355,12 +390,13 @@ G.NeutralRoster = (() => {
     rollRun,
     scale,
     bossScale,
-    buildElite,
+    buildBaneBoss,
     defFor,
     bagAt,
     pickAt,
     pickInHpBand,
-    eliteCreatureId,
+    spawnBandDebug,
+    baneBossCreatureId,
     hTarget,
     bandDelta,
     upcomingDex,

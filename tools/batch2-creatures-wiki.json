@@ -1,0 +1,282 @@
+{
+  "swamp_troll": {
+    "wiki": "Swamp_Troll",
+    "status": 200,
+    "hp": 55,
+    "speed": 64,
+    "lookType": null
+  },
+  "lizard_henchman": {
+    "wiki": "Lizard_Henchman",
+    "status": 200,
+    "hp": 58,
+    "speed": 76,
+    "lookType": null
+  },
+  "goblin_scavenger": {
+    "wiki": "Goblin_Scavenger",
+    "status": 200,
+    "hp": 60,
+    "speed": 66,
+    "lookType": null
+  },
+  "hyaena": {
+    "wiki": "Hyaena",
+    "status": 200,
+    "hp": 60,
+    "speed": 98,
+    "lookType": null
+  },
+  "lizard_magician": {
+    "wiki": "Lizard_Magician",
+    "status": 200,
+    "hp": 62,
+    "speed": 80,
+    "lookType": null
+  },
+  "cobra": {
+    "wiki": "Cobra",
+    "status": 200,
+    "hp": 65,
+    "speed": 60,
+    "lookType": null
+  },
+  "rotworm": {
+    "wiki": "Rotworm",
+    "status": 200,
+    "hp": 65,
+    "speed": 58,
+    "lookType": null
+  },
+  "skeleton_warrior": {
+    "wiki": "Skeleton_Warrior",
+    "status": 200,
+    "hp": 65,
+    "speed": 77,
+    "lookType": null
+  },
+  "chakoya_tribewarden": {
+    "wiki": "Chakoya_Tribewarden",
+    "status": 200,
+    "hp": 68,
+    "speed": 62,
+    "lookType": null
+  },
+  "lizard_swordmaster": {
+    "wiki": "Lizard_Swordmaster",
+    "status": 200,
+    "hp": 68,
+    "speed": 76,
+    "lookType": null
+  },
+  "pirate_gunner": {
+    "wiki": "Pirate_Gunner",
+    "status": 200,
+    "hp": 68,
+    "speed": 75,
+    "lookType": null
+  },
+  "centipede": {
+    "wiki": "Centipede",
+    "status": 200,
+    "hp": 70,
+    "speed": 83,
+    "lookType": null
+  },
+  "larva": {
+    "wiki": "Larva",
+    "status": 200,
+    "hp": 70,
+    "speed": 62,
+    "lookType": null
+  },
+  "orc": {
+    "wiki": "Orc",
+    "status": 200,
+    "hp": 70,
+    "speed": 75,
+    "lookType": null
+  },
+  "salamander": {
+    "wiki": "Salamander",
+    "status": 200,
+    "hp": 70,
+    "speed": 60,
+    "lookType": null
+  },
+  "lizard_executioner": {
+    "wiki": "Lizard_Executioner",
+    "status": 200,
+    "hp": 74,
+    "speed": 82,
+    "lookType": null
+  },
+  "goblin_assassin": {
+    "wiki": "Goblin_Assassin",
+    "status": 200,
+    "hp": 75,
+    "speed": 70,
+    "lookType": null
+  },
+  "tiger": {
+    "wiki": "Tiger",
+    "status": 200,
+    "hp": 75,
+    "speed": 100,
+    "lookType": null
+  },
+  "troll_champion": {
+    "wiki": "Troll_Champion",
+    "status": 200,
+    "hp": 75,
+    "speed": 69,
+    "lookType": null
+  },
+  "white_tiger": {
+    "wiki": "White_Tiger",
+    "status": 200,
+    "hp": 75,
+    "speed": 110,
+    "lookType": null
+  },
+  "wild_horse": {
+    "wiki": "Wild_Horse",
+    "status": 200,
+    "hp": 75,
+    "speed": 124,
+    "lookType": null
+  },
+  "bear": {
+    "wiki": "Bear",
+    "status": 200,
+    "hp": 80,
+    "speed": 78,
+    "lookType": null
+  },
+  "chakoya_toolshaper": {
+    "wiki": "Chakoya_Toolshaper",
+    "status": 200,
+    "hp": 80,
+    "speed": 68,
+    "lookType": null
+  },
+  "dworc_venomsniper": {
+    "wiki": "Dworc_Venomsniper",
+    "status": 200,
+    "hp": 80,
+    "speed": 76,
+    "lookType": null
+  },
+  "dworc_voodomaster": {
+    "wiki": "Dworc_Voodomaster",
+    "status": 200,
+    "hp": null,
+    "speed": null,
+    "lookType": null
+  },
+  "lion": {
+    "wiki": "Lion",
+    "status": 200,
+    "hp": 80,
+    "speed": 95,
+    "lookType": null
+  },
+  "panda": {
+    "wiki": "Panda",
+    "status": 200,
+    "hp": 80,
+    "speed": 78,
+    "lookType": null
+  },
+  "swampling": {
+    "wiki": "Swampling",
+    "status": 200,
+    "hp": 80,
+    "speed": 95,
+    "lookType": null
+  },
+  "chakoya_windcaller": {
+    "wiki": "Chakoya_Windcaller",
+    "status": 200,
+    "hp": 84,
+    "speed": 71,
+    "lookType": null
+  },
+  "dworc_fleshhunter": {
+    "wiki": "Dworc_Fleshhunter",
+    "status": 200,
+    "hp": 85,
+    "speed": 74,
+    "lookType": null
+  },
+  "honor_guard": {
+    "wiki": "Honor_Guard",
+    "status": 200,
+    "hp": null,
+    "speed": null,
+    "lookType": null
+  },
+  "infernoid_hound": {
+    "wiki": "Infernoid_Hound",
+    "status": 200,
+    "hp": 86,
+    "speed": 95,
+    "lookType": null
+  },
+  "emerald_damselfly": {
+    "wiki": "Emerald_Damselfly",
+    "status": 200,
+    "hp": 90,
+    "speed": 100,
+    "lookType": null
+  },
+  "dwarf": {
+    "wiki": "Dwarf",
+    "status": 200,
+    "hp": 90,
+    "speed": 85,
+    "lookType": null
+  },
+  "leaf_golem": {
+    "wiki": "Leaf_Golem",
+    "status": 200,
+    "hp": 90,
+    "speed": 68,
+    "lookType": null
+  },
+  "poacher": {
+    "wiki": "Poacher",
+    "status": 200,
+    "hp": 90,
+    "speed": 99,
+    "lookType": null
+  },
+  "infernoid_soul": {
+    "wiki": "Infernoid_Soul",
+    "status": 200,
+    "hp": 95,
+    "speed": 92,
+    "lookType": null
+  },
+  "barbarian_headsplitter": {
+    "wiki": "Barbarian_Headsplitter",
+    "status": 200,
+    "hp": 100,
+    "speed": 84,
+    "lookType": null
+  },
+  "crazed_beggar": {
+    "wiki": "Crazed_Beggar",
+    "status": 200,
+    "hp": 100,
+    "speed": 77,
+    "lookType": null
+  },
+  "elf": {
+    "wiki": "Elf",
+    "status": 200,
+    "hp": 100,
+    "speed": 95,
+    "lookType": null
+  }
+}

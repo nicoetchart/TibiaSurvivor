@@ -75,11 +75,20 @@ G.Path = (() => {
     const tx = Math.floor(e.x / TS) - f.ox, ty = Math.floor(e.y / TS) - f.oy;
     if (tx < 0 || ty < 0 || tx >= N || ty >= N) return null;
     const here = f.dist[ty * N + tx];
-    if (here <= 1 || here === UNSEEN) return null;   // pegado a ti, o sin camino: directo
+    if (here <= 1) return null;
+    if (here === UNSEEN) {
+      if (!f.open[ty * N + tx]) return unstuckDir(e, pl);
+      return null;
+    }
     // Con vista despejada hasta el jugador, en línea recta (más natural).
     // Se comprueba cada 0,2 s por enemigo (es lo más caro).
     const now = performance.now();
     if (!e.losAt || now - e.losAt > 200) { e.losAt = now; e.los = clearLine(f, e.x, e.y, pl.x, pl.y, e.r); }
+    if (e.los) {
+      const [lx, ly] = G.U.norm(pl.x - e.x, pl.y - e.y);
+      const probe = e.r + TS * 0.42;
+      if (!G.World.isFree(e.x + lx * probe, e.y + ly * probe, e.r)) e.los = false;
+    }
     if (e.los) return null;
     // Siguiente casilla del camino (la vecina con menos pasos, sin cortar esquinas).
     let bx = tx, by = ty, best = here;
@@ -91,7 +100,7 @@ G.Path = (() => {
       if (k >= 4 && (!f.open[ty * N + x] || !f.open[y * N + tx])) continue;
       best = v; bx = x; by = y;
     }
-    if (bx === tx && by === ty) return null;
+    if (bx === tx && by === ty) return unstuckDir(e, pl);
     let gx = (f.ox + bx + 0.5) * TS, gy = (f.oy + by + 0.5) * TS;
     // Si va descentrado y el atajo hasta esa casilla roza un obstáculo,
     // primero al centro de la suya (así no se engancha en las esquinas).
@@ -119,5 +128,57 @@ G.Path = (() => {
 
   function clear() { fields.clear(); timer = 0; }
 
-  return { update, dirFor, clear };
+  /** Dirección libre que aleja del jugador (desatasco contra paredes / multitudes). */
+  function unstuckDir(e, pl) {
+    if (!e || !pl) return G.U.norm(0, 0);
+    const TS = G.World.TS;
+    const [ax, ay] = G.U.norm(e.x - pl.x, e.y - pl.y);
+    const [tx, ty] = G.U.norm(pl.x - e.x, pl.y - e.y);
+    let best = null;
+    let bestScore = -1;
+    for (let stepMul = 0.45; stepMul <= 1.05; stepMul += 0.3) {
+      const step = TS * stepMul;
+      for (let k = 0; k < 16; k++) {
+        const a = (k / 16) * Math.PI * 2;
+        const dx = Math.cos(a);
+        const dy = Math.sin(a);
+        const nx = e.x + dx * step;
+        const ny = e.y + dy * step;
+        if (!G.World.isFree(nx, ny, e.r)) continue;
+        const toward = dx * tx + dy * ty;
+        const away = dx * ax + dy * ay;
+        const score = toward * 0.55 + away * 0.35 + 0.1;
+        if (score > bestScore) {
+          bestScore = score;
+          best = [dx, dy];
+        }
+      }
+    }
+    if (best) return best;
+    return [ax, ay];
+  }
+
+  /** Empuja al centro de una casilla libre cercana (esquinas / amontonados). */
+  function nudgeToFree(e, rings = 5) {
+    if (!e || e.flying) return false;
+    const TS = G.World.TS;
+    const ox = e.x, oy = e.y;
+    for (let ring = 1; ring <= rings; ring++) {
+      const rad = TS * ring * 0.58;
+      for (let k = 0; k < 16; k++) {
+        const a = (k / 16) * Math.PI * 2;
+        const nx = ox + Math.cos(a) * rad;
+        const ny = oy + Math.sin(a) * rad;
+        if (!G.World.isFree(nx, ny, e.r)) continue;
+        e.x = nx;
+        e.y = ny;
+        e.kx = e.ky = 0;
+        if (e.losAt != null) e.losAt = 0;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  return { update, dirFor, unstuckDir, nudgeToFree, clear };
 })();

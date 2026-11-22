@@ -2,6 +2,64 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-21', title: ['Sprites', 'Sprites'], fix: [
+    ['Humanoides compuestos (amazon, hunter, nómadas…): colores y addons Tibia vía tibia-creature-outfits.js; dibujo con TibiaOutfitDraw.',
+     'Composite humanoids (amazon, hunter, nomads…): Tibia colours and addons via tibia-creature-outfits.js; drawn with TibiaOutfitDraw.'],
+  ] },
+  { d: '2026-11-21', title: ['Combate', 'Combat'], chg: [
+    ['Golpes de jefes (Bane + Nemesis): máximo 30 % de tu vida máxima por impacto (mín. 2 golpes desde vida llena).',
+     'Boss hits (Bane + Nemesis): capped at 30% of your max HP per impact (at least ~2 hits from full HP).'],
+  ] },
+  { d: '2026-11-21', title: ['Bosstiary', 'Bosstiary'], chg: [
+    ['Encuentro recurrente Bosstiary Bane (Black Knight): nomenclatura Bane boss en código; ya no “centinela/élite” en spawn ni etiqueta.',
+     'Recurring Bosstiary Bane encounter (Black Knight): Bane boss naming in code; no more elite/sentinel spawn labels or flags.'],
+  ] },
+  { d: '2026-11-21', title: ['Herramientas', 'Tools'], new: [
+    ['Creature lab (?dev): 4 facing strip (N/NE…), arrastre del sprite con sombra fija, ejes X/Y y tuning por Idle/Walk.',
+     'Creature lab (?dev): 4 strip facings (N/NE…), drag sprite with fixed shadow, X/Y axes and Idle/Walk tuning.'],
+  ] },
+  { d: '2026-11-21', title: ['Sprites', 'Sprites'], fix: [
+    ['Bestiario lote 3 (99085–99152): 61 PNG idle/walk y meta lt_* importados desde el cliente (TSEXP grouped).',
+     'Bestiary batch 3 (99085–99152): 61 idle/walk PNGs and lt_* meta imported from client (TSEXP grouped).'],
+    ['Idle 32 + walk 64 (zorro, cobra, ardilla…): mismo tamaño en pantalla; idle escalado al walk, walk sin encoger.',
+     'Idle 32 + walk 64 (fox, cobra, squirrel…): matched on-screen size; idle scaled up to walk, walk at full cell.'],
+    ['Walk híbrido: fila del PNG automática, fallback a Idle si el frame va vacío; anclas Idle recalculadas (82 lookTypes).',
+     'Hybrid walk: auto strip row, Idle fallback when frame is empty; idle anchors refreshed (82 lookTypes).'],
+    ['Strips walk híbridos (solo mitad inferior, p. ej. ardilla); zorro/cobra siguen en celdas 64×64 para no romper direcciones.',
+     'Hybrid walk strips (lower half only, e.g. squirrel); fox/cobra keep 64×64 cells so all facing directions animate.'],
+    ['Anclas al suelo (fila inferior del sprite): ardilla idle/walk; tejón sin efecto flotante. Import actualizado para próximas reimportaciones.',
+     'Ground anchors (bottom sprite row): squirrel idle/walk; badger no longer floats. Import script updated for future reimports.'],
+  ] },
+  { d: '2026-11-21', title: ['Bestiario', 'Bestiary'], new: [
+    ['68 criaturas (marsh stalker, crocodile, mummy, carniphila…): bestiario 99085–99152, HP Wiki y 61 lookTypes nuevos para import.',
+     '68 creatures (marsh stalker, crocodile, mummy, carniphila…): bestiary 99085–99152, Wiki HP and 61 new lookTypes for import.'],
+    ['40 criaturas más (trol de pantano, orco, elfo, infernoid…): bestiario 99045–99084, sprites y tips.',
+     '40 more creatures (swamp troll, orc, elf, infernoid…): bestiary 99045–99084, sprites and tips.'],
+    ['26 criaturas clásicas de Tibia (pollo, rata, esqueleto, goblin…): HP Wiki, spawn y entradas de bestiario (99019–99044).',
+     '26 classic Tibia creatures (chicken, rat, skeleton, goblin…): Wiki HP, spawn pool and bestiary entries (99019–99044).'],
+  ] },
+  { d: '2026-11-21', title: ['Combate', 'Combat'], fix: [
+    ['Pathing en esquinas: slide por ejes, LOS con colisión, nudge si siguen pegados a roca/props.',
+     'Corner pathing: axis slide, LOS collision check, nudge when still pinned to rock/props.'],
+  ] },
+  { d: '2026-11-21', title: ['Cyclopedia', 'Cyclopedia'], fix: [
+    ['Sin banner de daily boss al iniciar run; toast «sighted»/«tracked» solo la primera vez en el save.',
+     'No daily boss banner on run start; bestiary sighted/tracked toasts only on first-ever progress in save.'],
+  ] },
+  { d: '2026-11-21', title: ['Combate', 'Combat'], fix: [
+    ['Black Knight ya no aparece al inicio (?dev); Bane boss con el timer habitual (1:45–2:15, luego ~2:30).',
+     'Black Knight no longer spawns at run start (?dev); Bane boss uses the normal timer (1:45–2:15, then ~2:30).'],
+    ['Orshabaal solo al minuto final (FINAL_BOSS_AT); quitado spawn al inicio en ?dev.',
+     'Orshabaal only at final boss timer (FINAL_BOSS_AT); removed ?dev spawn at run start.'],
+  ] },
+  { d: '2026-11-21', title: ['Combate', 'Combat'], chg: [
+    ['MVP: menos XP por baja (xpK 1,35) tras HP literales del bestiario; ritmo de nivel más parecido.',
+     'MVP: lower kill XP (xpK 1.35) after literal bestiary HP; leveling pace closer to before.'],
+  ] },
+  { d: '2026-11-21', title: ['Bestiary', 'Bestiary'], chg: [
+    ['HP del bestiario alineados a Tibia Wiki (Fandom); curva de spawn por banda acoplada al catálogo.',
+     'Bestiary creature HP matched to Tibia Wiki (Fandom); hp_band spawn curve tuned to roster.'],
+  ] },
   { d: '2026-11-21', title: ['Cyclopedia', 'Cyclopedia'], chg: [
     ['Menú: retratos del boost diario (criatura y boss) en panel aparte de las estadísticas.',
      'Menu: daily boost creature and boss portraits in a panel separate from run stats.'],
@@ -23,8 +81,8 @@ G.CHANGELOG = [
      'Cyclopedia UI: daily boost panel, name search, boosted entries highlight, detail shows today’s bonuses.'],
   ] },
   { d: '2026-11-21', title: ['Cyclopedia (CYC-9)', 'Cyclopedia (CYC-9)'], chg: [
-    ['Boss potenciado diario: rotación Bane/Archfoe, bonus bosstiary y puntos; centinela antes; más daño recibido.',
-     'Daily boosted boss: Bane/Archfoe rotation, bosstiary and boss-point bonuses; earlier elite spawn; extra damage taken.'],
+    ['Boss potenciado diario: rotación Bane/Archfoe, bonus bosstiary y puntos; Bane boss antes; más daño recibido.',
+     'Daily boosted boss: Bane/Archfoe rotation, bosstiary and boss-point bonuses; earlier Bane boss spawn; extra damage taken.'],
   ] },
   { d: '2026-11-21', title: ['Cyclopedia (CYC-8)', 'Cyclopedia (CYC-8)'], chg: [
     ['Criatura potenciada diaria (UTC): save cyclopedia.daily, más spawn, XP y progreso de bestiario; aviso en menú y Cyclopedia.',

@@ -149,6 +149,7 @@
         <button class="menu-item play" data-go="play">Play<small>Start a hunt (~15 min)</small></button>
         <button class="menu-item hidden" data-go="bestiary">Cyclopedia<small id="menu-bestiary-sub">Hunt log</small></button>
         <button class="menu-item hidden" data-go="outfit">Outfit<small>Colors and addons</small></button>
+        <button class="menu-item hidden" id="menu-creature-dev" data-go="creature-dev">Creature lab<small>?dev — sprites y stats</small></button>
         <button class="menu-item" data-go="goals">Missions<small id="menu-goals-sub">Missions, achievements and profile</small></button>
         <button class="menu-item" data-go="settings">Settings<small>Sound, graphics, controls and account</small></button>
       </div>
@@ -295,6 +296,17 @@
   </div>
 </section>
 
+<!-- ====== Creature dev editor (?dev) ====== -->
+<section id="scr-creature-dev" class="scr dim hidden">
+  <div class="box wide">
+    <div class="row between">
+      <h2>Creature lab</h2>
+      <button class="btn small ghost" type="button" id="cdev-back">Back</button>
+    </div>
+    <div id="cdev-root"></div>
+  </div>
+</section>
+
 <!-- ====== Bestiary ====== -->
 <section id="scr-bestiary" class="scr dim hidden">
   <div class="box wide">
@@ -404,6 +416,7 @@
 <!-- datos de juego -->
 <script defer src="js/data/damage-types.js"></script>
 <script defer src="js/data/mvp-config.js"></script>
+<script defer src="js/data/creatures-roster-ext.js"></script>
 <script defer src="js/data/creatures.js"></script>
 <script defer src="js/data/bosses.js"></script>
 <script defer src="js/data/bestiary.js"></script>
@@ -418,9 +431,11 @@
 <script defer src="js/data/spell-runtime.js"></script>
 <script defer src="js/data/content-api.js"></script>
 <script defer src="js/data/tibia-sprite-map.js"></script>
+<script defer src="js/data/tibia-creature-outfits.js"></script>
 <script defer src="js/data/tibia-items-meta.js"></script>
 <script defer src="js/data/tibia-creatures-meta.js"></script>
 <script defer src="js/data/tibia-sprite-tuning.js"></script>
+<script defer src="js/data/creature-dev-overrides.js"></script>
 <script defer src="js/data/tibia-outfit-colors.js"></script>
 <script defer src="js/data/tibia-outfits.js"></script>
 <script defer src="js/core/tibia-outfit-draw.js"></script>
@@ -473,6 +488,7 @@
 <script defer src="js/ui/run-ui.js"></script>
 <script defer src="js/ui/goals-ui.js"></script>
 <script defer src="js/ui/outfit-ui.js"></script>
+<script defer src="js/ui/creature-dev-editor.js"></script>
 <script defer src="js/ui/settings-ui.js"></script>
 <script defer src="js/ui/news-ui.js"></script>
 <script defer src="js/core/updater.js"></script>

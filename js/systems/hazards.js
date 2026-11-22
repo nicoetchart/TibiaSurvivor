@@ -51,7 +51,10 @@ G.Hazards = (() => {
         detonate(h);
         if (pl && !pl.dead && inside(h, pl.x, pl.y, pl.r)) {
           pl.invuln = 0;
-          pl.hurt(h.pct ? Math.max(h.dmg, pl.maxHp * h.pct) : h.dmg, h.type, !!h.pure);
+          let dmg = h.pct ? Math.max(h.dmg, pl.maxHp * h.pct) : h.dmg;
+          const src = h.eid != null && G.EnemyMgr.get ? G.EnemyMgr.get(h.eid) : null;
+          const fromBoss = !!(src && (src.boss || src.baneBoss));
+          pl.hurt(dmg, h.type, !!h.pure, fromBoss);
         }
       }
       if (h.hit && h.t >= h.delay + h.end) list.splice(i, 1);

@@ -7,7 +7,7 @@
 G.UI = (() => {
   const $ = id => document.getElementById(id);
   const SCREENS = ['scr-login', 'scr-vocation', 'scr-menu',
-                   'scr-outfit', 'scr-bestiary', 'scr-levelup', 'scr-pause', 'scr-over',
+                   'scr-outfit', 'scr-bestiary', 'scr-creature-dev', 'scr-levelup', 'scr-pause', 'scr-over',
                    'scr-item', 'scr-goals', 'scr-bond', 'scr-settings', 'scr-news', 'scr-profile'];
 
   function el(id) { return document.getElementById(id); }

@@ -14,7 +14,7 @@ function load(name) {
 load('js/core/util.js');
 load('js/data/damage-types.js');
 load('js/data/mvp-config.js');
-load('js/data/creatures.js');
+require('./load-creatures').registerCreatures(load);
 load('js/data/bestiary.js');
 load('js/data/bestiary-tips.js');
 load('js/data/neutral-roster.js');
@@ -46,7 +46,7 @@ for (const row of catalog) {
   let estKillsPerRun = 0;
   if (row.section === 'bosstiary') {
     if (row.bossCategory === 'nemesis') estKillsPerRun = 1;
-    else if (row.bossCategory === 'archfoe') estKillsPerRun = Math.max(0.5, runSec / ((cfg.ELITE && cfg.ELITE.intervalSec) || 150));
+    else if (row.bossCategory === 'archfoe') estKillsPerRun = Math.max(0.5, runSec / (((cfg.BANE_BOSS || cfg.ELITE) && (cfg.BANE_BOSS || cfg.ELITE).intervalSec) || 150));
     else estKillsPerRun = 0.25;
   } else {
     const cr = G.CREATURE_BY_ID[row.creatureId];
@@ -70,7 +70,7 @@ for (const row of catalog) {
   }
 }
 
-if (!bosstiarySentinel || !boss) err('missing bosstiary sentinel (black_knight) or final boss (orshabaal) catalog entry');
+if (!bosstiarySentinel || !boss) err('missing bane boss (black_knight) or final boss (orshabaal) catalog entry');
 
 const ptsPerHourAtBoss = boss.rewardPoints * (3600 / runSec);
 if (ptsPerHourAtBoss > 120) note(`boss points/hour heuristic ${ptsPerHourAtBoss.toFixed(1)} (watch economy)`);

@@ -614,7 +614,7 @@
 
   function creatureIdForEnemy(e) {
     if (!e) return null;
-    if (e.sentinelElite) return (e.def && e.def.bestiaryCreatureId) || 'black_knight';
+    if (e.baneBoss) return (e.def && e.def.bestiaryCreatureId) || 'black_knight';
     if (e.def && e.def.bestiaryCreatureId) return e.def.bestiaryCreatureId;
     if (e.def && e.def.creatureId) return e.def.creatureId;
     if (G.CREATURE_BY_LEGACY && e.dex != null) {
@@ -682,17 +682,20 @@
     const entry = ensureProgressEntry(creatureId);
     if (!entry) return false;
     const now = Date.now();
+    const firstEverSighting = entry.firstSeenAt == null;
     entry.runsEncountered = intNonNeg(entry.runsEncountered) + 1;
     if (entry.firstSeenAt == null) entry.firstSeenAt = now;
     flush(false);
-    emit('bestiary:creature-encountered', {
-      creatureId,
-      runsEncountered: entry.runsEncountered,
-      runId: runId || null
-    });
-    pushRunAdvance('encountered', creatureId, getRunKills(creatureId), null, 0, {
-      killsThisRun: getRunKills(creatureId)
-    });
+    if (firstEverSighting) {
+      emit('bestiary:creature-encountered', {
+        creatureId,
+        runsEncountered: entry.runsEncountered,
+        runId: runId || null
+      });
+      pushRunAdvance('encountered', creatureId, getRunKills(creatureId), null, 0, {
+        killsThisRun: getRunKills(creatureId)
+      });
+    }
     return true;
   }
 
@@ -809,7 +812,7 @@
       runId: payload.runId
     });
 
-    if (prevKills === 0 && !runEncountered.has(payload.creatureId)) {
+    if (prevKills === 0) {
       emit('bestiary:creature-discovered', { creatureId: payload.creatureId, runId: payload.runId });
       pushRunAdvance('discovered', payload.creatureId, entry.kills, nextStage, 0, { killsThisRun });
     }
@@ -858,7 +861,7 @@
     const payload = {
       creatureId,
       instanceId: e.id,
-      isElite: !!(e.sentinelElite || e.def && e.def.bestiaryCreatureId === 'black_knight'),
+      isBaneBoss: !!(e.baneBoss || (e.def && e.def.bestiaryCreatureId === 'black_knight')),
       isBoss: !!e.boss,
       sourceKind: e.lastHitAid || 'unknown',
       runId: runId || null,

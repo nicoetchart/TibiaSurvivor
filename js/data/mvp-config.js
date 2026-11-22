@@ -22,8 +22,11 @@ G.MvpConfig = {
     { from: 320, maxTier: 2 }
   ],
 
-  /** Centinelas de élite: primer spawn aleatorio y luego cada ~2:30 (segundos). */
-  ELITE: {
+  /** Tope de daño al jugador por un solo golpe de jefe (fracción de maxHp). */
+  BOSS_HIT_MAX_HP_PCT: 0.3,
+
+  /** Bosstiary Bane (p. ej. Black Knight): primer spawn aleatorio y luego cada ~2:30 (s). */
+  BANE_BOSS: {
     firstMinSec: 105,
     firstMaxSec: 135,
     intervalSec: 150,
@@ -38,11 +41,11 @@ G.MvpConfig = {
    * enemigos con HP declarado cercano. Ajustar al ampliar catálogo (D7).
    */
   HP_BAND: {
-    start: 16,
-    end: 40,
+    start: 18,
+    end: 420,
     curvePow: 1.55,
-    deltaMin: 7,
-    deltaRatio: 0.38,
+    deltaMin: 12,
+    deltaRatio: 0.35,
     widenFactors: [1, 1.6, 2.4],
     hpMulResidual: 1
   },
@@ -65,7 +68,8 @@ G.MvpConfig = {
     earlyWarmupMul: 1.72,
     openingAcc: 2.4,
     dmgK: 1.72,
-    xpK: 5.4,
+    /** Orbe de XP al morir (base def.xp × xpK). Bajo tras HP Tibia literales (~÷4 vs 5.4). */
+    xpK: 1.35,
     cap: 64,
     eliteFrom: 0.85
   },

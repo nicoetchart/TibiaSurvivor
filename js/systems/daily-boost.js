@@ -14,7 +14,7 @@
       bosstiaryKillMul: 1.5,
       extraBossPointOnKill: 5,
       damageTakenMul: 1.05,
-      eliteIntervalMul: 0.82,
+      baneBossIntervalMul: 0.82,
       spawnWeightMul: 1.35
     },
     rotation: { utc: true, noRepeatDays: NO_REPEAT_DAYS }
@@ -313,15 +313,17 @@
     return out;
   }
 
-  /** Centinela élite: aparece un poco antes si hoy toca ese bane/archfoe. */
-  function eliteIntervalMul() {
+  /** Bane boss recurrente: aparece un poco antes si hoy toca ese Bane en el boost diario. */
+  function baneBossIntervalMul() {
     const id = getBoostedBossId();
     if (!id) return 1;
-    if (G.NeutralRoster && G.NeutralRoster.eliteCreatureId) {
-      const eliteId = G.NeutralRoster.eliteCreatureId();
-      if (eliteId && eliteId !== id) return 1;
+    if (G.NeutralRoster && G.NeutralRoster.baneBossCreatureId) {
+      const baneId = G.NeutralRoster.baneBossCreatureId();
+      if (baneId && baneId !== id) return 1;
     }
-    return mulFor('eliteIntervalMul', 'boss');
+    const m = bossMulFor('baneBossIntervalMul');
+    if (Number.isFinite(m) && m > 0) return m;
+    return bossMulFor('eliteIntervalMul') || 1;
   }
 
   function playerDamageMulForEnemy(e) {
@@ -396,7 +398,7 @@
     bonusBossPointsOnKill,
     scaleXp,
     applySpawnDef,
-    eliteIntervalMul,
+    baneBossIntervalMul,
     playerDamageMulForEnemy,
     displayName,
     bannerCreatureText,

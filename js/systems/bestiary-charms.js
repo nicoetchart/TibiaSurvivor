@@ -22,6 +22,7 @@ G.BestiaryCharms = (() => {
         bonusDamage: 0,
         bonusDamageNormal: 0,
         bonusDamageElite: 0,
+        bonusDamageBaneBoss: 0,
         bonusDamageBoss: 0,
         mitigated: 0,
         heals: 0,
@@ -107,7 +108,7 @@ G.BestiaryCharms = (() => {
     const bossCap = effect.bossCap != null ? effect.bossCap : base;
     let frac = base;
     if (e.boss) frac = bossCap;
-    else if (e.elite || e.sentinelElite) frac = Math.min(base, (base + bossCap) * 0.5);
+    else if (e.baneBoss || e.elite) frac = Math.min(base, (base + bossCap) * 0.5);
     return Math.max(1, Math.round(e.maxHp * frac));
   }
 
@@ -117,7 +118,8 @@ G.BestiaryCharms = (() => {
     const st = stat(charm.id);
     st.bonusDamage += bonus;
     if (e.boss) st.bonusDamageBoss += bonus;
-    else if (e.elite || e.sentinelElite) st.bonusDamageElite += bonus;
+    else if (e.baneBoss) st.bonusDamageBaneBoss = (st.bonusDamageBaneBoss || 0) + bonus;
+    else if (e.elite) st.bonusDamageElite += bonus;
     else st.bonusDamageNormal += bonus;
   }
 
@@ -263,7 +265,7 @@ G.BestiaryCharms = (() => {
   function simulateBossWoundBonus(maxHp, elite = false, boss = true) {
     const wound = charmDef('wound');
     if (!wound || !wound.effect) return 0;
-    const fake = { maxHp, boss, elite, sentinelElite: elite && !boss };
+    const fake = { maxHp, boss, elite, baneBoss: elite && !boss };
     return bonusFromScale(fake, wound.effect);
   }
 

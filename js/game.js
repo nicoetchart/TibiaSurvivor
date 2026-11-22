@@ -127,10 +127,6 @@ G.Game = (() => {
     if (G.Bestiary && G.Bestiary.applyRunBonuses) G.Bestiary.applyRunBonuses(pl);
     if (G.MsTelemetry) G.MsTelemetry.reset(pl);
     if (G.Bestiary && G.Bestiary.beginRun) G.Bestiary.beginRun('run-' + Math.floor(Math.random() * 1e9));
-    if (G.DailyBoost && G.DailyBoost.runStartBossHint && G.Spawner && G.Spawner.say) {
-      const hint = G.DailyBoost.runStartBossHint();
-      if (hint) setTimeout(() => G.Spawner.say(hint, 3.6), 600);
-    }
     if (G.BestiaryRunUI) G.BestiaryRunUI.onRunBegin();
     if (G.BestiaryCharms) G.BestiaryCharms.beginRun();
     if (G.BestiaryTelemetry) G.BestiaryTelemetry.beginRun();
@@ -165,10 +161,6 @@ G.Game = (() => {
     deathT = 0;
 
     state = 'playing';
-    if (/[?&]dev\b/.test(location.search)) {
-      if (G.Spawner.devSpawnEliteAtStart) G.Spawner.devSpawnEliteAtStart(pl);
-      if (G.Spawner.devSpawnBossAtStart) G.Spawner.devSpawnBossAtStart(pl);
-    }
   }
 
   function quitRun() { endRun(false); }
@@ -733,7 +725,16 @@ G.Game = (() => {
    */
   const Backdrop = (() => {
     let wanderers = [], t = 0, ready = false, biomeT = 0, bi = 0;
-    const CAST = [99002, 99003, 99004, 99005, 99006, 99007, 99008, 99009, 99010, 99011];
+    function pickBackdropCast(n = 12) {
+      const pool = (G.CREATURES || []).filter(c => c && c.role === 'enemy' && (c.spawnWeight || 0) > 0 && !c.boss)
+        .map(c => c.legacyId);
+      const out = pool.slice();
+      for (let i = out.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const t = out[i]; out[i] = out[j]; out[j] = t;
+      }
+      return out.slice(0, Math.min(n, out.length));
+    }
 
     function backdropBiome() {
       if (G.MvpConfig && G.MvpConfig.RUN_BIOME != null) return G.MvpConfig.RUN_BIOME;
@@ -752,7 +753,7 @@ G.Game = (() => {
       if (!(G.MvpConfig && G.MvpConfig.RUN_BIOME != null)) bi = 0;
       applyBackdropWorld();
       G.Camera.x = 0; G.Camera.y = 0;
-      wanderers = CAST.map(dex => spawn(dex, true));
+      wanderers = pickBackdropCast().map(dex => spawn(dex, true));
       ready = true;
     }
 
@@ -826,7 +827,7 @@ G.Game = (() => {
       G.World.reset(4242);
       applyBackdropWorld();
       G.FX.clear(); G.Projectiles.clear(); G.Combat.clearFields(); G.EnemyMgr.clear(); G.Pickups.clear();
-      wanderers = CAST.map(dex => spawn(dex, true));
+      wanderers = pickBackdropCast().map(dex => spawn(dex, true));
     }
 
     return { init, render, restore };
@@ -928,7 +929,8 @@ G.Flow = {
     if (G.DB.purgeLegacyPs) G.DB.purgeLegacyPs();
     G.UI.initChrome();
     G.LoginUI.init(); G.VocationUI.init(); G.MenuUI.init();
-    G.GoalsUI.init(); G.ProfileUI.init(); G.SettingsUI.init(); G.OutfitUI && G.OutfitUI.init(); G.NewsUI.init(); G.Updater.init();
+    G.GoalsUI.init(); G.ProfileUI.init(); G.SettingsUI.init(); G.OutfitUI && G.OutfitUI.init();
+    G.CreatureDevEditor && G.CreatureDevEditor.init(); G.NewsUI.init(); G.Updater.init();
     // Tu nombre arriba a la derecha abre tu perfil.
     document.getElementById('user-pill').onclick = () => G.GoalsUI.open('profile');
     G.Audio.music('village');     // suena tras el primer clic (lo exige el navegador)

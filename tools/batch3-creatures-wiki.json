@@ -1,0 +1,478 @@
+{
+  "marsh_stalker": {
+    "wiki": "Marsh_Stalker",
+    "status": 200,
+    "hp": 100,
+    "speed": 75,
+    "lookType": null
+  },
+  "minotaur_archer": {
+    "wiki": "Minotaur_Archer",
+    "status": 200,
+    "hp": 100,
+    "speed": 80,
+    "lookType": null
+  },
+  "infernoid_spiritual": {
+    "wiki": "Infernoid_Spiritual",
+    "status": 200,
+    "hp": 102,
+    "speed": 92,
+    "lookType": null
+  },
+  "crocodile": {
+    "wiki": "Crocodile",
+    "status": 200,
+    "hp": 105,
+    "speed": 78,
+    "lookType": null
+  },
+  "orc_spearman": {
+    "wiki": "Orc_Spearman",
+    "status": 200,
+    "hp": 105,
+    "speed": 88,
+    "lookType": null
+  },
+  "amazon": {
+    "wiki": "Amazon",
+    "status": 200,
+    "hp": 110,
+    "speed": 86,
+    "lookType": null
+  },
+  "wisp": {
+    "wiki": "Wisp",
+    "status": 200,
+    "hp": 115,
+    "speed": 81,
+    "lookType": null
+  },
+  "gazer": {
+    "wiki": "Gazer",
+    "status": 200,
+    "hp": 120,
+    "speed": 70,
+    "lookType": null
+  },
+  "stalker": {
+    "wiki": "Stalker",
+    "status": 200,
+    "hp": 120,
+    "speed": 130,
+    "lookType": null
+  },
+  "feverish_citizen": {
+    "wiki": "Feverish_Citizen",
+    "status": 200,
+    "hp": 125,
+    "speed": 73,
+    "lookType": null
+  },
+  "orc_warrior": {
+    "wiki": "Orc_Warrior",
+    "status": 200,
+    "hp": 125,
+    "speed": 95,
+    "lookType": null
+  },
+  "smuggler": {
+    "wiki": "Smuggler",
+    "status": 200,
+    "hp": 130,
+    "speed": 88,
+    "lookType": null
+  },
+  "barbarian_skullhunter": {
+    "wiki": "Barbarian_Skullhunter",
+    "status": 200,
+    "hp": 135,
+    "speed": 84,
+    "lookType": null
+  },
+  "dwarf_soldier": {
+    "wiki": "Dwarf_Soldier",
+    "status": 200,
+    "hp": 135,
+    "speed": 88,
+    "lookType": null
+  },
+  "toad": {
+    "wiki": "Toad",
+    "status": 200,
+    "hp": 135,
+    "speed": 105,
+    "lookType": null
+  },
+  "wild_warrior": {
+    "wiki": "Wild_Warrior",
+    "status": 200,
+    "hp": 135,
+    "speed": 95,
+    "lookType": null
+  },
+  "husky": {
+    "wiki": "Husky",
+    "status": 200,
+    "hp": 140,
+    "speed": 132,
+    "lookType": null
+  },
+  "war_wolf": {
+    "wiki": "War_Wolf",
+    "status": 200,
+    "hp": 140,
+    "speed": 132,
+    "lookType": null
+  },
+  "barbarian_brutetamer": {
+    "wiki": "Barbarian_Brutetamer",
+    "status": 200,
+    "hp": 145,
+    "speed": 89,
+    "lookType": null
+  },
+  "carrion_worm": {
+    "wiki": "Carrion_Worm",
+    "status": 200,
+    "hp": 145,
+    "speed": 65,
+    "lookType": null
+  },
+  "ghost": {
+    "wiki": "Ghost",
+    "status": 200,
+    "hp": 150,
+    "speed": 80,
+    "lookType": null
+  },
+  "hunter": {
+    "wiki": "Hunter",
+    "status": 200,
+    "hp": 150,
+    "speed": 105,
+    "lookType": null
+  },
+  "mercury_blob": {
+    "wiki": "Mercury_Blob",
+    "status": 200,
+    "hp": 150,
+    "speed": 75,
+    "lookType": null
+  },
+  "slime": {
+    "wiki": "Slime",
+    "status": 200,
+    "hp": 150,
+    "speed": 60,
+    "lookType": null
+  },
+  "tarnished_spirit": {
+    "wiki": "Tarnished_Spirit",
+    "status": 200,
+    "hp": 150,
+    "speed": 80,
+    "lookType": null
+  },
+  "minotaur_mage": {
+    "wiki": "Minotaur_Mage",
+    "status": 200,
+    "hp": 155,
+    "speed": 85,
+    "lookType": null
+  },
+  "elf_scout": {
+    "wiki": "Elf_Scout",
+    "status": 200,
+    "hp": 160,
+    "speed": 110,
+    "lookType": null
+  },
+  "lizard_commander": {
+    "wiki": "Lizard_Commander",
+    "status": 200,
+    "hp": 160,
+    "speed": 88,
+    "lookType": null
+  },
+  "nomad_basic": {
+    "wiki": "Nomad_(Basic)",
+    "status": 200,
+    "hp": 160,
+    "speed": 95,
+    "lookType": null
+  },
+  "nomad_blue": {
+    "wiki": "Nomad_(Blue)",
+    "status": 200,
+    "hp": 160,
+    "speed": 95,
+    "lookType": null
+  },
+  "nomad_female": {
+    "wiki": "Nomad_(Female)",
+    "status": 200,
+    "hp": 160,
+    "speed": 95,
+    "lookType": null
+  },
+  "assassin": {
+    "wiki": "Assassin",
+    "status": 200,
+    "hp": 175,
+    "speed": 112,
+    "lookType": null
+  },
+  "firestarter": {
+    "wiki": "Firestarter",
+    "status": 200,
+    "hp": 180,
+    "speed": 100,
+    "lookType": null
+  },
+  "orc_rider": {
+    "wiki": "Orc_Rider",
+    "status": 200,
+    "hp": 180,
+    "speed": 130,
+    "lookType": null
+  },
+  "gladiator": {
+    "wiki": "Gladiator",
+    "status": 200,
+    "hp": 185,
+    "speed": 98,
+    "lookType": null
+  },
+  "minotaur_guard": {
+    "wiki": "Minotaur_Guard",
+    "status": 200,
+    "hp": 185,
+    "speed": 95,
+    "lookType": null
+  },
+  "tortoise": {
+    "wiki": "Tortoise",
+    "status": 200,
+    "hp": 185,
+    "speed": 65,
+    "lookType": null
+  },
+  "dark_monk": {
+    "wiki": "Dark_Monk",
+    "status": 200,
+    "hp": 190,
+    "speed": 115,
+    "lookType": null
+  },
+  "deepling_worker": {
+    "wiki": "Deepling_Worker",
+    "status": 200,
+    "hp": 190,
+    "speed": 65,
+    "lookType": null
+  },
+  "pirate_skeleton": {
+    "wiki": "Pirate_Skeleton",
+    "status": 200,
+    "hp": 190,
+    "speed": 88,
+    "lookType": null
+  },
+  "valkyrie": {
+    "wiki": "Valkyrie",
+    "status": 200,
+    "hp": 190,
+    "speed": 88,
+    "lookType": null
+  },
+  "white_deer": {
+    "wiki": "White_Deer",
+    "status": 200,
+    "hp": 195,
+    "speed": 104,
+    "lookType": null
+  },
+  "boar": {
+    "wiki": "Boar",
+    "status": 200,
+    "hp": 198,
+    "speed": 68,
+    "lookType": null
+  },
+  "gnarlhound": {
+    "wiki": "Gnarlhound",
+    "status": 200,
+    "hp": 198,
+    "speed": 68,
+    "lookType": null
+  },
+  "gloom_wolf": {
+    "wiki": "Gloom_Wolf",
+    "status": 200,
+    "hp": 200,
+    "speed": 125,
+    "lookType": null
+  },
+  "mole": {
+    "wiki": "Mole",
+    "status": 200,
+    "hp": 200,
+    "speed": 80,
+    "lookType": null
+  },
+  "orc_berserker": {
+    "wiki": "Orc_Berserker",
+    "status": 200,
+    "hp": 210,
+    "speed": 125,
+    "lookType": null
+  },
+  "pirate_marauder": {
+    "wiki": "Pirate_Marauder",
+    "status": 200,
+    "hp": 210,
+    "speed": 105,
+    "lookType": null
+  },
+  "elf_arcanist": {
+    "wiki": "Elf_Arcanist",
+    "status": 200,
+    "hp": 220,
+    "speed": 110,
+    "lookType": null
+  },
+  "quara_mantassin_scout": {
+    "wiki": "Quara_Mantassin_Scout",
+    "status": 200,
+    "hp": 220,
+    "speed": 70,
+    "lookType": null
+  },
+  "dark_apprentice": {
+    "wiki": "Dark_Apprentice",
+    "status": 200,
+    "hp": 225,
+    "speed": 86,
+    "lookType": null
+  },
+  "sibang": {
+    "wiki": "Sibang",
+    "status": 200,
+    "hp": 225,
+    "speed": 107,
+    "lookType": null
+  },
+  "tarantula": {
+    "wiki": "Tarantula",
+    "status": 200,
+    "hp": 225,
+    "speed": 107,
+    "lookType": null
+  },
+  "insectoid_scout": {
+    "wiki": "Insectoid_Scout",
+    "status": 200,
+    "hp": 230,
+    "speed": 101,
+    "lookType": null
+  },
+  "merlkin": {
+    "wiki": "Merlkin",
+    "status": 200,
+    "hp": 235,
+    "speed": 97,
+    "lookType": null
+  },
+  "orc_marauder": {
+    "wiki": "Orc_Marauder",
+    "status": 200,
+    "hp": 235,
+    "speed": 195,
+    "lookType": null
+  },
+  "deepling_scout": {
+    "wiki": "Deepling_Scout",
+    "status": 200,
+    "hp": 240,
+    "speed": 65,
+    "lookType": null
+  },
+  "gozzler": {
+    "wiki": "Gozzler",
+    "status": 200,
+    "hp": 240,
+    "speed": 120,
+    "lookType": null
+  },
+  "monk_creature": {
+    "wiki": "Monk_(Creature)",
+    "status": 200,
+    "hp": 240,
+    "speed": 120,
+    "lookType": null
+  },
+  "mummy": {
+    "wiki": "Mummy",
+    "status": 200,
+    "hp": 240,
+    "speed": 75,
+    "lookType": null
+  },
+  "mutated_human": {
+    "wiki": "Mutated_Human",
+    "status": 200,
+    "hp": 240,
+    "speed": 77,
+    "lookType": null
+  },
+  "bandit": {
+    "wiki": "Bandit",
+    "status": 200,
+    "hp": 245,
+    "speed": 90,
+    "lookType": null
+  },
+  "dwarf_guard": {
+    "wiki": "Dwarf_Guard",
+    "status": 200,
+    "hp": 245,
+    "speed": 103,
+    "lookType": null
+  },
+  "acid_blob": {
+    "wiki": "Acid_Blob",
+    "status": 200,
+    "hp": 250,
+    "speed": 60,
+    "lookType": null
+  },
+  "corym_charlatan": {
+    "wiki": "Corym_Charlatan",
+    "status": 200,
+    "hp": 250,
+    "speed": 95,
+    "lookType": null
+  },
+  "gargoyle": {
+    "wiki": "Gargoyle",
+    "status": 200,
+    "hp": 250,
+    "speed": 100,
+    "lookType": null
+  },
+  "tainted_soul": {
+    "wiki": "Tainted_Soul",
+    "status": 200,
+    "hp": 250,
+    "speed": 85,
+    "lookType": null
+  },
+  "carniphila": {
+    "wiki": "Carniphila",
+    "status": 200,
+    "hp": 255,
+    "speed": 55,
+    "lookType": null
+  }
+}

@@ -14,7 +14,7 @@ function load(name) {
 
 load('js/core/util.js');
 load('js/data/cyclopedia-enums.js');
-load('js/data/creatures.js');
+require('./load-creatures').registerCreatures(load);
 load('js/data/cyclopedia-registry.js');
 load('js/data/bestiary.js');
 load('js/systems/daily-boost.js');

@@ -15,7 +15,7 @@ function load(name) {
 load('js/core/util.js');
 load('js/data/damage-types.js');
 load('js/data/mvp-config.js');
-load('js/data/creatures.js');
+require('./load-creatures').registerCreatures(load);
 load('js/data/bosses.js');
 load('js/data/bestiary.js');
 load('js/data/cyclopedia-enums.js');

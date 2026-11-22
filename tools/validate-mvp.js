@@ -17,7 +17,7 @@ function load(name) {
 load('js/core/util.js');
 load('js/data/damage-types.js');
 load('js/data/mvp-config.js');
-load('js/data/creatures.js');
+require('./load-creatures').registerCreatures(load);
 load('js/data/bosses.js');
 load('js/data/bestiary.js');
 load('js/data/cyclopedia-enums.js');
@@ -46,34 +46,34 @@ function okNum(n, label) {
 const cfg = G.MvpConfig;
 okNum(cfg.RUN_DURATION_SEC, 'RUN_DURATION_SEC');
 okNum(cfg.FINAL_BOSS_AT, 'FINAL_BOSS_AT');
-const E = cfg.ELITE;
-if (!E || E.firstMinSec == null) err('ELITE.firstMinSec missing');
+const E = cfg.BANE_BOSS || cfg.ELITE;
+if (!E || E.firstMinSec == null) err('BANE_BOSS.firstMinSec missing');
 else {
-  okNum(E.firstMinSec, 'ELITE.firstMinSec');
-  okNum(E.firstMaxSec, 'ELITE.firstMaxSec');
-  okNum(E.intervalSec, 'ELITE.intervalSec');
-  if (E.firstMaxSec < E.firstMinSec) err('ELITE.firstMaxSec < firstMinSec');
-  if (E.firstMinSec >= cfg.FINAL_BOSS_AT) err('ELITE.firstMinSec must be < FINAL_BOSS_AT');
+  okNum(E.firstMinSec, 'BANE_BOSS.firstMinSec');
+  okNum(E.firstMaxSec, 'BANE_BOSS.firstMaxSec');
+  okNum(E.intervalSec, 'BANE_BOSS.intervalSec');
+  if (E.firstMaxSec < E.firstMinSec) err('BANE_BOSS.firstMaxSec < firstMinSec');
+  if (E.firstMinSec >= cfg.FINAL_BOSS_AT) err('BANE_BOSS.firstMinSec must be < FINAL_BOSS_AT');
 }
 if (cfg.FINAL_BOSS_AT >= cfg.RUN_DURATION_SEC) err('FINAL_BOSS_AT must be < RUN_DURATION_SEC');
 if (cfg.RUN_DURATION_SEC < 600 || cfg.RUN_DURATION_SEC > 900) err('RUN_DURATION_SEC outside 10–15 min band');
 
 const enemies = G.CREATURES.filter(c => c.role === 'enemy');
 const bosses = enemies.filter(c => c.boss);
-if (enemies.length < 10 || enemies.length > 16) err(`enemy creature count ${enemies.length} (expect 10–15 types incl. boss)`);
+if (enemies.length < 10 || enemies.length > 160) err(`enemy creature count ${enemies.length} (expect 10–160 incl. boss/minion)`);
 if (bosses.length !== 1) err(`boss count ${bosses.length} (expect 1)`);
 
 if (G.Cyclopedia) {
   const catDef = G.Cyclopedia.getDefinition('cat');
   if (!catDef || catDef.id !== 'cat' || !Number.isFinite(catDef.hp)) err('Cyclopedia.getDefinition(cat) failed');
   const listed = G.Cyclopedia.listCreatures({ bestiaryOnly: true });
-  if (listed.length < 12) err(`Cyclopedia listCreatures bestiary ${listed.length}`);
+  if (listed.length < 140) err(`Cyclopedia listCreatures bestiary ${listed.length}`);
 }
 if (G.Bestiary) {
   const v = G.Bestiary.validate(false);
   if (!v.ok) v.issues.forEach(msg => err(`Bestiary: ${msg}`));
   const catalog = G.Bestiary.listEntries();
-  if (catalog.length < 14) err(`Bestiary catalog ${catalog.length} (expect >= 14 incl. elite extra)`);
+  if (catalog.length < 145) err(`Bestiary catalog ${catalog.length} (expect >= 145 incl. elite extra)`);
   const sections = new Set(catalog.map(e => e.section));
   if (!sections.has('bestiary') || !sections.has('bosstiary')) {
     err('Cyclopedia catalog missing bestiary or bosstiary section');
@@ -131,8 +131,8 @@ for (const t of SLICE_TYPES) {
   if (!usedTypes.has(t)) err(`slice damage type unused in abilities: ${t}`);
 }
 
-const elite = G.NeutralRoster.buildElite();
-if (!elite || !elite.elite) err('buildElite failed');
+const baneBoss = G.NeutralRoster.buildBaneBoss();
+if (!baneBoss || !baneBoss.baneBoss || !baneBoss.boss) err('buildBaneBoss failed');
 const bossDef = G.NeutralRoster.BOSSES[0];
 if (!bossDef) err('no final boss in roster');
 
@@ -151,8 +151,8 @@ if (G.MvpConfig.SPAWN_MODE === 'hp_band') {
       }
     }
   }
-  if (elite.hp !== 95) err(`hp_band: black knight sentinel hp ${elite.hp} (expect 95)`);
-  if (bossDef.hp !== 520) err(`hp_band: orshabaal hp ${bossDef.hp} (expect 520)`);
+  if (baneBoss.hp !== 1800) err(`hp_band: black knight bane boss hp ${baneBoss.hp} (expect 1800, Tibia Wiki)`);
+  if (bossDef.hp !== 22500) err(`hp_band: orshabaal hp ${bossDef.hp} (expect 22500, Tibia Wiki)`);
 }
 
 if (G.DEX_BY && Object.keys(G.DEX_BY).length) err('PSR-3: G.DEX_BY must stay empty (no pokedex boot)');

@@ -29,7 +29,141 @@ G.TIBIA_SPRITE_MAP = {
     99014: { kind: 'lookType', lookType: 17 },    // Bonelord
     99015: { kind: 'lookType', lookType: 73 },    // Hero
     99016: { kind: 'lookType', lookType: 201 },    // Orshabaal
-    99018: { kind: 'lookType', lookType: 35 }     // Demon (minion)
+    99018: { kind: 'lookType', lookType: 35 },     // Demon (minion)
+    99019: { kind: 'lookType', lookType: 111 },    // Chicken
+    99020: { kind: 'lookType', lookType: 21 },     // Rat
+    99021: { kind: 'lookType', lookType: 14 },     // Sheep
+    99022: { kind: 'lookType', lookType: 106 },    // Skunk
+    99023: { kind: 'lookType', lookType: 30 },     // Spider
+    99024: { kind: 'lookType', lookType: 274 },    // Squirrel
+    99025: { kind: 'lookType', lookType: 1029 },   // Fox (client 15.33+)
+    99026: { kind: 'lookType', lookType: 105 },    // Badger
+    99027: { kind: 'lookType', lookType: 212 },    // Flamingo
+    99028: { kind: 'lookType', lookType: 217 },    // Parrot
+    99029: { kind: 'lookType', lookType: 60 },     // Pig
+    99030: { kind: 'lookType', lookType: 223 },    // Seagull
+    99031: { kind: 'lookType', lookType: 36 },     // Poison Spider
+    99032: { kind: 'lookType', lookType: 122 },    // Bat
+    99033: { kind: 'lookType', lookType: 56 },     // Cave Rat
+    99034: { kind: 'lookType', lookType: 531 },    // Pigeon
+    99035: { kind: 'lookType', lookType: 350 },    // Sandcrawler
+    99036: { kind: 'lookType', lookType: 52 },     // Winter Wolf
+    99037: { kind: 'lookType', lookType: 250 },    // Penguin
+    99038: { kind: 'lookType', lookType: 404 },    // Dromedary
+    99039: { kind: 'lookType', lookType: 43 },     // Scorpion
+    99040: { kind: 'lookType', lookType: 61 },     // Goblin
+    99041: { kind: 'lookType', lookType: 349 },    // Insect Swarm
+    99042: { kind: 'lookType', lookType: 282 },    // Island Troll
+    99043: { kind: 'lookType', lookType: 33 },     // Skeleton
+    99044: { kind: 'lookType', lookType: 112 },    // Crab
+    99045: { kind: 'lookType', lookType: 76 },     // Swamp Troll
+    99046: { kind: 'lookType', lookType: 1927, outfit: { type: 1927, head: 117, body: 4, legs: 56, feet: 11, addons: 0 } },   // Lizard Henchman
+    99047: { kind: 'lookType', lookType: 297 },    // Goblin Scavenger
+    99048: { kind: 'lookType', lookType: 94 },     // Hyaena
+    99049: { kind: 'lookType', lookType: 1928, outfit: { type: 1928, head: 117, body: 4, legs: 20, feet: 57, addons: 0 } },   // Lizard Magician
+    99050: { kind: 'lookType', lookType: 81 },     // Cobra
+    99051: { kind: 'lookType', lookType: 26 },     // Rotworm
+    99052: { kind: 'lookType', lookType: 298 },    // Skeleton Warrior
+    99053: { kind: 'lookType', lookType: 249 },    // Chakoya Tribewarden
+    99054: { kind: 'lookType', lookType: 1929, outfit: { type: 1929, head: 117, body: 4, legs: 11, feet: 6, addons: 0 } },   // Lizard Swordmaster
+    99055: { kind: 'lookType', lookType: 97 },     // Pirate Gunner
+    99056: { kind: 'lookType', lookType: 124 },    // Centipede
+    99057: { kind: 'lookType', lookType: 82 },     // Larva
+    99058: { kind: 'lookType', lookType: 5 },      // Orc
+    99059: { kind: 'lookType', lookType: 529 },    // Salamander
+    99060: { kind: 'lookType', lookType: 1929, outfit: { type: 1929, head: 117, body: 4, legs: 11, feet: 6, addons: 0 } },   // Lizard Executioner
+    99061: { kind: 'lookType', lookType: 296 },    // Goblin Assassin
+    99062: { kind: 'lookType', lookType: 125 },    // Tiger
+    99063: { kind: 'lookType', lookType: 281 },    // Troll Champion
+    99064: { kind: 'lookType', lookType: 1649 },   // White Tiger
+    99065: { kind: 'lookType', lookType: 393 },    // Wild Horse
+    99066: { kind: 'lookType', lookType: 16 },     // Bear
+    99067: { kind: 'lookType', lookType: 259 },    // Chakoya Toolshaper
+    99068: { kind: 'lookType', lookType: 216 },    // Dworc Venomsniper
+    99069: { kind: 'lookType', lookType: 214 },    // Dworc Voodomaster
+    99070: { kind: 'lookType', lookType: 41 },     // Lion
+    99071: { kind: 'lookType', lookType: 123 },    // Panda
+    99072: { kind: 'lookType', lookType: 535 },    // Swampling
+    99073: { kind: 'lookType', lookType: 260 },    // Chakoya Windcaller
+    99074: { kind: 'lookType', lookType: 215 },    // Dworc Fleshhunter
+    99075: { kind: 'lookType', lookType: 298 },    // Honor Guard
+    99076: { kind: 'lookType', lookType: 414 },    // Infernoid Hound
+    99077: { kind: 'lookType', lookType: 528 },    // Emerald Damselfly
+    99078: { kind: 'lookType', lookType: 69 },     // Dwarf
+    99079: { kind: 'lookType', lookType: 567 },    // Leaf Golem
+    99080: { kind: 'lookType', lookType: 129 },    // Poacher
+    99081: { kind: 'lookType', lookType: 242 },    // Infernoid Soul
+    99082: { kind: 'lookType', lookType: 253 },    // Barbarian Headsplitter
+    99083: { kind: 'lookType', lookType: 153 },    // Crazed Beggar
+    99084: { kind: 'lookType', lookType: 62 },     // Elf
+99085: { kind: 'lookType', lookType: 530 },    // Marsh Stalker
+    99086: { kind: 'lookType', lookType: 24 },    // Minotaur Archer
+    99087: { kind: 'lookType', lookType: 243 },    // Infernoid Spiritual
+    99088: { kind: 'lookType', lookType: 119 },    // Crocodile
+    99089: { kind: 'lookType', lookType: 50 },    // Orc Spearman
+    99090: { kind: 'lookType', lookType: 137 },    // Amazon
+    99091: { kind: 'lookType', lookType: 294 },    // Wisp
+    99092: { kind: 'lookType', lookType: 109 },    // Gazer
+    99093: { kind: 'lookType', lookType: 128 },    // Stalker
+    99094: { kind: 'lookType', lookType: 425 },    // Feverish Citizen
+    99095: { kind: 'lookType', lookType: 7 },    // Orc Warrior
+    99096: { kind: 'lookType', lookType: 134 },    // Smuggler
+    99097: { kind: 'lookType', lookType: 254 },    // Barbarian Skullhunter
+    99098: { kind: 'lookType', lookType: 71 },    // Dwarf Soldier
+    99099: { kind: 'lookType', lookType: 222 },    // Toad
+    99100: { kind: 'lookType', lookType: 131 },    // Wild Warrior
+    99101: { kind: 'lookType', lookType: 258 },    // Husky
+    99102: { kind: 'lookType', lookType: 3 },    // War Wolf
+    99103: { kind: 'lookType', lookType: 264 },    // Barbarian Brutetamer
+    99104: { kind: 'lookType', lookType: 192 },    // Carrion Worm
+    99105: { kind: 'lookType', lookType: 48 },    // Ghost
+    99106: { kind: 'lookType', lookType: 129 },    // Hunter
+    99107: { kind: 'lookType', lookType: 316 },    // Mercury Blob
+    99108: { kind: 'lookType', lookType: 19 },    // Slime
+    99109: { kind: 'lookType', lookType: 566 },    // Tarnished Spirit
+    99110: { kind: 'lookType', lookType: 23 },    // Minotaur Mage
+    99111: { kind: 'lookType', lookType: 64 },    // Elf Scout
+    99112: { kind: 'lookType', lookType: 1930 },    // Lizard Commander
+    99113: { kind: 'lookType', lookType: 146 },    // Nomad (Basic)
+    99114: { kind: 'lookType', lookType: 146 },    // Nomad (Blue)
+    99115: { kind: 'lookType', lookType: 146 },    // Nomad (Female)
+    99116: { kind: 'lookType', lookType: 152 },    // Assassin
+    99117: { kind: 'lookType', lookType: 159 },    // Firestarter
+    99118: { kind: 'lookType', lookType: 4 },    // Orc Rider
+    99119: { kind: 'lookType', lookType: 131 },    // Gladiator
+    99120: { kind: 'lookType', lookType: 29 },    // Minotaur Guard
+    99121: { kind: 'lookType', lookType: 197 },    // Tortoise
+    99122: { kind: 'lookType', lookType: 225 },    // Dark Monk
+    99123: { kind: 'lookType', lookType: 470 },    // Deepling Worker
+    99124: { kind: 'lookType', lookType: 195 },    // Pirate Skeleton
+    99125: { kind: 'lookType', lookType: 139 },    // Valkyrie
+    99126: { kind: 'lookType', lookType: 400 },    // White Deer
+    99127: { kind: 'lookType', lookType: 380 },    // Boar
+    99128: { kind: 'lookType', lookType: 341 },    // Gnarlhound
+    99129: { kind: 'lookType', lookType: 716 },    // Gloom Wolf
+    99130: { kind: 'lookType', lookType: 1048 },    // Mole
+    99131: { kind: 'lookType', lookType: 8 },    // Orc Berserker
+    99132: { kind: 'lookType', lookType: 93 },    // Pirate Marauder
+    99133: { kind: 'lookType', lookType: 63 },    // Elf Arcanist
+    99134: { kind: 'lookType', lookType: 72 },    // Quara Mantassin Scout
+    99135: { kind: 'lookType', lookType: 133 },    // Dark Apprentice
+    99136: { kind: 'lookType', lookType: 118 },    // Sibang
+    99137: { kind: 'lookType', lookType: 219 },    // Tarantula
+    99138: { kind: 'lookType', lookType: 403 },    // Insectoid Scout
+    99139: { kind: 'lookType', lookType: 117 },    // Merlkin
+    99140: { kind: 'lookType', lookType: 342 },    // Orc Marauder
+    99141: { kind: 'lookType', lookType: 413 },    // Deepling Scout
+    99142: { kind: 'lookType', lookType: 313 },    // Gozzler
+    99143: { kind: 'lookType', lookType: 57 },    // Monk
+    99144: { kind: 'lookType', lookType: 65 },    // Mummy
+    99145: { kind: 'lookType', lookType: 323 },    // Mutated Human
+    99146: { kind: 'lookType', lookType: 129 },    // Bandit
+    99147: { kind: 'lookType', lookType: 70 },    // Dwarf Guard
+    99148: { kind: 'lookType', lookType: 314 },    // Acid Blob
+    99149: { kind: 'lookType', lookType: 532 },    // Corym Charlatan
+    99150: { kind: 'lookType', lookType: 95 },    // Gargoyle
+    99151: { kind: 'lookType', lookType: 712 },    // Tainted Soul
+    99152: { kind: 'lookType', lookType: 120 },    // Carniphila
   },
 
   /** Claves usadas en juego → PNG en assets/tibia/items/ o clientId en items-32.png. */

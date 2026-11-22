@@ -14,7 +14,7 @@ Para **añadir o redefinir un boss**. Incluye **todo** `NEW_CREATURE_INTAKE.md` 
 
 | Categoría | Significado en run offline |
 |-----------|----------------------------|
-| **bane** | Repetible varias veces por periodo de juego; aviso en mapa; p. ej. centinela elite |
+| **bane** | Repetible varias veces por periodo de juego; aviso en mapa; Bane boss recurrente (p. ej. Black Knight) |
 | **archfoe** | Cooldown largo entre victorias; entrada a sala especial (futuro Rift renombrado) |
 | **nemesis** | Jefe de cierre de run; sala/teleport; mecánicas máximas |
 

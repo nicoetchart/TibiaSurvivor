@@ -1,0 +1,184 @@
+{
+  "chicken": {
+    "wiki": "Chicken",
+    "status": 200,
+    "hp": 15,
+    "speed": 64,
+    "lookType": null
+  },
+  "rat": {
+    "wiki": "Rat",
+    "status": 200,
+    "hp": 20,
+    "speed": 67,
+    "lookType": null
+  },
+  "sheep": {
+    "wiki": "Sheep",
+    "status": 200,
+    "hp": 20,
+    "speed": 58,
+    "lookType": null
+  },
+  "skunk": {
+    "wiki": "Skunk",
+    "status": 200,
+    "hp": 20,
+    "speed": 68,
+    "lookType": null
+  },
+  "spider": {
+    "wiki": "Spider",
+    "status": 200,
+    "hp": 20,
+    "speed": 76,
+    "lookType": null
+  },
+  "squirrel": {
+    "wiki": "Squirrel",
+    "status": 200,
+    "hp": 20,
+    "speed": 240,
+    "lookType": null
+  },
+  "fox": {
+    "wiki": "Fox",
+    "status": 200,
+    "hp": 22,
+    "speed": 85,
+    "lookType": null
+  },
+  "badger": {
+    "wiki": "Badger",
+    "status": 200,
+    "hp": 23,
+    "speed": 70,
+    "lookType": null
+  },
+  "flamingo": {
+    "wiki": "Flamingo",
+    "status": 200,
+    "hp": 25,
+    "speed": 84,
+    "lookType": null
+  },
+  "parrot": {
+    "wiki": "Parrot",
+    "status": 200,
+    "hp": 25,
+    "speed": 160,
+    "lookType": null
+  },
+  "pig": {
+    "wiki": "Pig",
+    "status": 200,
+    "hp": 25,
+    "speed": 57,
+    "lookType": null
+  },
+  "seagull": {
+    "wiki": "Seagull",
+    "status": 200,
+    "hp": 25,
+    "speed": 160,
+    "lookType": null
+  },
+  "poison_spider": {
+    "wiki": "Poison_Spider",
+    "status": 200,
+    "hp": 26,
+    "speed": 80,
+    "lookType": null
+  },
+  "bat": {
+    "wiki": "Bat",
+    "status": 200,
+    "hp": 30,
+    "speed": 100,
+    "lookType": null
+  },
+  "cave_rat": {
+    "wiki": "Cave_Rat",
+    "status": 200,
+    "hp": 30,
+    "speed": 75,
+    "lookType": null
+  },
+  "pigeon": {
+    "wiki": "Pigeon",
+    "status": 200,
+    "hp": 30,
+    "speed": 65,
+    "lookType": null
+  },
+  "sandcrawler": {
+    "wiki": "Sandcrawler",
+    "status": 200,
+    "hp": 30,
+    "speed": 80,
+    "lookType": null
+  },
+  "winter_wolf": {
+    "wiki": "Winter_Wolf",
+    "status": 200,
+    "hp": 30,
+    "speed": 85,
+    "lookType": null
+  },
+  "penguin": {
+    "wiki": "Penguin",
+    "status": 200,
+    "hp": 33,
+    "speed": 58,
+    "lookType": null
+  },
+  "dromedary": {
+    "wiki": "Dromedary",
+    "status": 200,
+    "hp": 45,
+    "speed": 57,
+    "lookType": null
+  },
+  "scorpion": {
+    "wiki": "Scorpion",
+    "status": 200,
+    "hp": 45,
+    "speed": 75,
+    "lookType": null
+  },
+  "goblin": {
+    "wiki": "Goblin",
+    "status": 200,
+    "hp": 50,
+    "speed": 60,
+    "lookType": null
+  },
+  "insect_swarm": {
+    "wiki": "Insect_Swarm",
+    "status": 200,
+    "hp": 50,
+    "speed": 118,
+    "lookType": null
+  },
+  "island_troll": {
+    "wiki": "Island_Troll",
+    "status": 200,
+    "hp": 50,
+    "speed": 63,
+    "lookType": null
+  },
+  "skeleton": {
+    "wiki": "Skeleton",
+    "status": 200,
+    "hp": 50,
+    "speed": 77,
+    "lookType": null
+  },
+  "crab": {
+    "wiki": "Crab",
+    "status": 200,
+    "hp": 55,
+    "speed": 100,
+    "lookType": null
+  }
+}

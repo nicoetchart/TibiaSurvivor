@@ -1,6 +1,7 @@
 /* ============ creatures.js — criaturas Tibia (MVP bestiario) ============
  * legacyId 99001–99099 (DEC-018). Sprites Tibia (tibia-sprite-map.js).
- * 15 enemigos del bestiario oficial de Tibia + jugador.
+ * Bestiario MVP (núcleo + js/data/creatures-roster-ext.js) + jugador.
+ * HP de combate/bestiario alineados a Tibia Wiki (Fandom List of Creatures).
  * Dificultades: Bestiary/Difficulties (TibiaWiki). Elementos: debilidades/resistencias/inmunidades.
  */
 const TS_BESTIARY_STD = {
@@ -70,7 +71,7 @@ G.CREATURES = [
     family: 'beast',
     difficulty: 'harmless',
     tags: ['melee', 'ground'],
-    hp: 18,
+    hp: 20,
     speed: 52,
     attack: 1.05,
     damageTypes: ['physical'],
@@ -92,7 +93,7 @@ G.CREATURES = [
     family: 'beast',
     difficulty: 'harmless',
     tags: ['melee', 'ground'],
-    hp: 14,
+    hp: 25,
     speed: 78,
     attack: 0.95,
     damageTypes: ['physical'],
@@ -114,7 +115,7 @@ G.CREATURES = [
     family: 'beast',
     difficulty: 'harmless',
     tags: ['melee', 'ground'],
-    hp: 16,
+    hp: 15,
     speed: 50,
     attack: 1,
     damageTypes: ['physical'],
@@ -137,7 +138,7 @@ G.CREATURES = [
     family: 'vermin',
     difficulty: 'trivial',
     tags: ['melee', 'ground'],
-    hp: 38,
+    hp: 29,
     speed: 44,
     attack: 0.92,
     damageTypes: ['earth', 'physical'],
@@ -162,7 +163,7 @@ G.CREATURES = [
     family: 'humanoid',
     difficulty: 'trivial',
     tags: ['melee', 'ground'],
-    hp: 24,
+    hp: 50,
     speed: 54,
     attack: 1.02,
     damageTypes: ['physical'],
@@ -186,7 +187,7 @@ G.CREATURES = [
     family: 'beast',
     difficulty: 'easy',
     tags: ['melee', 'ground'],
-    hp: 28,
+    hp: 25,
     speed: 68,
     attack: 1.08,
     damageTypes: ['physical'],
@@ -209,7 +210,7 @@ G.CREATURES = [
     family: 'humanoid',
     difficulty: 'medium',
     tags: ['healer', 'ranged', 'ground'],
-    hp: 22,
+    hp: 115,
     speed: 44,
     attack: 0.92,
     damageTypes: ['energy'],
@@ -234,7 +235,7 @@ G.CREATURES = [
     family: 'humanoid',
     difficulty: 'easy',
     tags: ['melee', 'ground'],
-    hp: 30,
+    hp: 100,
     speed: 46,
     attack: 1,
     damageTypes: ['physical'],
@@ -258,7 +259,7 @@ G.CREATURES = [
     family: 'humanoid',
     difficulty: 'medium',
     tags: ['melee', 'ground'],
-    hp: 95,
+    hp: 1800,
     speed: 54,
     attack: 1.18,
     damageTypes: ['physical'],
@@ -269,7 +270,7 @@ G.CREATURES = [
     behavior: 'charger',
     behaviors: ['charger'],
     sprite: 'tibia',
-    role: 'elite',
+    role: 'enemy',
     tier: 2,
     spawnWeight: 0,
     boss: true,
@@ -285,7 +286,7 @@ G.CREATURES = [
     family: 'vermin',
     difficulty: 'easy',
     tags: ['melee', 'ground'],
-    hp: 26,
+    hp: 35,
     speed: 50,
     attack: 0.98,
     damageTypes: ['earth', 'physical'],
@@ -309,7 +310,7 @@ G.CREATURES = [
     family: 'demon',
     difficulty: 'medium',
     tags: ['ranged', 'ground'],
-    hp: 32,
+    hp: 200,
     speed: 52,
     attack: 1.05,
     damageTypes: ['fire'],
@@ -334,7 +335,7 @@ G.CREATURES = [
     family: 'undead',
     difficulty: 'easy',
     tags: ['melee', 'ground'],
-    hp: 28,
+    hp: 100,
     speed: 48,
     attack: 1.1,
     damageTypes: ['death', 'physical'],
@@ -359,7 +360,7 @@ G.CREATURES = [
     family: 'magical',
     difficulty: 'medium',
     tags: ['ranged', 'ground'],
-    hp: 34,
+    hp: 260,
     speed: 46,
     attack: 0.9,
     damageTypes: ['energy', 'death'],
@@ -383,7 +384,7 @@ G.CREATURES = [
     family: 'humanoid',
     difficulty: 'hard',
     tags: ['melee', 'ground'],
-    hp: 36,
+    hp: 1400,
     speed: 58,
     attack: 1.12,
     damageTypes: ['physical'],
@@ -408,7 +409,7 @@ G.CREATURES = [
     family: 'demon',
     difficulty: 'hard',
     tags: ['melee', 'ground'],
-    hp: 28,
+    hp: 8200,
     speed: 58,
     attack: 1.05,
     damageTypes: ['fire', 'death'],
@@ -434,7 +435,7 @@ G.CREATURES = [
     family: 'demon',
     difficulty: 'boss',
     tags: ['boss', 'melee', 'summoner', 'ground'],
-    hp: 520,
+    hp: 22500,
     speed: 62,
     attack: 1.25,
     damageTypes: ['physical', 'fire', 'energy'],
@@ -455,9 +456,17 @@ G.CREATURES = [
   }
 ];
 
-G.CREATURE_BY_ID = {};
-G.CREATURE_BY_LEGACY = {};
-for (const c of G.CREATURES) {
-  G.CREATURE_BY_ID[c.id] = c;
-  G.CREATURE_BY_LEGACY[c.legacyId] = c;
+function registerCreatureMaps() {
+  G.CREATURE_BY_ID = G.CREATURE_BY_ID || {};
+  G.CREATURE_BY_LEGACY = G.CREATURE_BY_LEGACY || {};
+  for (const c of G.CREATURES) {
+    G.CREATURE_BY_ID[c.id] = c;
+    G.CREATURE_BY_LEGACY[c.legacyId] = c;
+  }
 }
+
+if (Array.isArray(G.CREATURE_ROSTER_EXT) && G.CREATURE_ROSTER_EXT.length) {
+  G.CREATURES.push(...G.CREATURE_ROSTER_EXT);
+}
+
+registerCreatureMaps();

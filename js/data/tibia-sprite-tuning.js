@@ -4,7 +4,8 @@
  *   · Tamaño en pantalla = w×h del meta × G.Sprites.PX (2) × scale de la entidad (como un dex).
  *   · Minotaur 32px se ve más chico que troll 64px — igual que en el cliente Tibia.
  *   · ax/ay y s (sombra) vienen del import (`tibia-creatures-meta.js`), medidos del PNG.
- *   · Solo correcciones finas aquí: scaleMul global, footDx/footDy, byLookType.
+ *   · Solo correcciones finas aquí: scaleMul global, footDx/footDy, byLookType
+ *     (Idle/Walk y dir["0"…"3"] footDx/footDy por columna strip: 0=N/NE 1=W/NW 2=S/SW 3=E/SE).
  *
  * Modo uniforme (opcional): naturalSize: false + visualTiers + lookTypeTier
  *   · Iguala alturas “de juego” aunque el tile del cliente sea 32 o 64.

@@ -42,7 +42,7 @@ Ejecutar incrementalmente por fase. Marcar: PASS | FAIL | NOT TESTED | BLOCKED.
 | ID | Caso | Esperado |
 |----|------|----------|
 | BO01 | Spawn Orshabaal timer | ~FINAL_BOSS_AT |
-| BO02 | Black Knight elite | sentinelElite, bosstiary bane |
+| BO02 | Black Knight Bane boss | baneBoss, bosstiary bane |
 | BO03 | Boss AI phases | fury <50% hp |
 | BO04 | Summons cap | max 4 |
 | BO05 | Muerte boss | victory path |

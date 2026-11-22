@@ -88,7 +88,7 @@ No hay `G.DEX` / `G.DEX_BY` en boot (PSR-10).
 ### 3.2 Spawn
 
 - Continuo por `spawnRate(t)` + bolsa `available(t)` filtrada por `tier` y `ENEMY_UNLOCK`.
-- Elite sentinel: `buildElite()` → `black_knight`, flags `sentinelElite`, timer en `MvpConfig.ELITE`.
+- Bane boss: `buildBaneBoss()` → `black_knight`, flag `baneBoss`, timer en `MvpConfig.BANE_BOSS`.
 - Boss final: `NeutralRoster.BOSSES` → `orshabaal` en `FINAL_BOSS_AT` (~780 s).
 - Summons Orshabaal: `noBestiaryCredit: true` en def inline (`enemy.js`).
 
@@ -132,7 +132,7 @@ Restos: `entity.dex`, shiny/golden en enemy, `Progress` misiones por `dtype`, ca
 |-----------|-----|
 | `c.boss: true` en `CREATURES` | Escala, flying, AI jefe, drops |
 | `e.boss` runtime | Charms caps, telemetry |
-| `e.sentinelElite` | Centinela Black Knight |
+| `e.baneBoss` | Bosstiary Bane en run (Black Knight) |
 | `bestiary.section: 'bosstiary'` | Catálogo / umbrales |
 | `isOrshabaal()` hardcoded | Kit exclusivo |
 

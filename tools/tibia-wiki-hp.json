@@ -1,0 +1,87 @@
+{
+  "Cat": {
+    "hp": 20,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Cat"
+  },
+  "Dog": {
+    "hp": 20,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Dog"
+  },
+  "Deer": {
+    "hp": 25,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Deer"
+  },
+  "Rabbit": {
+    "hp": 15,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Rabbit"
+  },
+  "Bug": {
+    "hp": 29,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Bug"
+  },
+  "Troll": {
+    "hp": 50,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Troll"
+  },
+  "Wolf": {
+    "hp": 25,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Wolf"
+  },
+  "Orc_Shaman": {
+    "hp": 115,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Orc_Shaman"
+  },
+  "Minotaur": {
+    "hp": 100,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Minotaur"
+  },
+  "Black_Knight": {
+    "hp": 1800,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Black_Knight"
+  },
+  "Wasp": {
+    "hp": 35,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Wasp"
+  },
+  "Fire_Devil": {
+    "hp": 200,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Fire_Devil"
+  },
+  "Ghoul": {
+    "hp": 100,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Ghoul"
+  },
+  "Bonelord": {
+    "hp": 260,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Bonelord"
+  },
+  "Hero": {
+    "hp": 1400,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Hero"
+  },
+  "Demon": {
+    "hp": 8200,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Demon"
+  },
+  "Orshabaal": {
+    "hp": 22500,
+    "status": 200,
+    "url": "https://tibia.fandom.com/wiki/Orshabaal"
+  }
+}

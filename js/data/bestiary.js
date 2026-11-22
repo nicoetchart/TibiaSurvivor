@@ -12,7 +12,7 @@ G.Bestiary = (() => {
   const BOSS_CATEGORY_INFO = {
     bane: {
       label: 'Bane',
-      blurb: 'Repeatable hunters; sentinel alerts and elite conversions during runs.'
+      blurb: 'Repeatable Bosstiary bosses (e.g. Black Knight) that appear mid-run.'
     },
     archfoe: {
       label: 'Archfoe',

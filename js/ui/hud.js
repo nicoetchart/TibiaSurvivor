@@ -136,6 +136,37 @@ G.HUD = (() => {
       ctx.fillText(boss.name.toUpperCase(), w / 2, 80);
     }
 
+    // ---------- ?dev: banda HP (D7 hp_band) ----------
+    if (typeof location !== 'undefined' && /[?&]dev\b/.test(location.search) &&
+        G.Content && G.Content.mode === 'neutral' && G.NeutralRoster &&
+        G.NeutralRoster.useHpBand && G.NeutralRoster.useHpBand()) {
+      const bandDbg = G.NeutralRoster.spawnBandDebug(st.time);
+      if (bandDbg) {
+        const dx = 16;
+        const dy = boss ? 98 : 86;
+        roundRect(ctx, dx - 6, dy - 14, 248, bandDbg.fallback ? 56 : 44, 6);
+        ctx.fillStyle = 'rgba(8,14,24,.78)';
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'rgba(120,180,255,.35)';
+        ctx.stroke();
+        ctx.textAlign = 'left';
+        ctx.font = F(800, 11);
+        ctx.fillStyle = '#9ae6ff';
+        ctx.fillText('H_target  ' + bandDbg.h.toFixed(1), dx, dy);
+        ctx.font = F(600, 10);
+        ctx.fillStyle = P.sub;
+        let line2 = 'Band  [' + bandDbg.lo + ' – ' + bandDbg.hi + ']   δ ' + bandDbg.delta;
+        if (bandDbg.widenMul > 1) line2 += '   widen ×' + bandDbg.widenMul;
+        ctx.fillText(line2, dx, dy + 14);
+        ctx.fillStyle = bandDbg.pool ? P.muted : P.warn;
+        const line3 = bandDbg.fallback
+          ? 'Pool empty · nearest-H fallback'
+          : 'Pool  ' + bandDbg.pool + ' spawn def(s)';
+        ctx.fillText(line3, dx, dy + 28);
+      }
+    }
+
     // ---------- aviso ----------
     // ---------- shinies fuera de pantalla: destello en el borde ----------
     const cam = G.Camera, pulse = 0.6 + Math.sin(performance.now() / 160) * 0.4;

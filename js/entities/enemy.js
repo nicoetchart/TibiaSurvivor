@@ -12,6 +12,34 @@
  */
 (() => {
   let nextId = 1;
+
+  /** Movimiento con deslizamiento en ejes (esquinas de roca / props). */
+  function moveWithSlide(e, vx, vy, dt) {
+    const ox = e.x, oy = e.y;
+    let x = ox, y = oy;
+    const mx = vx * dt, my = vy * dt;
+    if (Math.abs(mx) > 1e-4) {
+      e.x = x + mx; e.y = y;
+      if (G.World.collide(e)) e.x = x;
+      else x = e.x;
+    }
+    if (Math.abs(my) > 1e-4) {
+      e.x = x; e.y = y + my;
+      if (G.World.collide(e)) e.y = y;
+      else y = e.y;
+    }
+    e.x = x; e.y = y;
+    return Math.hypot(x - ox, y - oy);
+  }
+
+  function startUnstuck(self, pl, long = false) {
+    self.unstuckT = long ? G.U.rand(0.55, 0.85) : G.U.rand(0.42, 0.65);
+    self._unstuckDir = G.Path.unstuckDir ? G.Path.unstuckDir(self, pl) : G.U.norm(self.x - pl.x, self.y - pl.y);
+    self.losAt = 0;
+    self.stuckT = 0;
+    self.stuckHits = 0;
+    self.wallPinT = 0;
+  }
   /** Los jefes se agrandan hasta ~110 de alto, según lo grande que ya sea su sprite. */
   function bossScale(dex) {
     const m = G.Sprites.animMeta(dex, 'Idle');
@@ -50,6 +78,7 @@
       this.resistances = (dexRow && dexRow.resistances) || [];
       this.immunities = (dexRow && dexRow.immunities) || [];
       this.elite = !!def.elite;
+      this.baneBoss = !!def.baneBoss;
       const atkTypes = (dexRow && dexRow.atkTypes) || this.types;
       this.atkType = atkTypes[0];         // tipo de sus golpes (tabla de tipos)
       // Vuelan por encima de rocas y agua sólo los que FLOTAN en su sprite (un
@@ -74,7 +103,8 @@
       // distancia
       this.shotCd = def.shotCd ? G.U.rand(0.3, def.shotCd) : 0;
       // desatasco
-      this.stuckT = 0; this.sideT = 0; this.side = 1;
+      this.stuckT = 0; this.stuckHits = 0; this.wallPinT = 0; this.sideT = 0; this.side = 1;
+      this.unstuckT = 0; this._unstuckDir = null;
       this.bob = Math.random() * 6.28;
       this.shiny = false;
       this.sparkT = 0;
@@ -229,7 +259,7 @@
       if (this.lastHitOwner && this.lastHitAid && G.MsTelemetry) {
         G.MsTelemetry.onKill(this.lastHitOwner, this.lastHitAid, this);
       }
-      if (this.sentinelElite && G.Content && G.Content.mode === 'neutral') {
+      if (this.baneBoss && G.Content && G.Content.mode === 'neutral') {
         const pl = G.Game ? G.Game.player : null;
         if (pl) {
           pl.bonds++;
@@ -372,6 +402,24 @@
         }
       }
 
+      // Retroceso breve: recalcula ruta (invalida LOS) tras chocar sin avanzar.
+      if (!this.flying && this.unstuckT > 0 && this.phase === 'walk') {
+        this.unstuckT -= dt;
+        const u = this._unstuckDir || (G.Path.unstuckDir ? G.Path.unstuckDir(this, pl) : G.U.norm(this.x - pl.x, this.y - pl.y));
+        let ux = u[0], uy = u[1];
+        let vx = ux * spd * 0.92, vy = uy * spd * 0.92;
+        const ox = this.x, oy = this.y;
+        this.x += this.kx * dt; this.y += this.ky * dt;
+        this.kx *= Math.pow(0.0015, dt); this.ky *= Math.pow(0.0015, dt);
+        moveWithSlide(this, vx, vy, dt);
+        const moved = Math.hypot(this.x - ox, this.y - oy);
+        const moving = moved > spd * dt * 0.12;
+        this.anim.dir = G.Sprites.dirFromAngle(Math.atan2(uy, ux));
+        this.anim.loop(moving ? 'Walk' : 'Idle', moving ? 0.65 : 1);
+        if (this.unstuckT <= 0) this._unstuckDir = null;
+        return;
+      }
+
       // Si lleva rato atascado contra algo, rodea por un lado.
       if (this.sideT > 0) {
         this.sideT -= dt;
@@ -427,23 +475,30 @@
       const ox = this.x, oy = this.y;
       this.x += this.kx * dt; this.y += this.ky * dt;
       this.kx *= Math.pow(0.0015, dt); this.ky *= Math.pow(0.0015, dt);
-      this.x += vx * dt; this.y += vy * dt;
+      let gotMove;
+      if (!this.flying) gotMove = moveWithSlide(this, vx, vy, dt);
+      else { this.x += vx * dt; this.y += vy * dt; gotMove = Math.hypot(this.x - ox, this.y - oy); }
 
-      if (!this.flying && G.World.collide(this)) {
-        // ¿Ha avanzado bastante menos de lo que quería?
-        const want = Math.hypot(vx, vy) * dt;
-        const got = Math.hypot(this.x - ox, this.y - oy);
-        if (want > 0.5 && got < want * 0.35) {
-          this.stuckT += dt;
-          if (this.stuckT > 0.35 && this.sideT <= 0) {
-            this.sideT = 0.7; this.stuckT = 0;
-            this.side = Math.random() < 0.5 ? -1 : 1;
-          }
-        } else this.stuckT = 0;
+      const wantMove = Math.hypot(vx, vy) * dt;
+      const stillWall = !this.flying && G.World.collide(this);
+      const blocked = !this.flying && wantMove > 0.4 && (gotMove < wantMove * 0.38 || stillWall);
+      if (blocked) {
+        this.stuckT += dt;
+        this.wallPinT += dt;
+        this.stuckHits = (this.stuckHits || 0) + 1;
+        if (this.unstuckT <= 0 && this.sideT <= 0 &&
+            (this.wallPinT > 0.12 || this.stuckT > 0.2 || this.stuckHits >= 3)) {
+          startUnstuck(this, pl, this.wallPinT > 0.45);
+        }
+      } else if (gotMove > wantMove * 0.45) {
+        this.stuckT = Math.max(0, this.stuckT - dt * 3);
+        this.wallPinT = Math.max(0, this.wallPinT - dt * 4);
+        this.stuckHits = Math.max(0, (this.stuckHits || 0) - 1);
       }
 
       // --- animación ---
-      const moving = Math.abs(vx) + Math.abs(vy) > 2;
+      const jammed = !this.flying && wantMove > 0.5 && gotMove < wantMove * 0.22;
+      const moving = !jammed && (gotMove > Math.max(1.5, wantMove * 0.28) || Math.abs(vx) + Math.abs(vy) > 2);
       const faceA = this.phase === 'dash' ? Math.atan2(this.dy, this.dx)
                   : moving ? Math.atan2(vy, vx) : Math.atan2(pl.y - this.y, pl.x - this.x);
       this.anim.dir = G.Sprites.dirFromAngle(faceA);
@@ -699,6 +754,7 @@
         G.Projectiles.spawn({
           x: this.x, y: this.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
           dmg: this.shotDmg() * k, r: pr, life, friendly: false, color: '#ff7a9e', mtype: type,
+          fromBoss: !!(this.boss || this.baneBoss),
           vis: G.VFX.forType(type)
         });
       }
@@ -886,7 +942,14 @@
         supN++;
       }
 
-      if (this.elite && !this.boss && this.hp >= this.maxHp * 0.98) {
+      if (this.baneBoss && this.hp >= this.maxHp * 0.98) {
+        ctx.save();
+        ctx.font = G.TibiaTheme ? G.TibiaTheme.font(700, 9) : '700 9px Pixelify, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#e8c4ff';
+        ctx.fillText('BANE', this.x, this.y - this.bodyH - 14);
+        ctx.restore();
+      } else if (this.elite && !this.boss && this.hp >= this.maxHp * 0.98) {
         ctx.save();
         ctx.font = G.TibiaTheme ? G.TibiaTheme.font(700, 9) : '700 9px Pixelify, monospace';
         ctx.textAlign = 'center';
@@ -1037,9 +1100,13 @@
           }
         }
         if (n) {
+          const ox = e.x, oy = e.y;
           e.x += px * 42 * dt;
           e.y += py * 42 * dt;
-          if (!e.flying) G.World.collide(e);
+          if (!e.flying && G.World.collide(e) && Math.hypot(e.x - ox, e.y - oy) < 1.5) {
+            e.x = ox;
+            e.y = oy;
+          }
         }
       }
     }
@@ -1080,6 +1147,18 @@
         else e.update(dt, nearestPlayer(players, e.x, e.y) || pl);
       }
       if (true) separate(dt);
+      if (G.Path && G.Path.nudgeToFree) {
+        for (const e of list) {
+          if (e.dead || e.remote || e.flying || e.boss) continue;
+          if ((e.wallPinT || 0) > 0.55 || (e.stuckT || 0) > 0.65) {
+            if (G.Path.nudgeToFree(e)) {
+              e.stuckT = 0;
+              e.wallPinT = 0;
+              e.stuckHits = 0;
+            }
+          }
+        }
+      }
       for (let i = list.length - 1; i >= 0; i--) {
         const e = list[i];
         if (e.remote) continue;

@@ -33,7 +33,7 @@ G.Player = class Player {
     this.slots = [];           // huecos: cada uno, una lista de movimientos que se lanzan a la vez
     this.active = 0;           // hueco activo
     this.maxMoves = 4;         // huecos
-    this.bonds = 0;            // vínculos: centinela de élite, grietas legendarias, etc.
+    this.bonds = 0;            // vínculos: Bane boss, grietas legendarias, etc.
 
     this.buffs = {
       atk: { n: 0, t: 0, amount: 0 },
@@ -288,8 +288,9 @@ G.Player = class Player {
   /**
    * @param type  tipo del ataque (tabla de tipos y clima); sin tipo, daño tal cual
    * @param pure  daño que ignora defensa (eventos especiales / jefes)
+   * @param fromBoss  tope por golpe (MvpConfig.BOSS_HIT_MAX_HP_PCT, p. ej. 30 % maxHp)
    */
-  hurt(amount, type = null, pure = false) {
+  hurt(amount, type = null, pure = false, fromBoss = false) {
     if (this.invuln > 0 || this.dead) return;
     let eff = null;
     if (type) {
@@ -316,6 +317,11 @@ G.Player = class Player {
       this.flash = 0.14;
       G.Audio.sfx('hurt');
       return;
+    }
+    if (fromBoss) {
+      const pct = G.MvpConfig && G.MvpConfig.BOSS_HIT_MAX_HP_PCT;
+      const cap = this.maxHp * (Number.isFinite(pct) && pct > 0 ? pct : 0.3);
+      d = Math.min(d, Math.max(1, cap));
     }
     this.msShieldIdleT = 0;
     this.hp -= d;

@@ -39,6 +39,12 @@ G.TibiaSprites = (() => {
       const live = G.TibiaOutfits.fromSave();
       base.outfit = Object.assign({}, base.outfit, live);
     }
+    if (base.kind === 'lookType' && !base.outfit && G.TIBIA_CREATURE_OUTFITS) {
+      const preset = G.TIBIA_CREATURE_OUTFITS[String(dex)];
+      if (preset) {
+        base.outfit = Object.assign({ type: base.lookType }, preset);
+      }
+    }
     return base;
   }
 
@@ -114,7 +120,38 @@ G.TibiaSprites = (() => {
     return !T || T.naturalSize !== false;
   }
 
-  function resolveTuning(dex, animM) {
+  function animTuningBucket(anim) {
+    if (anim === 'Idle' || anim === 'Hurt' || anim === 'Faint') return 'Idle';
+    return 'Walk';
+  }
+
+  function normDir8(dir8) {
+    return ((((dir8 != null ? dir8 : 0) % 8) + 8) % 8);
+  }
+
+  function mergeAnimTuning(by, bucket, scaleMul, footDx, footDy, dir8) {
+    if (!by || !bucket) return { scaleMul, footDx, footDy };
+    const animBy = by[bucket];
+    if (!animBy || typeof animBy !== 'object') return { scaleMul, footDx, footDy };
+    if (animBy.scaleMul != null) scaleMul *= animBy.scaleMul;
+    let bFootDx = animBy.footDx != null ? animBy.footDx : 0;
+    let bFootDy = animBy.footDy != null ? animBy.footDy : 0;
+    if (dir8 != null && animBy.dir) {
+      const col = tibiaDir(dir8);
+      let d = animBy.dir[String(col)];
+      if (!d) d = animBy.dir[String(normDir8(dir8))];
+      if (d) {
+        if (d.footDx != null) bFootDx = d.footDx;
+        if (d.footDy != null) bFootDy = d.footDy;
+        if (d.scaleMul != null) scaleMul *= d.scaleMul;
+      }
+    }
+    footDx += bFootDx;
+    footDy += bFootDy;
+    return { scaleMul, footDx, footDy };
+  }
+
+  function resolveTuning(dex, animM, animName, dir8) {
     const T = tuningRoot();
     const large = animM && animM.h >= 48;
     const lt = lookTypeFromDex(dex);
@@ -142,25 +179,87 @@ G.TibiaSprites = (() => {
         if (T.footDy32 != null) footDy += T.footDy32;
       }
     }
-  const by = lt != null && T.byLookType ? T.byLookType[lt] : null;
+    const by = lt != null && T.byLookType ? T.byLookType[lt] : null;
+    let shadowRxMul = T.shadowRxMul != null ? T.shadowRxMul : 1;
+    let shadowS = null;
     if (by) {
       if (by.scaleMul != null) scaleMul *= by.scaleMul;
       if (by.footDx != null) footDx += by.footDx;
       if (by.footDy != null) footDy += by.footDy;
+      if (by.shadowRxMul != null) shadowRxMul = by.shadowRxMul;
+      if (by.shadowS != null) shadowS = by.shadowS;
     }
+    const bucket = animName ? animTuningBucket(animName)
+      : (animM && (animM.stripKind === 'idle' || animM.stripKind === 'Idle') ? 'Idle' : 'Walk');
+    const merged = mergeAnimTuning(by, bucket, scaleMul, footDx, footDy, dir8);
     return {
-      scaleMul,
-      footDx,
-      footDy,
-      shadowRxMul: T.shadowRxMul != null ? T.shadowRxMul : 1
+      scaleMul: merged.scaleMul,
+      footDx: merged.footDx,
+      footDy: merged.footDy,
+      shadowRxMul,
+      shadowS
     };
   }
 
   const stripFrames = new Map();
   const MAX_STRIP_FRAMES = 512;
+  const stripAlphaCache = new Map();
+
+  /** Píxeles opacos en un recorte del strip (cacheado; sólo en runtime con Image cargada). */
+  function stripAlphaCount(img, sx, sy, w, h) {
+    if (!img || !img.complete || !img.naturalWidth) return 0;
+    const key = img.src + '|' + sx + '|' + sy + '|' + w + 'x' + h;
+    let n = stripAlphaCache.get(key);
+    if (n != null) return n;
+    const cv = document.createElement('canvas');
+    cv.width = w;
+    cv.height = h;
+    const c = cv.getContext('2d', { willReadFrequently: true });
+    c.imageSmoothingEnabled = false;
+    c.clearRect(0, 0, w, h);
+    c.drawImage(img, sx, sy, w, h, 0, 0, w, h);
+    const d = c.getImageData(0, 0, w, h).data;
+    n = 0;
+    for (let i = 3; i < d.length; i += 4) if (d[i] > 40) n++;
+    if (stripAlphaCache.size > 2048) stripAlphaCache.clear();
+    stripAlphaCache.set(key, n);
+    return n;
+  }
+
+  /** Walk híbrido (mitad inferior): elige fila 0 o stripSy según dónde esté el arte. */
+  function resolveStripSy(img, animM, idx) {
+    const def = animM.stripSy != null ? animM.stripSy : 0;
+    if (!animM.stripSy) return 0;
+    const sx = idx * animM.w;
+    const low = stripAlphaCount(img, sx, def, animM.w, animM.h);
+    if (low >= 20) return def;
+    const up = stripAlphaCount(img, sx, 0, animM.w, animM.h);
+    if (up >= 20) return 0;
+    return low >= up ? def : 0;
+  }
+
+  /** Idle 32 + walk 64 (Tibia): mismo tamaño en pantalla que el walk, sin recortar el strip. */
+  function hybridIdleWalkScale(dex, anim, drawM) {
+    const idleM = frameMetaForDex(dex, 'Idle');
+    const walkM = frameMetaForDex(dex, 'Walk');
+    if (!idleM || !walkM || walkM.h <= idleM.h || walkM.w < idleM.w * 1.5) return 1;
+    const idleLike = anim === 'Idle' || anim === 'Hurt' || anim === 'Faint';
+    if (idleLike && drawM.h <= idleM.h) return walkM.h / idleM.h;
+    return 1;
+  }
+
+  /** Pies al mundo: walk con stripSy (celda recortada) alinea ancla Idle. */
+  function footAnchorForDraw(dex, anim, drawM, sourceM) {
+    const idleM = frameMetaForDex(dex, 'Idle');
+    const walkLike = anim !== 'Idle' && anim !== 'Hurt' && anim !== 'Faint';
+    if (walkLike && idleM && sourceM && sourceM.stripSy) {
+      return { ax: idleM.ax, ay: idleM.ay };
+    }
+    return { ax: drawM.ax, ay: drawM.ay };
+  }
 
   /** Copia un fotograma del strip a un canvas aislado (evita costuras con columnas vecinas). */
-  function isolatedStripFrame(img, sx, w, h, cacheKey) {
+  function isolatedStripFrame(img, sx, sy, w, h, cacheKey) {
     let cv = stripFrames.get(cacheKey);
     if (cv) return cv;
     if (typeof document === 'undefined') return img;
@@ -174,25 +273,22 @@ G.TibiaSprites = (() => {
     const c = cv.getContext('2d');
     c.imageSmoothingEnabled = false;
     c.clearRect(0, 0, w, h);
-    c.drawImage(img, sx, 0, w, h, 0, 0, w, h);
+    c.drawImage(img, sx, sy, w, h, 0, 0, w, h);
     stripFrames.set(cacheKey, cv);
     return cv;
   }
 
-  function blitStripFrame(ctx, img, animM, idx, k, dx, dy, alpha) {
+  function blitStripFrame(ctx, img, animM, idx, k, dx, dy, alpha, syOverride) {
     const sx = idx * animM.w;
+    const sy = syOverride != null ? syOverride : (animM.stripSy != null ? resolveStripSy(img, animM, idx) : 0);
     const scale = Math.max(0.001, k);
     const dw = Math.round(animM.w * scale);
     const dh = Math.round(animM.h * scale);
-    const frameKey = img.src + '|' + sx + '|' + animM.w + 'x' + animM.h;
-    const src = isolatedStripFrame(img, sx, animM.w, animM.h, frameKey);
     const prevA = ctx.globalAlpha;
     const prevSm = ctx.imageSmoothingEnabled;
     if (alpha < 1) ctx.globalAlpha = prevA * alpha;
     ctx.imageSmoothingEnabled = false;
-    const fromX = src === img ? sx : 0;
-    const fromY = 0;
-    ctx.drawImage(src, fromX, fromY, animM.w, animM.h, Math.round(dx), Math.round(dy), dw, dh);
+    ctx.drawImage(img, sx, sy, animM.w, animM.h, Math.round(dx), Math.round(dy), dw, dh);
     ctx.imageSmoothingEnabled = prevSm;
     ctx.globalAlpha = prevA;
   }
@@ -446,14 +542,37 @@ G.TibiaSprites = (() => {
     return dir4 + pw * fr;
   }
 
+  /** Inspector ?dev: posición del dibujo y ancla meta (sin depender del canvas). */
+  function creatureDrawPlacement(dex, x, y, scale, anim, frame, dir8) {
+    const animM = frameMetaForDex(dex, anim);
+    if (!animM) return null;
+    const drawM = animM;
+    const tun = resolveTuning(dex, drawM, anim, dir8);
+    const hybridK = hybridIdleWalkScale(dex, anim, drawM);
+    const k = PX() * (scale || 1) * baseDrawMul(dex, drawM) * tun.scaleMul * hybridK;
+    const foot = footAnchorForDraw(dex, anim, drawM, animM);
+    const ax = foot.ax + tun.footDx;
+    const ay = foot.ay + tun.footDy;
+    return {
+      k,
+      dx: Math.round(x - ax * k),
+      dy: Math.round(y - ay * k),
+      footAx: foot.ax,
+      footAy: foot.ay,
+      footDx: tun.footDx,
+      footDy: tun.footDy
+    };
+  }
+
   function drawCreatureFrame(ctx, dex, x, y, scale, anim, frame, dir8, opts = {}) {
     const entry = entryForDex(dex);
     const key = creatureKey(entry);
     const animM = frameMetaForDex(dex, anim);
     const assetId = assetIdFromEntry(entry);
     if (!animM || !assetId) return false;
-    const stripKind = animM.stripKind || (anim === 'Idle' || anim === 'Hurt' || anim === 'Faint' ? 'idle' : 'walk');
-    const s = getSheet(assetId, stripKind, assetSubdir(entry));
+    let drawM = animM;
+    let stripKind = animM.stripKind || (anim === 'Idle' || anim === 'Hurt' || anim === 'Faint' ? 'idle' : 'walk');
+    let s = getSheet(assetId, stripKind, assetSubdir(entry));
     if (!s || !s.ready) return false;
 
     const extFull = creatureMeta(dex);
@@ -461,26 +580,45 @@ G.TibiaSprites = (() => {
     const fr = Math.min(frame, animM.n - 1);
     const tun = dex === 99001 && opts.outfitUi
       ? outfitTuningForDraw(animM, true)
-      : resolveTuning(dex, animM);
-    const k = PX() * (scale || 1) * baseDrawMul(dex, animM) * tun.scaleMul;
-    const ax = animM.ax + tun.footDx;
-    const ay = animM.ay + tun.footDy;
+      : resolveTuning(dex, drawM, anim, dir8);
+    const hybridK = hybridIdleWalkScale(dex, anim, drawM);
+    const k = PX() * (scale || 1) * baseDrawMul(dex, drawM) * tun.scaleMul * hybridK;
+    const foot = footAnchorForDraw(dex, anim, drawM, animM);
+    const ax = foot.ax + tun.footDx;
+    const ay = foot.ay + tun.footDy;
     const dx = Math.round(x - ax * k);
     const dy = Math.round(y - ay * k);
     const alpha = opts.alpha == null ? 1 : opts.alpha;
     if (alpha <= 0) return true;
 
-    if (extFull && extFull.composite && extFull.layout && entry.outfit && G.TibiaOutfitDraw) {
+    const compositeDraw = extFull && extFull.layout
+      && (extFull.composite || (extFull.layout.layers || 0) >= 2)
+      && entry.outfit && G.TibiaOutfitDraw;
+    if (compositeDraw) {
       return G.TibiaOutfitDraw.drawFrame(
         ctx, s.img, extFull.layout, animM.w, animM.h, fr, colDir, entry.outfit,
         dx, dy, animM.w * k, animM.h * k, alpha
       );
     }
 
-    let idx = stripIndex(animM, colDir, fr);
-    const slots = Math.max(1, Math.floor(s.img.width / animM.w));
+    let idx = stripIndex(drawM, colDir, fr);
+    let slots = Math.max(1, Math.floor(s.img.width / drawM.w));
     idx = Math.min(idx, slots - 1);
-    blitStripFrame(ctx, s.img, animM, idx, k, dx, dy, alpha);
+    let sy = drawM.stripSy != null ? resolveStripSy(s.img, drawM, idx) : 0;
+    const alphaN = stripAlphaCount(s.img, idx * drawM.w, sy, drawM.w, drawM.h);
+    if (alphaN < 8 && drawM.stripSy != null) {
+      const idleM = frameMetaForDex(dex, 'Idle');
+      const idleS = idleM ? getSheet(assetId, 'idle', assetSubdir(entry)) : null;
+      if (idleM && idleS && idleS.ready) {
+        drawM = idleM;
+        s = idleS;
+        sy = 0;
+        idx = stripIndex(idleM, colDir, 0);
+        slots = Math.max(1, Math.floor(s.img.width / idleM.w));
+        idx = Math.min(idx, slots - 1);
+      }
+    }
+    blitStripFrame(ctx, s.img, drawM, idx, k, dx, dy, alpha, sy);
     return true;
   }
 
@@ -495,7 +633,8 @@ G.TibiaSprites = (() => {
     const tun = resolveTuning(dex, m);
     const ext = creatureMeta(dex);
   if (naturalSize(tuningRoot()) && ext && ext.s != null) {
-      return [5, 8, 12][G.U.clamp(ext.s, 0, 2)] * PX() * scale * tun.shadowRxMul;
+      const sVal = tun.shadowS != null ? tun.shadowS : ext.s;
+      return [5, 8, 12][G.U.clamp(sVal, 0, 2)] * PX() * scale * tun.shadowRxMul;
     }
     const k = PX() * scale * effectiveDrawMul(dex, m);
     return G.U.clamp(m.w * 0.36, 5, 28) * k * tun.shadowRxMul;
@@ -611,12 +750,73 @@ G.TibiaSprites = (() => {
     })]);
   }
 
+  function persistTuningStore(store) {
+    if (!queryDev() || !devStorageOk()) return;
+    try { localStorage.setItem(LS_TUNING, JSON.stringify(store)); } catch { /* ignore */ }
+  }
+
+  function tuningStoreFromRoot() {
+    const root = tuningRoot();
+    const store = Object.assign({}, G.TIBIA_SPRITE_TUNING || {}, root);
+    if (root.byLookType) store.byLookType = Object.assign({}, root.byLookType);
+    return store;
+  }
+
+  function setByLookType(lt, patch) {
+    const key = String(lt);
+    const store = tuningStoreFromRoot();
+    const prev = store.byLookType && store.byLookType[key] ? store.byLookType[key] : {};
+    const next = Object.assign({}, prev, patch || {});
+    for (const bucket of ['Idle', 'Walk']) {
+      if (!patch || !patch[bucket]) continue;
+      const pb = patch[bucket];
+      const prevB = prev[bucket] || {};
+      next[bucket] = Object.assign({}, prevB, pb);
+      if (pb.dir) {
+        next[bucket].dir = Object.assign({}, prevB.dir || {});
+        for (const dk of Object.keys(pb.dir)) {
+          const pd = pb.dir[dk];
+          if (!pd || (pd.footDx == null && pd.footDy == null && pd.scaleMul == null)) {
+            delete next[bucket].dir[dk];
+            continue;
+          }
+          next[bucket].dir[dk] = Object.assign({}, prevB.dir && prevB.dir[dk], pd);
+        }
+        if (!Object.keys(next[bucket].dir).length) delete next[bucket].dir;
+      }
+    }
+    if (!store.byLookType) store.byLookType = {};
+    if (Object.keys(next).length) store.byLookType[key] = next;
+    else delete store.byLookType[key];
+    persistTuningStore(store);
+    return next;
+  }
+
+  function clearByLookType(lt) {
+    const key = String(lt);
+    const store = tuningStoreFromRoot();
+    if (store.byLookType) delete store.byLookType[key];
+    persistTuningStore(store);
+  }
+
+  function getByLookType(lt) {
+    const T = tuningRoot();
+    const raw = T.byLookType && T.byLookType[String(lt)];
+    if (!raw) return {};
+    return JSON.parse(JSON.stringify(raw));
+  }
+
+  function defaultShadowS(dex) {
+    const ext = creatureMeta(dex);
+    return ext && ext.s != null ? ext.s : 1;
+  }
+
   function bump(field, delta) {
     const T = tuningRoot();
     T[field] = (T[field] != null ? T[field] : (field === 'scaleMul' ? 1 : 0)) + delta;
     const store = Object.assign({}, G.TIBIA_SPRITE_TUNING || {}, T);
-    delete store.byLookType;
-    persistLive(store);
+    if (T.byLookType) store.byLookType = Object.assign({}, T.byLookType);
+    persistTuningStore(store);
     const msg = `Tibia tuning: ${field}=${typeof T[field] === 'number' ? T[field].toFixed(3) : T[field]}`;
     if (G.UI && G.UI.toast) G.UI.toast(msg, 2.5);
     else console.log(msg);
@@ -654,11 +854,21 @@ G.TibiaSprites = (() => {
     enable,
     PX,
     tuningRoot,
+    tuningStoreFromRoot,
+    persistTuningStore,
+    setByLookType,
+    clearByLookType,
+    getByLookType,
+    defaultShadowS,
+    animTuningBucket,
     resolveTuning,
     baseDrawMul,
     effectiveDrawMul,
     shadowRadius,
     entryForDex,
+    lookTypeFromDex,
+    tibiaDir,
+    creatureDrawPlacement,
     hasCreature,
     frameMetaForDex,
     hasOutfitAssets,

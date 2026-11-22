@@ -22,7 +22,7 @@ load('js/data/master-sorcerer-passives.js');
 load('js/data/master-sorcerer-register.js');
 load('js/data/spell-runtime.js');
 load('js/data/vocations.js');
-load('js/data/creatures.js');
+require('./load-creatures').registerCreatures(load);
 load('js/data/content-api.js');
 
 const errors = [];

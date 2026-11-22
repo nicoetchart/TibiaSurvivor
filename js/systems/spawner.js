@@ -40,12 +40,16 @@ G.Spawner = (() => {
   const SHINY_RATE = 1 / 4096;
   let acc = 0, bossIdx = 0, surgeT = 32, announce = null, announceT = 0, preloadT = 0;
   let forceShiny = 0;           // para pruebas: los N próximos salen shiny
-  let nextEliteAt = Infinity;
+  let nextBaneBossAt = Infinity;
 
-  function eliteCfg() {
+  function baneBossCfg() {
     if (!G.MvpConfig || G.Content.mode !== 'neutral') return null;
-    const E = G.MvpConfig.ELITE;
+    const E = G.MvpConfig.BANE_BOSS || G.MvpConfig.ELITE;
     if (E && E.firstMinSec != null) return E;
+    if (G.MvpConfig.BANE_BOSS_AT != null) {
+      const at = G.MvpConfig.BANE_BOSS_AT;
+      return { firstMinSec: at, firstMaxSec: at, intervalSec: 150, intervalJitterSec: 18 };
+    }
     if (G.MvpConfig.ELITE_AT != null) {
       const at = G.MvpConfig.ELITE_AT;
       return { firstMinSec: at, firstMaxSec: at, intervalSec: 150, intervalJitterSec: 18 };
@@ -53,30 +57,30 @@ G.Spawner = (() => {
     return null;
   }
 
-  function rollFirstEliteAt() {
-    const E = eliteCfg();
-    if (!E) { nextEliteAt = Infinity; return; }
+  function rollFirstBaneBossAt() {
+    const E = baneBossCfg();
+    if (!E) { nextBaneBossAt = Infinity; return; }
     const lo = E.firstMinSec;
     const hi = E.firstMaxSec != null ? E.firstMaxSec : lo;
     let at = Math.floor(G.U.rand(lo, hi + 1));
-    const mul = G.DailyBoost && G.DailyBoost.eliteIntervalMul ? G.DailyBoost.eliteIntervalMul() : 1;
+    const mul = G.DailyBoost && G.DailyBoost.baneBossIntervalMul ? G.DailyBoost.baneBossIntervalMul() : 1;
     if (mul > 0 && mul < 1) at = Math.max(45, Math.round(at * mul));
-    nextEliteAt = at;
+    nextBaneBossAt = at;
   }
 
-  function scheduleEliteAfterSpawn(t) {
-    const E = eliteCfg();
+  function scheduleBaneBossAfterSpawn(t) {
+    const E = baneBossCfg();
     if (!E) return;
     const base = E.intervalSec != null ? E.intervalSec : 150;
     const j = E.intervalJitterSec != null ? E.intervalJitterSec : 0;
     let gap = j > 0 ? G.U.rand(base - j, base + j + 1) : base;
-    const mul = G.DailyBoost && G.DailyBoost.eliteIntervalMul ? G.DailyBoost.eliteIntervalMul() : 1;
+    const mul = G.DailyBoost && G.DailyBoost.baneBossIntervalMul ? G.DailyBoost.baneBossIntervalMul() : 1;
     if (mul > 0 && mul < 1) gap = Math.max(60, Math.round(gap * mul));
-    nextEliteAt = t + Math.max(60, gap);
+    nextBaneBossAt = t + Math.max(60, gap);
   }
 
-  function sentinelAlive() {
-    return G.EnemyMgr.all().some(e => e.sentinelElite && !e.dead);
+  function baneBossAlive() {
+    return G.EnemyMgr.all().some(e => e.baneBoss && !e.dead);
   }
 
   function reset() {
@@ -87,7 +91,7 @@ G.Spawner = (() => {
     bossIdx = 0;
     surgeT = G.Content && G.Content.mode === 'neutral' ? 58 : 32;
     announce = null; announceT = 0; preloadT = 0;
-    rollFirstEliteAt();
+    rollFirstBaneBossAt();
     G.Content.roster().rollRun();
     G.Sprites.preload(G.Content.roster().upcomingDex(0, 80));
   }
@@ -190,13 +194,12 @@ G.Spawner = (() => {
     return e;
   }
 
-  function spawnElite(pl, t, def) {
+  function spawnBaneBoss(pl, t, def) {
     const pt = freePoint(pl, Math.random() * 6.2832, isFlyer(def));
     if (!pt) return null;
     const roster = G.Content.roster();
     const e = new G.Enemy(def, pt[0], pt[1], scaled(roster.scale(t), 1 * hpMulRun(t)));
-    e.elite = true;
-    e.sentinelElite = true;
+    e.baneBoss = true;
     e.scale = Math.min(1.85, (e.scale || 1) * 1.32);
     e.anim = new G.Sprites.Animator(e.dex, e.scale);
     e.r = G.Sprites.bodyRadius(e.dex, e.scale);
@@ -213,7 +216,7 @@ G.Spawner = (() => {
       G.DailyBoost.isBossBoosted(def.bestiaryCreatureId);
     const intro = def.creatureId === 'black_knight'
       ? (boostedBoss ? 'Daily Black Knight — NO MERCY!' : 'Black Knight — NO MERCY!')
-      : (boostedBoss ? `Daily boss: ${def.name || 'Elite'}!` : 'Elite sentinel! Defeat it to earn a spell bond.');
+      : (boostedBoss ? `Daily Bane boss: ${def.name || 'Bane'}!` : 'Bane boss! Defeat it to earn a spell bond.');
     say(intro, 3.4);
     G.Camera.kick(0.65);
     G.Audio.sfx('boss');
@@ -234,13 +237,13 @@ G.Spawner = (() => {
     preloadT -= dt;
     if (preloadT <= 0) { preloadT = 10; G.Sprites.preload(G.Content.roster().upcomingDex(t, 60)); }
 
-    // --- centinelas de élite (MVP neutral, recurrentes) ---
+    // --- Bosstiary Bane (MVP neutral, recurrente) ---
     const bossCap = G.MvpConfig && G.MvpConfig.FINAL_BOSS_AT;
-    if (eliteCfg() && t >= nextEliteAt && !G.EnemyMgr.bossAlive() && !sentinelAlive() &&
+    if (baneBossCfg() && t >= nextBaneBossAt && !G.EnemyMgr.bossAlive() && !baneBossAlive() &&
         (bossCap == null || t < bossCap)) {
-      const buildElite = G.Content.roster().buildElite;
-      const ed = buildElite ? buildElite() : null;
-      if (ed && spawnElite(anchor(), t, ed)) scheduleEliteAfterSpawn(t);
+      const buildBaneBoss = G.Content.roster().buildBaneBoss;
+      const ed = buildBaneBoss ? buildBaneBoss() : null;
+      if (ed && spawnBaneBoss(anchor(), t, ed)) scheduleBaneBossAfterSpawn(t);
     }
 
     // --- jefes ---
@@ -312,13 +315,13 @@ G.Spawner = (() => {
   /** Invitado en cooperativo: sólo corre el reloj del aviso. */
   function tickBanner(dt) { if (announceT > 0) announceT -= dt; }
 
-  /** ?dev: centinela Bosstiary al iniciar. */
-  function devSpawnEliteAtStart(pl) {
-    const buildElite = G.Content.roster().buildElite;
-    const ed = buildElite ? buildElite() : null;
-    if (!ed || sentinelAlive()) return false;
-    if (spawnElite(pl || anchor(), 0, ed)) {
-      nextEliteAt = Infinity;
+  /** ?dev: Bane boss Bosstiary al iniciar. */
+  function devSpawnBaneBossAtStart(pl) {
+    const buildBaneBoss = G.Content.roster().buildBaneBoss;
+    const ed = buildBaneBoss ? buildBaneBoss() : null;
+    if (!ed || baneBossAlive()) return false;
+    if (spawnBaneBoss(pl || anchor(), 0, ed)) {
+      nextBaneBossAt = Infinity;
       return true;
     }
     return false;
@@ -335,7 +338,7 @@ G.Spawner = (() => {
     return true;
   }
 
-  return { reset, update, ahead, burst, tickBanner, banner, say, rate, SHINY_RATE, CAP, spawnElite,
-           devSpawnEliteAtStart, devSpawnBossAtStart,
+  return { reset, update, ahead, burst, tickBanner, banner, say, rate, SHINY_RATE, CAP, spawnBaneBoss,
+           devSpawnBaneBossAtStart, devSpawnBossAtStart,
            debugForceShiny(n = 1) { forceShiny = n; } };
 })();

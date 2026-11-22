@@ -12,6 +12,7 @@ G.MenuUI = (() => {
         if (go === 'play') G.Flow.play();
         else if (go === 'bestiary') G.BestiaryUI.open();
         else if (go === 'outfit') G.OutfitUI && G.OutfitUI.open();
+        else if (go === 'creature-dev') G.CreatureDevEditor && G.CreatureDevEditor.open();
         else if (go === 'goals') G.GoalsUI.open();
         else if (go === 'settings') G.SettingsUI.open();
       };
