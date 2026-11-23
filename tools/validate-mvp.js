@@ -73,7 +73,7 @@ if (G.Bestiary) {
   const v = G.Bestiary.validate(false);
   if (!v.ok) v.issues.forEach(msg => err(`Bestiary: ${msg}`));
   const catalog = G.Bestiary.listEntries();
-  if (catalog.length < 145) err(`Bestiary catalog ${catalog.length} (expect >= 145 incl. elite extra)`);
+  if (catalog.length < 143) err(`Bestiary catalog ${catalog.length} (expect >= 143 incl. elite extra)`);
   const sections = new Set(catalog.map(e => e.section));
   if (!sections.has('bestiary') || !sections.has('bosstiary')) {
     err('Cyclopedia catalog missing bestiary or bosstiary section');

@@ -52,10 +52,6 @@ G.BESTIARY_TIPS = {
     es: 'Abanico de rayos: gira para no recibir varios impactos seguidos.',
     en: 'Fan of beams: strafe so you do not eat several hits in a row.'
   },
-  'bestiary.hero.tip1': {
-    es: 'Tanque lento: necesita muchos golpes; usa daño sostenido, no bursts cortos.',
-    en: 'Slow tank: takes many hits; use sustained damage, not short bursts.'
-  },
   'bestiary.orshabaal.tip1': {
     es: 'Némesis: débil a hielo y sagrado; inmune a fuego y tierra. Cúrale rápido al rojo (huye y se cura) y prioriza sus demonios.',
     en: 'Nemesis: weak to ice and holy; immune to fire and earth. Burn him down when low (he flees and heals) and clear his demons.'
@@ -100,7 +96,6 @@ G.BESTIARY_TIPS = {
   'bestiary.skeleton_warrior.tip1': { es: 'Limpia Skeleton Warrior en oleadas tempranas antes de que corte tu huida.', en: 'Clear Skeleton Warrior in early swarms before it clogs your escape route.' },
   'bestiary.chakoya_tribewarden.tip1': { es: 'Kitea a Chakoya Tribewarden; daño sostenido, no bursts.', en: 'Kite Chakoya Tribewarden; sustained damage beats bursting one target.' },
   'bestiary.lizard_swordmaster.tip1': { es: 'Esquiva las cargas de Lizard Swordmaster y castiga después.', en: 'Sidestep Lizard Swordmaster charges; punish after the dash.' },
-  'bestiary.pirate_gunner.tip1': { es: 'Elimina a Pirate Gunner primero: dispara mientras el melee te rodea.', en: 'Drop Pirate Gunner first — it shoots while melee swarms you.' },
   'bestiary.centipede.tip1': { es: 'Limpia Centipede en oleadas tempranas antes de que corte tu huida.', en: 'Clear Centipede in early swarms before it clogs your escape route.' },
   'bestiary.larva.tip1': { es: 'Limpia Larva en oleadas tempranas antes de que corte tu huida.', en: 'Clear Larva in early swarms before it clogs your escape route.' },
   'bestiary.orc.tip1': { es: 'Limpia Orc en oleadas tempranas antes de que corte tu huida.', en: 'Clear Orc in early swarms before it clogs your escape route.' },
@@ -121,18 +116,15 @@ G.BESTIARY_TIPS = {
   'bestiary.chakoya_windcaller.tip1': { es: 'Elimina a Chakoya Windcaller primero: dispara mientras el melee te rodea.', en: 'Drop Chakoya Windcaller first — it shoots while melee swarms you.' },
   'bestiary.dworc_fleshhunter.tip1': { es: 'Limpia Dworc Fleshhunter en oleadas tempranas antes de que corte tu huida.', en: 'Clear Dworc Fleshhunter in early swarms before it clogs your escape route.' },
   'bestiary.honor_guard.tip1': { es: 'Kitea a Honor Guard; daño sostenido, no bursts.', en: 'Kite Honor Guard; sustained damage beats bursting one target.' },
-  'bestiary.infernoid_hound.tip1': { es: 'Esquiva las cargas de Infernoid Hound y castiga después.', en: 'Sidestep Infernoid Hound charges; punish after the dash.' },
   'bestiary.emerald_damselfly.tip1': { es: 'No persigas a Emerald Damselfly en línea recta.', en: 'Do not chase Emerald Damselfly in a straight line.' },
   'bestiary.dwarf.tip1': { es: 'Limpia Dwarf en oleadas tempranas antes de que corte tu huida.', en: 'Clear Dwarf in early swarms before it clogs your escape route.' },
   'bestiary.leaf_golem.tip1': { es: 'Kitea a Leaf Golem; daño sostenido, no bursts.', en: 'Kite Leaf Golem; sustained damage beats bursting one target.' },
   'bestiary.poacher.tip1': { es: 'Elimina a Poacher primero: dispara mientras el melee te rodea.', en: 'Drop Poacher first — it shoots while melee swarms you.' },
-  'bestiary.infernoid_soul.tip1': { es: 'No persigas a Infernoid Soul en línea recta.', en: 'Do not chase Infernoid Soul in a straight line.' },
   'bestiary.barbarian_headsplitter.tip1': { es: 'Esquiva las cargas de Barbarian Headsplitter y castiga después.', en: 'Sidestep Barbarian Headsplitter charges; punish after the dash.' },
   'bestiary.crazed_beggar.tip1': { es: 'Limpia Crazed Beggar en oleadas tempranas antes de que corte tu huida.', en: 'Clear Crazed Beggar in early swarms before it clogs your escape route.' },
   'bestiary.elf.tip1': { es: 'Elimina a Elf primero: dispara mientras el melee te rodea.', en: 'Drop Elf first — it shoots while melee swarms you.' },
   'bestiary.marsh_stalker.tip1': { es: 'Contra Marsh Stalker: cuidado con su alcance y tipos de daño.', en: 'Against Marsh Stalker: respect its range and damage types.' },
   'bestiary.minotaur_archer.tip1': { es: 'Contra Minotaur Archer: cuidado con su alcance y tipos de daño.', en: 'Against Minotaur Archer: respect its range and damage types.' },
-  'bestiary.infernoid_spiritual.tip1': { es: 'Contra Infernoid Spiritual: cuidado con su alcance y tipos de daño.', en: 'Against Infernoid Spiritual: respect its range and damage types.' },
   'bestiary.crocodile.tip1': { es: 'Contra Crocodile: cuidado con su alcance y tipos de daño.', en: 'Against Crocodile: respect its range and damage types.' },
   'bestiary.orc_spearman.tip1': { es: 'Contra Orc Spearman: cuidado con su alcance y tipos de daño.', en: 'Against Orc Spearman: respect its range and damage types.' },
   'bestiary.amazon.tip1': { es: 'Contra Amazon: cuidado con su alcance y tipos de daño.', en: 'Against Amazon: respect its range and damage types.' },
@@ -144,7 +136,6 @@ G.BESTIARY_TIPS = {
   'bestiary.smuggler.tip1': { es: 'Contra Smuggler: cuidado con su alcance y tipos de daño.', en: 'Against Smuggler: respect its range and damage types.' },
   'bestiary.barbarian_skullhunter.tip1': { es: 'Contra Barbarian Skullhunter: cuidado con su alcance y tipos de daño.', en: 'Against Barbarian Skullhunter: respect its range and damage types.' },
   'bestiary.dwarf_soldier.tip1': { es: 'Contra Dwarf Soldier: cuidado con su alcance y tipos de daño.', en: 'Against Dwarf Soldier: respect its range and damage types.' },
-  'bestiary.toad.tip1': { es: 'Contra Toad: cuidado con su alcance y tipos de daño.', en: 'Against Toad: respect its range and damage types.' },
   'bestiary.wild_warrior.tip1': { es: 'Contra Wild Warrior: cuidado con su alcance y tipos de daño.', en: 'Against Wild Warrior: respect its range and damage types.' },
   'bestiary.husky.tip1': { es: 'Contra Husky: cuidado con su alcance y tipos de daño.', en: 'Against Husky: respect its range and damage types.' },
   'bestiary.war_wolf.tip1': { es: 'Contra War Wolf: cuidado con su alcance y tipos de daño.', en: 'Against War Wolf: respect its range and damage types.' },
@@ -195,7 +186,6 @@ G.BESTIARY_TIPS = {
   'bestiary.dwarf_guard.tip1': { es: 'Contra Dwarf Guard: cuidado con su alcance y tipos de daño.', en: 'Against Dwarf Guard: respect its range and damage types.' },
   'bestiary.acid_blob.tip1': { es: 'Contra Acid Blob: cuidado con su alcance y tipos de daño.', en: 'Against Acid Blob: respect its range and damage types.' },
   'bestiary.corym_charlatan.tip1': { es: 'Contra Corym Charlatan: cuidado con su alcance y tipos de daño.', en: 'Against Corym Charlatan: respect its range and damage types.' },
-  'bestiary.gargoyle.tip1': { es: 'Contra Gargoyle: cuidado con su alcance y tipos de daño.', en: 'Against Gargoyle: respect its range and damage types.' },
   'bestiary.tainted_soul.tip1': { es: 'Contra Tainted Soul: cuidado con su alcance y tipos de daño.', en: 'Against Tainted Soul: respect its range and damage types.' },
   'bestiary.carniphila.tip1': { es: 'Contra Carniphila: cuidado con su alcance y tipos de daño.', en: 'Against Carniphila: respect its range and damage types.' },
 };

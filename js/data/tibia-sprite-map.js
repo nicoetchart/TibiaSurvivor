@@ -27,7 +27,6 @@ G.TIBIA_SPRITE_MAP = {
     99012: { kind: 'lookType', lookType: 40 },    // Fire Devil
     99013: { kind: 'lookType', lookType: 18 },    // Ghoul
     99014: { kind: 'lookType', lookType: 17 },    // Bonelord
-    99015: { kind: 'lookType', lookType: 73 },    // Hero
     99016: { kind: 'lookType', lookType: 201 },    // Orshabaal
     99018: { kind: 'lookType', lookType: 35 },     // Demon (minion)
     99019: { kind: 'lookType', lookType: 111 },    // Chicken
@@ -66,7 +65,6 @@ G.TIBIA_SPRITE_MAP = {
     99052: { kind: 'lookType', lookType: 298 },    // Skeleton Warrior
     99053: { kind: 'lookType', lookType: 249 },    // Chakoya Tribewarden
     99054: { kind: 'lookType', lookType: 1929, outfit: { type: 1929, head: 117, body: 4, legs: 11, feet: 6, addons: 0 } },   // Lizard Swordmaster
-    99055: { kind: 'lookType', lookType: 97 },     // Pirate Gunner
     99056: { kind: 'lookType', lookType: 124 },    // Centipede
     99057: { kind: 'lookType', lookType: 82 },     // Larva
     99058: { kind: 'lookType', lookType: 5 },      // Orc
@@ -87,18 +85,15 @@ G.TIBIA_SPRITE_MAP = {
     99073: { kind: 'lookType', lookType: 260 },    // Chakoya Windcaller
     99074: { kind: 'lookType', lookType: 215 },    // Dworc Fleshhunter
     99075: { kind: 'lookType', lookType: 298 },    // Honor Guard
-    99076: { kind: 'lookType', lookType: 414 },    // Infernoid Hound
     99077: { kind: 'lookType', lookType: 528 },    // Emerald Damselfly
     99078: { kind: 'lookType', lookType: 69 },     // Dwarf
     99079: { kind: 'lookType', lookType: 567 },    // Leaf Golem
     99080: { kind: 'lookType', lookType: 129 },    // Poacher
-    99081: { kind: 'lookType', lookType: 242 },    // Infernoid Soul
     99082: { kind: 'lookType', lookType: 253 },    // Barbarian Headsplitter
     99083: { kind: 'lookType', lookType: 153 },    // Crazed Beggar
     99084: { kind: 'lookType', lookType: 62 },     // Elf
 99085: { kind: 'lookType', lookType: 530 },    // Marsh Stalker
     99086: { kind: 'lookType', lookType: 24 },    // Minotaur Archer
-    99087: { kind: 'lookType', lookType: 243 },    // Infernoid Spiritual
     99088: { kind: 'lookType', lookType: 119 },    // Crocodile
     99089: { kind: 'lookType', lookType: 50 },    // Orc Spearman
     99090: { kind: 'lookType', lookType: 137 },    // Amazon
@@ -110,7 +105,6 @@ G.TIBIA_SPRITE_MAP = {
     99096: { kind: 'lookType', lookType: 134 },    // Smuggler
     99097: { kind: 'lookType', lookType: 254 },    // Barbarian Skullhunter
     99098: { kind: 'lookType', lookType: 71 },    // Dwarf Soldier
-    99099: { kind: 'lookType', lookType: 222 },    // Toad
     99100: { kind: 'lookType', lookType: 131 },    // Wild Warrior
     99101: { kind: 'lookType', lookType: 258 },    // Husky
     99102: { kind: 'lookType', lookType: 3 },    // War Wolf
@@ -161,7 +155,6 @@ G.TIBIA_SPRITE_MAP = {
     99147: { kind: 'lookType', lookType: 70 },    // Dwarf Guard
     99148: { kind: 'lookType', lookType: 314 },    // Acid Blob
     99149: { kind: 'lookType', lookType: 532 },    // Corym Charlatan
-    99150: { kind: 'lookType', lookType: 95 },    // Gargoyle
     99151: { kind: 'lookType', lookType: 712 },    // Tainted Soul
     99152: { kind: 'lookType', lookType: 120 },    // Carniphila
   },

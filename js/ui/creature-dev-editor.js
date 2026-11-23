@@ -65,6 +65,10 @@ G.CreatureDevEditor = (() => {
     return { scaleMul: 1, footDx: 0, footDy: 0, shadowRxMul: 1, shadowS: null, Idle: emptyBucket(), Walk: emptyBucket() };
   }
 
+  function bucketUsesPerDirFoot(b) {
+    return !!(b && b.dir && Object.keys(b.dir).length);
+  }
+
   function footForDirInBucket(b, col4) {
     if (!b) return { footDx: 0, footDy: 0 };
     const key = String(col4);
@@ -77,6 +81,7 @@ G.CreatureDevEditor = (() => {
     if (d && (d.footDx != null || d.footDy != null)) {
       return { footDx: d.footDx != null ? d.footDx : 0, footDy: d.footDy != null ? d.footDy : 0 };
     }
+    if (bucketUsesPerDirFoot(b)) return { footDx: 0, footDy: 0 };
     return { footDx: b.footDx != null ? b.footDx : 0, footDy: b.footDy != null ? b.footDy : 0 };
   }
 
@@ -97,7 +102,12 @@ G.CreatureDevEditor = (() => {
     for (const bucket of ['Idle', 'Walk']) {
       if (by[bucket]) {
         out[bucket] = Object.assign({}, out[bucket], by[bucket]);
-        if (by[bucket].dir) out[bucket].dir = Object.assign({}, by[bucket].dir);
+        if (by[bucket].dir) {
+          out[bucket].dir = Object.create(null);
+          for (const k of Object.keys(by[bucket].dir)) {
+            out[bucket].dir[k] = Object.assign({}, by[bucket].dir[k]);
+          }
+        }
       }
     }
     if (out.shadowS == null) {
@@ -111,8 +121,11 @@ G.CreatureDevEditor = (() => {
     if (!b) return null;
     const out = {};
     if (b.scaleMul != null && b.scaleMul !== 1) out.scaleMul = b.scaleMul;
-    if (b.footDx) out.footDx = b.footDx;
-    if (b.footDy) out.footDy = b.footDy;
+    const perDir = bucketUsesPerDirFoot(b);
+    if (!perDir) {
+      if (b.footDx) out.footDx = b.footDx;
+      if (b.footDy) out.footDy = b.footDy;
+    }
     if (b.dir) {
       const dir = Object.create(null);
       for (const k of Object.keys(b.dir)) {
@@ -150,10 +163,7 @@ G.CreatureDevEditor = (() => {
     if (lt == null || !G.TibiaSprites) return;
     const patch = cleanSpritePatch(ui, c.legacyId);
     if (!Object.keys(patch).length) G.TibiaSprites.clearByLookType(lt);
-    else {
-      G.TibiaSprites.clearByLookType(lt);
-      G.TibiaSprites.setByLookType(lt, patch);
-    }
+    else G.TibiaSprites.setByLookType(lt, patch);
     paintPreviews();
   }
 
@@ -296,6 +306,10 @@ G.CreatureDevEditor = (() => {
       else delete b.dir[colKey];
       for (const lk of Object.keys(b.dir)) {
         if (LEGACY_DIR_TO_COL[lk] === previewCol4 && lk !== colKey) delete b.dir[lk];
+      }
+      if (bucketUsesPerDirFoot(b)) {
+        delete b.footDx;
+        delete b.footDy;
       }
       ui[name] = b;
     }
@@ -576,6 +590,10 @@ G.CreatureDevEditor = (() => {
       else delete b.dir[dirKey];
       for (const lk of Object.keys(b.dir)) {
         if (LEGACY_DIR_TO_COL[lk] === previewCol4 && lk !== dirKey) delete b.dir[lk];
+      }
+      if (bucketUsesPerDirFoot(b)) {
+        delete b.footDx;
+        delete b.footDy;
       }
       ui[name] = b;
     }

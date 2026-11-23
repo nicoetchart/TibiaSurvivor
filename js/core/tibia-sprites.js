@@ -129,17 +129,34 @@ G.TibiaSprites = (() => {
     return ((((dir8 != null ? dir8 : 0) % 8) + 8) % 8);
   }
 
+  /** dir8 heredado (0–7) → columna strip 0–3; no confundir con la clave de columna. */
+  const LEGACY_DIR8_TO_COL = { 0: 2, 1: 2, 2: 1, 3: 1, 4: 0, 5: 0, 6: 3, 7: 3 };
+
+  function dirTuningEntry(animBy, dir8) {
+    const dirMap = animBy && animBy.dir;
+    if (!dirMap) return null;
+    const col = tibiaDir(dir8);
+    let d = dirMap[String(col)];
+    if (d) return d;
+    const d8 = normDir8(dir8);
+    const legacy = dirMap[String(d8)];
+    if (legacy && LEGACY_DIR8_TO_COL[d8] === col) return legacy;
+    return null;
+  }
+
   function mergeAnimTuning(by, bucket, scaleMul, footDx, footDy, dir8) {
     if (!by || !bucket) return { scaleMul, footDx, footDy };
     const animBy = by[bucket];
     if (!animBy || typeof animBy !== 'object') return { scaleMul, footDx, footDy };
     if (animBy.scaleMul != null) scaleMul *= animBy.scaleMul;
-    let bFootDx = animBy.footDx != null ? animBy.footDx : 0;
-    let bFootDy = animBy.footDy != null ? animBy.footDy : 0;
-    if (dir8 != null && animBy.dir) {
-      const col = tibiaDir(dir8);
-      let d = animBy.dir[String(col)];
-      if (!d) d = animBy.dir[String(normDir8(dir8))];
+    const perDir = animBy.dir && Object.keys(animBy.dir).length > 0;
+    let bFootDx = 0;
+    let bFootDy = 0;
+    if (!perDir) {
+      bFootDx = animBy.footDx != null ? animBy.footDx : 0;
+      bFootDy = animBy.footDy != null ? animBy.footDy : 0;
+    } else if (dir8 != null) {
+      const d = dirTuningEntry(animBy, dir8);
       if (d) {
         if (d.footDx != null) bFootDx = d.footDx;
         if (d.footDy != null) bFootDy = d.footDy;

@@ -20,14 +20,14 @@ const MANIFEST_OUT = path.join(ROOT, 'assets', 'tibia', 'manifest.json');
 const LOCAL_CFG = path.join(ROOT, 'tools', 'tibia-client.local.json');
 
 const MVP_LOOKTYPES = [
-  276, 32, 31, 74, 45, 15, 27, 6, 25, 29, 44, 40, 18, 17, 73, 35, 131, 201,
+  276, 32, 31, 74, 45, 15, 27, 6, 25, 29, 44, 40, 18, 17, 35, 131, 201,
   111, 21, 14, 106, 30, 274, 1029, 105, 212, 217, 60, 223, 36, 122, 56, 531, 350, 52, 250, 404, 43, 61, 349, 282, 33, 112,
-  76, 1927, 297, 94, 1928, 81, 26, 298, 249, 1929, 97, 124, 82, 5, 529, 296, 125, 281, 1649, 393, 16, 259, 216, 214, 41,
-  123, 535, 260, 215, 414, 528, 69, 567, 129, 242, 253, 153, 62,
+  76, 1927, 297, 94, 1928, 81, 26, 298, 249, 1929, 124, 82, 5, 529, 296, 125, 281, 1649, 393, 16, 259, 216, 214, 41,
+  123, 535, 260, 215, 528, 69, 567, 129, 253, 153, 62,
   // batch3
-  530, 24, 243, 119, 50, 137, 294, 109, 128, 425, 7, 134, 254, 71, 222, 258, 3, 264, 192, 48,
+  530, 24, 119, 50, 137, 294, 109, 128, 425, 7, 134, 254, 71, 258, 3, 264, 192, 48,
   316, 19, 566, 23, 64, 1930, 146, 152, 159, 4, 197, 225, 470, 195, 139, 400, 380, 341, 716, 1048,
-  8, 93, 63, 72, 133, 118, 219, 403, 117, 342, 413, 313, 57, 65, 323, 70, 314, 532, 95, 712, 120
+  8, 93, 63, 72, 133, 118, 219, 403, 117, 342, 413, 313, 57, 65, 323, 70, 314, 532, 712, 120
 ];
 /** Plantilla de outfit en appearances (138 = cuerpo MS; colores vía export agrupado). */
 const MVP_OUTFIT_TYPES = [128, 132, 138];
@@ -93,7 +93,9 @@ function groupedFileName(ids) {
 }
 
 async function loadAppearances() {
-  const root = await protobuf.load(path.join(ROOT, 'tools', 'vendor', 'appearances.proto'));
+  const full = path.join(ROOT, 'tools', 'vendor', 'appearances-full.proto');
+  const mini = path.join(ROOT, 'tools', 'vendor', 'appearances.proto');
+  const root = await protobuf.load(fs.existsSync(full) ? full : mini);
   return root.lookupType('Canary.protobuf.appearances.Appearances');
 }
 
@@ -107,8 +109,32 @@ function spriteInfoFromGroup(fg) {
     ph: si.patternHeight ?? si.pattern_height ?? 1,
     pd: si.patternDepth ?? si.pattern_depth ?? 1,
     layers: si.layers ?? 1,
-    ids: rawIds.map(Number)
+    ids: rawIds.map(Number),
+    animation: si.animation || null
   };
+}
+
+/** Fases walk según SpriteAnimation del cliente (2 en Hero/Toad, 8 en rata, etc.). */
+function walkPhaseCountFromClient(si) {
+  const anim = si && si.animation;
+  if (!anim) return null;
+  const phases = anim.spritePhase || anim.sprite_phase;
+  if (phases && phases.length) return phases.length;
+  return null;
+}
+
+function frameDurationsFromClient(si, n) {
+  const anim = si && si.animation;
+  const phases = anim && (anim.spritePhase || anim.sprite_phase);
+  if (!phases || !phases.length) {
+    return Array.from({ length: n }, () => (n > 1 ? 5 : 10));
+  }
+  const slice = phases.length >= n ? phases.slice(0, n) : phases;
+  while (slice.length < n) slice.push(phases[phases.length - 1]);
+  return slice.map(p => {
+    const ms = p.durationMin ?? p.duration_min ?? 300;
+    return Math.max(2, Math.min(12, Math.round(ms / 55)));
+  });
 }
 
 function pickFrameGroups(outfit) {
@@ -142,6 +168,26 @@ function countAlphaStrip(data, sx, sy, w, h) {
     }
   }
   return n;
+}
+
+/** Fases walk reales en el PNG (evita n=8 del cliente con slots vacíos en grouped). */
+function walkFramesInPng(pngPath, tileW, tileH, pw = 4, stripSy = 0) {
+  const data = PNG.sync.read(fs.readFileSync(pngPath));
+  const maxF = Math.floor(data.width / (Math.max(1, pw) * tileW));
+  let n = 0;
+  for (let f = 0; f < maxF; f++) {
+    let ok = true;
+    for (let d = 0; d < pw; d++) {
+      const sx = (f * pw + d) * tileW;
+      if (countAlphaStrip(data, sx, stripSy, tileW, tileH) < 40) {
+        ok = false;
+        break;
+      }
+    }
+    if (ok) n = f + 1;
+    else break;
+  }
+  return Math.max(1, n);
 }
 
 /** Idle 32 + walk 2048×64: 64×64 completo si el sur encaja; 32×32+stripSy solo si NO hay arte 64×64 (evita recortar). */
@@ -196,14 +242,14 @@ function shadowSizeFromTile(tileH) {
   return 0;
 }
 
-function buildAnimMeta(si, tileW, tileH, nOverride, stripKind, anchor, stripSy = 0) {
+function buildAnimMeta(si, tileW, tileH, nOverride, stripKind, anchor, stripSy = 0, dOverride = null) {
   const pw = si.pw || 4;
   const n = nOverride ?? Math.max(1, phaseCount(si));
-  const d = Array.from({ length: n }, () => (n > 1 ? 5 : 10));
+  const d = dOverride || Array.from({ length: n }, () => (n > 1 ? 5 : 10));
   const ax = anchor ? anchor.ax : Math.round(tileW / 2);
   const ay = anchor ? anchor.ay : (tileH >= 48 ? tileH - 3 : tileH - 1);
   const m = {
-    w: tileW, h: tileH, n, d, ax, ay, r: 4, pw, ph: phaseCount(si), strip: true, stripKind
+    w: tileW, h: tileH, n, d, ax, ay, r: 4, pw, ph: Math.min(phaseCount(si), n), strip: true, stripKind
   };
   if (stripSy) m.stripSy = stripSy;
   return m;
@@ -220,7 +266,30 @@ function copyStrip(groupedDir, fileId, suffix, si, outDir) {
   if (!sz) return { err: 'PNG inválido ' + fname };
   const tileW = Math.max(1, Math.round(sz.w / si.ids.length));
   const tileH = sz.h;
-  return { fname, dest, tileW, tileH, count: si.ids.length };
+  return { fname, dest, tileW, tileH, count: si.ids.length, pw: si.pw || 4 };
+}
+
+/** Aparición sólo con grupo move: idle = primera fase (4 dirs), sin duplicar walk. */
+function trimIdleStripToFirstPhase(idleCopy) {
+  const sz = pngSize(idleCopy.dest);
+  if (!sz) return;
+  const pw = idleCopy.pw || 4;
+  const phaseW = idleCopy.tileW * pw;
+  if (sz.w <= phaseW) return;
+  const src = PNG.sync.read(fs.readFileSync(idleCopy.dest));
+  const out = new PNG({ width: phaseW, height: sz.h });
+  for (let y = 0; y < sz.h; y++) {
+    for (let x = 0; x < phaseW; x++) {
+      const si = (y * src.width + x) << 2;
+      const oi = (y * phaseW + x) << 2;
+      out.data[oi] = src.data[si];
+      out.data[oi + 1] = src.data[si + 1];
+      out.data[oi + 2] = src.data[si + 2];
+      out.data[oi + 3] = src.data[si + 3];
+    }
+  }
+  fs.writeFileSync(idleCopy.dest, PNG.sync.write(out));
+  idleCopy.count = pw;
 }
 
 async function main() {
@@ -253,8 +322,18 @@ async function main() {
     if (idleCopy?.err || walkCopy?.err) {
       return { ok: false, reason: idleCopy?.err || walkCopy?.err };
     }
-    const walkN = Math.min(walkCap ?? 8, phaseCount(move));
+  if (idleCopy.fname === walkCopy.fname) {
+      trimIdleStripToFirstPhase(idleCopy);
+    }
     const walkTile = hybridWalkTile(idleCopy, walkCopy);
+    const clientWalkPhases = walkPhaseCountFromClient(move);
+    const walkDurations = frameDurationsFromClient(move, clientWalkPhases || phaseCount(move));
+    const walkN = Math.min(
+      walkCap ?? 8,
+      clientWalkPhases ?? phaseCount(move),
+      phaseCount(move),
+      walkFramesInPng(walkCopy.dest, walkTile.w, walkTile.h, move.pw || 4, walkTile.stripSy)
+    );
     const refH = Math.max(idleCopy.tileH, walkTile.h);
     const anchorIdle = groundAnchorFromStrip(idleCopy.dest, idleCopy.tileW, idleCopy.tileH, 2);
     const sameTile = idleCopy.tileW === walkTile.w && idleCopy.tileH === walkTile.h;
@@ -281,10 +360,10 @@ async function main() {
       anchor: anchorWalk,
       a: {
         Idle: buildAnimMeta(idle, idleCopy.tileW, idleCopy.tileH, 1, 'idle', anchorIdle),
-        Walk: buildAnimMeta(move, walkTile.w, walkTile.h, walkN, 'walk', anchorWalk, walkTile.stripSy),
-        Attack: buildAnimMeta(move, walkTile.w, walkTile.h, Math.min(3, walkN), 'walk', anchorWalk, walkTile.stripSy),
-        Shoot: buildAnimMeta(move, walkTile.w, walkTile.h, Math.min(3, walkN), 'walk', anchorWalk, walkTile.stripSy),
-        Charge: buildAnimMeta(move, walkTile.w, walkTile.h, Math.min(2, walkN), 'walk', anchorWalk, walkTile.stripSy),
+        Walk: buildAnimMeta(move, walkTile.w, walkTile.h, walkN, 'walk', anchorWalk, walkTile.stripSy, walkDurations.slice(0, walkN)),
+        Attack: buildAnimMeta(move, walkTile.w, walkTile.h, Math.min(3, walkN), 'walk', anchorWalk, walkTile.stripSy, walkDurations.slice(0, Math.min(3, walkN))),
+        Shoot: buildAnimMeta(move, walkTile.w, walkTile.h, Math.min(3, walkN), 'walk', anchorWalk, walkTile.stripSy, walkDurations.slice(0, Math.min(3, walkN))),
+        Charge: buildAnimMeta(move, walkTile.w, walkTile.h, Math.min(2, walkN), 'walk', anchorWalk, walkTile.stripSy, walkDurations.slice(0, Math.min(2, walkN))),
         Hurt: buildAnimMeta(idle, idleCopy.tileW, idleCopy.tileH, 1, 'idle', anchorIdle),
         Faint: buildAnimMeta(idle, idleCopy.tileW, idleCopy.tileH, 1, 'idle', anchorIdle)
       },
@@ -327,11 +406,21 @@ async function main() {
   fs.writeFileSync(META_OUT, `/* GENERADO por tools/import_tibia_grouped.mjs — no editar */\nG.TIBIA_CREATURES_META = ${JSON.stringify(meta, null, 2)};\n`);
   const okCreatures = report.filter(r => r.kind === 'creature' && r.ok).length;
   const okOutfits = report.filter(r => r.kind === 'outfit' && r.ok).length;
+  let manifestCreatures = okCreatures;
+  let manifestOutfits = okOutfits;
+  if (opt('--only')) {
+    const idleCount = fs.readdirSync(OUT_CREATURES)
+      .filter(f => /^\d+-idle\.png$/i.test(f)).length;
+    const outCount = fs.readdirSync(OUT_OUTFITS)
+      .filter(f => /^\d+-idle\.png$/i.test(f)).length;
+    manifestCreatures = idleCount;
+    manifestOutfits = outCount;
+  }
   fs.writeFileSync(MANIFEST_OUT, JSON.stringify({
     at: new Date().toISOString(),
     groupedDir,
-    creatures: okCreatures,
-    outfits: okOutfits
+    creatures: manifestCreatures,
+    outfits: manifestOutfits
   }, null, 2) + '\n');
 
   console.log(JSON.stringify(report, null, 2));

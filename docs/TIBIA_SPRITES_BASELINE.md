@@ -47,7 +47,7 @@ Convención de animaciones exportadas (alineadas al motor):
 | Motor | Tibia (típico) | Notas |
 |-------|----------------|-------|
 | Idle | standing / idle | 1+ frames |
-| Walk | walking | 2–3 frames × 4 dirs |
+| Walk | walking | **2 u 8 fases** × 4 dirs (ver abajo) |
 | Attack | attacking | opcional fase 1 |
 | Shoot | (hechizo / distance) | misiles aparte en effects |
 | Hurt | — | reutilizar Walk o 1 frame |
@@ -55,6 +55,17 @@ Convención de animaciones exportadas (alineadas al motor):
 | Charge | — | opcional |
 
 Ancla al suelo: **`ax`, `ay`** en meta (pies alineados con `G.Sprites.PX`).
+
+### Walk: 8 fases vs 2 fases (Tibia 15+)
+
+En `appearances.dat`, el grupo **moving** trae `sprite_id[]` y `SpriteAnimation.sprite_phase[]`. La cantidad de fases walk es **`sprite_phase.length`**, no siempre 8.
+
+- **Rata / pollo / etc.:** 32 sprites, **8** fases (`sprite_phase` × 4 direcciones).
+- **Varios lookTypes (p. ej. humanoides):** 8 sprites, **2** fases (2 poses × 4 direcciones). Sin 8 dibujos en grouped/TSEXP; en juego se omiten criaturas cuyo walk no encaja con el pipeline 15.x.
+
+`tools/import_tibia_grouped.mjs` usa `appearances-full.proto` para `walkN` y duraciones. **No** interpolar ni “inventar” fases: se ve peor que el Tibia real.
+
+Alternativa con **8 dibujos distintos** solo con arte legacy (Tibia 7.x `.spr`/`.dat` u otro dump antiguo), fuera del pipeline oficial 15.x.
 
 ## Mapa lógico → cliente
 

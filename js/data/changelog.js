@@ -2,6 +2,18 @@
  *   new  · chg  · fix  — cada línea [es, en]
  */
 G.CHANGELOG = [
+  { d: '2026-11-23', title: ['Bestiario', 'Bestiary'], chg: [
+    ['Retiradas del juego 7 criaturas sin walk animado fiable (Hero, Gargoyle, infernoids, Pirate Gunner, Toad): roster, bestiario, sprites y mapa.',
+     'Removed 7 creatures without reliable walk animation (Hero, Gargoyle, infernoids, Pirate Gunner, Toad): roster, bestiary, sprites and map.'],
+  ] },
+  { d: '2026-11-22', title: ['Sprites', 'Sprites'], fix: [
+    ['Elf Scout (64): PNG idle 128×32 y walk 1024×32 recortados (mitad inferior del grouped); meta 32×32 y 7 fases walk.',
+     'Elf Scout (64): idle/walk PNGs cropped to 128×32 and 1024×32 (lower grouped half); 32×32 meta, 7 walk phases.'],
+  ] },
+  { d: '2026-11-22', title: ['Herramientas', 'Tools'], fix: [
+    ['Creature lab: footDx/Dy por columna (N/W/S/E) ya no se mezclan entre direcciones ni con el offset global del bucket.',
+     'Creature lab: per-column footDx/Dy (N/W/S/E) no longer bleed across facings or bucket-level offsets.'],
+  ] },
   { d: '2026-11-21', title: ['Sprites', 'Sprites'], fix: [
     ['Humanoides compuestos (amazon, hunter, nómadas…): colores y addons Tibia vía tibia-creature-outfits.js; dibujo con TibiaOutfitDraw.',
      'Composite humanoids (amazon, hunter, nomads…): Tibia colours and addons via tibia-creature-outfits.js; drawn with TibiaOutfitDraw.'],

@@ -374,30 +374,6 @@ G.CREATURES = [
     spawnWeight: 0.7,
     bestiary: bestiaryMeta('bonelord')
   },
-  {
-    id: 'hero',
-    legacyId: 99015,
-    name: 'Hero',
-    description: 'Human champion hardened in battle; slow but very tough.',
-    nameKey: 'creature.hero.name',
-    descriptionKey: 'creature.hero.description',
-    family: 'humanoid',
-    difficulty: 'hard',
-    tags: ['melee', 'ground'],
-    hp: 1400,
-    speed: 58,
-    attack: 1.12,
-    damageTypes: ['physical'],
-    defenseTypes: ['physical'],
-    weaknesses: ['death'],
-    resistances: ['physical', 'holy'],
-    behavior: 'tank',
-    sprite: 'tibia',
-    role: 'enemy',
-    tier: 2,
-    spawnWeight: 0.88,
-    bestiary: bestiaryMeta('hero')
-  },
   /** Summoned by Orshabaal only (not in bestiary / spawns). */
   {
     id: 'demon',
